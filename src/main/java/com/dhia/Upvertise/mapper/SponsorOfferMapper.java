@@ -21,6 +21,7 @@ public class SponsorOfferMapper {
                 .price(sponsorOffer.getPrice())
                 .gobletQuantity(sponsorOffer.getGobletQuantity())
                 .explainImage(sponsorOffer.getExplainImage())
+                .category(sponsorOffer.getCategory())
                 .status(String.valueOf(sponsorOffer.getStatus()))
                 .build();
     }

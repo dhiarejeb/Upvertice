@@ -6,7 +6,6 @@ import com.dhia.Upvertise.dto.SponsorOfferResponse;
 import com.dhia.Upvertise.models.common.PageResponse;
 import com.dhia.Upvertise.models.sponsorship.SponsorOfferStatus;
 import com.dhia.Upvertise.services.SponsorOfferService;
-import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +17,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/sponsor-offers")
 @RequiredArgsConstructor
 public class SponsorOfferController {
+
     private final SponsorOfferService sponsorOfferService;
 
 
 
     @GetMapping("/sponsorOffersByStatus")
+    @PreAuthorize("hasAnyRole('Admin','Sponsor')")
     public PageResponse<SponsorOfferResponse> getSponsorOffersByStatus(
             @RequestParam String status ,
             Pageable pageable) {
@@ -36,13 +37,13 @@ public class SponsorOfferController {
         return sponsorOfferService.getSponsorOffersByStatus(pageable,sponsorOfferStatus);
     }
     @GetMapping("/allSponsorOffers")
-    @PermitAll
+    @PreAuthorize("hasAnyRole('Admin','Sponsor')")
     public ResponseEntity<PageResponse<SponsorOfferResponse>> getAllSponsorOffers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(sponsorOfferService.getAllSponsorOffers(page, size));
     }
-    @PostMapping("/create")
+    @PostMapping("/createSponsorOffer")
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<String> createSponsorOffer(
             @RequestBody SponsorOfferRequest sponsorOfferRequest,
@@ -53,7 +54,7 @@ public class SponsorOfferController {
     }
 
     // sponsor selects a specific sponsor offer
-    @PostMapping("/{offerId}/choose")
+    @PostMapping("/chooseSponsorOffer/{offerId}")
     @PreAuthorize("hasRole('Sponsor')")
     public ResponseEntity<Integer> chooseSponsorOffer(
             @PathVariable Integer offerId,
@@ -62,7 +63,7 @@ public class SponsorOfferController {
 
         return ResponseEntity.ok(sponsorOfferService.chooseSponsorOffer(offerId, sponsorAdRequest , connectedUser));
     }
-    @PutMapping("/update-offer")
+    @PutMapping("/updateSponsorOfferChoice")
     @PreAuthorize("hasRole('Sponsor')")
     public ResponseEntity<String> updateChosenSponsorOffer(
             @RequestParam Integer oldOfferId,
@@ -74,4 +75,25 @@ public class SponsorOfferController {
         return ResponseEntity.ok("Sponsorship updated successfully. Sponsorship ID: " + updatedSponsorshipId
                 + " | Old Offer ID: " + oldOfferId + " | New Offer ID: " + newOfferId);
     }
+
+    @PutMapping("/{offerId}/updateSponsorOffer")
+    @PreAuthorize("hasRole('Admin')")
+    public ResponseEntity<SponsorOfferResponse> updateSponsorOffer(
+            @PathVariable Integer offerId,
+            @RequestBody SponsorOfferRequest request,
+            Authentication connectedUser) {
+
+        SponsorOfferResponse response = sponsorOfferService.updateSponsorOffer(connectedUser, offerId, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{offerId}/deleteSponsorOffer")
+    @PreAuthorize("hasRole('Admin')")
+    public ResponseEntity<Void> deleteSponsorOffer(
+            @PathVariable Integer offerId,
+            Authentication connectedUser) {
+        sponsorOfferService.deleteSponsorOffer(connectedUser, offerId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

@@ -2,6 +2,7 @@ package com.dhia.Upvertise.controllers;
 
 import com.dhia.Upvertise.dto.SponsorAdRequest;
 import com.dhia.Upvertise.dto.SponsorAdResponse;
+import com.dhia.Upvertise.models.common.PageResponse;
 import com.dhia.Upvertise.services.SponsorAdService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,25 @@ import org.springframework.web.bind.annotation.*;
 public class SponsorAdController {
 
     private final SponsorAdService sponsorAdService ;
+
+    @GetMapping("/sponsorAds")
+    @PreAuthorize("hasAnyRole('Admin', 'Sponsor')")
+    public ResponseEntity<PageResponse<SponsorAdResponse>> getAllSponsorAds(
+            Authentication connectedUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        PageResponse<SponsorAdResponse> sponsorAdResponses = sponsorAdService.getAllSponsorAds(connectedUser, page, size);
+        return ResponseEntity.ok(sponsorAdResponses);
+    }
+
+    @DeleteMapping("/{adId}/deleteAd")
+    @PreAuthorize("hasAnyRole('Admin','Sponsor')")
+    public ResponseEntity<?> deleteSponsorAd(
+            @PathVariable Integer adId,
+            Authentication connectedUser) {
+        sponsorAdService.deleteSponsorAd(connectedUser, adId);
+        return ResponseEntity.ok("Sponsor Ad deleted successfully");
+    }
 
 
     @PutMapping("/updateAd/{adId}")

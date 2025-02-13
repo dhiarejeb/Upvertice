@@ -9,6 +9,7 @@ public record SponsorOfferResponse(
         Double price,
         Integer gobletQuantity,
         String status,
+        String category,
         String explainImage
 ) {
 }

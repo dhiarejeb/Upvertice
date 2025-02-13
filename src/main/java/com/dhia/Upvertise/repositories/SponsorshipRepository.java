@@ -1,24 +1,30 @@
 package com.dhia.Upvertise.repositories;
 
+import com.dhia.Upvertise.models.sponsorship.SponsorAd;
+import com.dhia.Upvertise.models.sponsorship.SponsorOffer;
 import com.dhia.Upvertise.models.sponsorship.Sponsorship;
+import com.dhia.Upvertise.models.sponsorship.SponsorshipStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 @Repository
 public interface SponsorshipRepository extends JpaRepository<Sponsorship, Integer> {
 
 
-    //@Query("""
-    //SELECT s FROM Sponsorship s WHERE s.sponsor_id = :sponsorId AND s.sponsorad_id = :adId""")
-    //Optional<Sponsorship> findBySponsorIdAndSponsorAdId(Integer sponsorId, Integer adId);
+    Page<Sponsorship> findByCreatedBy(String createdBy , Pageable pageable);
+    Page<Sponsorship> findByStatus(SponsorshipStatus status , Pageable pageable);
+    Page<Sponsorship> findByStatusAndCreatedBy(SponsorshipStatus status, String createdBy,Pageable pageable);
     @Query("""
     SELECT s 
     FROM Sponsorship s JOIN s.sponsorAds ads 
     WHERE s.userId = :userId AND ads.id = :sponsorAdId""")
-    Optional<Sponsorship> findByUserIdAndSponsorAdId(@Param("userId") String userId, @Param("sponsorAdId") Integer sponsorAdId);
+    List<Sponsorship> findByUserIdAndSponsorAdId(@Param("userId") String userId, @Param("sponsorAdId") Integer sponsorAdId);
 
 
     @Query("""
@@ -28,11 +34,12 @@ public interface SponsorshipRepository extends JpaRepository<Sponsorship, Intege
 """)
     Optional<Sponsorship> findBySponsorOfferIdAndUserId(@Param("sponsorOfferId") Integer sponsorOfferId,
                                                         @Param("userId") String userId);
-//    @Query("""
-//SELECT s
-//FROM Sponsorship s
-//WHERE s.sponsorOffer.id = :oldOfferId
-//""")
-//    Optional<Sponsorship> findBySponsorOfferId(Integer oldOfferId);
-//
+
+    List<Sponsorship> findBySponsorOffer(SponsorOffer sponsorOffer);
+
+
+    List<Sponsorship> findBySponsorAdsContaining(SponsorAd sponsorAd);
+
+
+
 }

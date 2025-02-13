@@ -9,12 +9,15 @@ import com.dhia.Upvertise.models.sponsorship.*;
 import com.dhia.Upvertise.repositories.SponsorAdRepository;
 import com.dhia.Upvertise.repositories.SponsorOfferRepository;
 import com.dhia.Upvertise.repositories.SponsorshipRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -139,11 +142,97 @@ public class SponsorOfferService {
         sponsorOffer.setGobletQuantity(request.gobletQuantity());
         sponsorOffer.setExplainImage(request.explainImage());
         sponsorOffer.setStatus(request.status());
+        sponsorOffer.setCategory(request.category());
         sponsorOffer.setUserId(connectedUser.getName());  // Link offer to admin who created it
 
         return sponsorOfferRepository.save(sponsorOffer).getId();
     }
 
+
+    public SponsorOfferResponse updateSponsorOffer(Authentication connectedUser, Integer offerId, SponsorOfferRequest request) {
+
+
+
+        // Retrieve the SponsorOffer
+        SponsorOffer sponsorOffer = sponsorOfferRepository.findById(offerId)
+                .orElseThrow(() -> new EntityNotFoundException("Sponsor Offer not found"));
+        // Fetch associated Sponsorships, handling null or empty list
+        List<Sponsorship> sponsorships = sponsorshipRepository.findBySponsorOffer(sponsorOffer);
+
+        // Check if the list is null or empty (no active sponsorships)
+        if (sponsorships == null || sponsorships.isEmpty()) {
+            // No sponsorships, so update is allowed
+            return updateSponsorOfferDetails(sponsorOffer, request);
+        }else {
+
+        // Check if any related Sponsorship has status other than FINISHED
+        boolean canUpdate = sponsorships.stream()
+                .anyMatch(sponsorship -> sponsorship.getStatus() == SponsorshipStatus.PENDING
+                        || sponsorship.getStatus() == SponsorshipStatus.REJECTED
+                        || sponsorship.getStatus() == SponsorshipStatus.FINISHED);
+
+        if (!canUpdate) {
+            throw new IllegalStateException("You cannot update an offer with an active or unfinished sponsorship");
+        }
+
+        // Apply changes and save the updated SponsorOffer
+        return updateSponsorOfferDetails(sponsorOffer, request);
+        }
+    }
+
+    private SponsorOfferResponse updateSponsorOfferDetails(SponsorOffer sponsorOffer, SponsorOfferRequest request) {
+        // Apply changes from the request
+        if (request.title() != null) sponsorOffer.setTitle(request.title());
+        if (request.description() != null) sponsorOffer.setDescription(request.description());
+        if (request.price() != null) sponsorOffer.setPrice(request.price());
+        if (request.category() != null) sponsorOffer.setCategory(request.category());
+        if (request.explainImage() != null) sponsorOffer.setExplainImage(request.explainImage());
+        if (request.numberAds() != null) sponsorOffer.setNumberAds(request.numberAds());
+        if (request.gobletQuantity() != null) sponsorOffer.setGobletQuantity(request.gobletQuantity());
+
+
+        // Update SponsorOffer status if provided
+        if (request.status() != null) sponsorOffer.setStatus(request.status());
+
+        // Save the updated SponsorOffer
+        sponsorOfferRepository.save(sponsorOffer);
+
+        return sponsorOfferMapper.toSponsorOfferResponse(sponsorOffer);
+    }
+
+
+    public void deleteSponsorOffer(Authentication connectedUser, Integer offerId) {
+        // Retrieve the SponsorOffer
+        SponsorOffer sponsorOffer = sponsorOfferRepository.findById(offerId)
+                .orElseThrow(() -> new EntityNotFoundException("Sponsor Offer not found"));
+
+        // Fetch associated Sponsorships
+        List<Sponsorship> sponsorships = sponsorshipRepository.findBySponsorOffer(sponsorOffer);
+
+        // If no Sponsorships exist, delete immediately
+        if (sponsorships == null || sponsorships.isEmpty()) {
+            sponsorOfferRepository.delete(sponsorOffer);
+            return;
+        }
+
+        // Check if all related Sponsorships have a valid status (PENDING, REJECTED, or FINISHED)
+        boolean canDelete = sponsorships.stream()
+                .allMatch(sponsorship -> sponsorship.getStatus() == SponsorshipStatus.PENDING
+                        || sponsorship.getStatus() == SponsorshipStatus.REJECTED
+                        || sponsorship.getStatus() == SponsorshipStatus.FINISHED);
+
+        if (!canDelete) {
+            throw new IllegalStateException("Cannot delete a Sponsor Offer with active or ongoing sponsorships");
+        }
+
+        // Update all related Sponsorships to FINISHED
+        sponsorships.forEach(sponsorship -> sponsorship.setStatus(SponsorshipStatus.FINISHED));
+        sponsorshipRepository.saveAll(sponsorships);
+
+        // Delete the SponsorOffer
+        sponsorOfferRepository.delete(sponsorOffer);
+
+    }
 
 
 }

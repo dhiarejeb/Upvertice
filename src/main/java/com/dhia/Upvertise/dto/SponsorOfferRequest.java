@@ -8,6 +8,7 @@ public record SponsorOfferRequest(
         String title,
         String description,
         Double price,
+        String category,
         Integer gobletQuantity,
         String explainImage,
         Integer numberAds,
