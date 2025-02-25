@@ -14,10 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,14 +23,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SponsorOfferService {
     private final SponsorOfferRepository sponsorOfferRepository;
-    private final SponsorOfferMapper sponsorOfferMapper;
     private final SponsorshipRepository sponsorshipRepository;
     private final SponsorAdRepository sponsorAdRepository;
 
 
     public PageResponse<SponsorOfferResponse> getSponsorOffersByStatus(Pageable pageable, SponsorOfferStatus status) {
         Page<SponsorOffer> page = sponsorOfferRepository.findByStatus(status, pageable);
-        return sponsorOfferMapper.toSponsorOfferPageResponse(page);
+        return SponsorOfferMapper.toSponsorOfferPageResponse(page);
     }
 
 
@@ -46,7 +43,7 @@ public class SponsorOfferService {
         List<SponsorOfferResponse> SponsorOfferResponses = sponsorOffersPage
                 .getContent()
                 .stream()
-                .map(sponsorOfferMapper::toSponsorOfferResponse)
+                .map(SponsorOfferMapper::toSponsorOfferResponse)
                 .toList();
         return new PageResponse<>(
                 SponsorOfferResponses,
@@ -69,6 +66,7 @@ public class SponsorOfferService {
 
         // Create a new SponsorAd
         SponsorAd sponsorAd = new SponsorAd();
+        sponsorAd.setTitle(sponsorAdRequest.title());
         sponsorAd.setDesign(sponsorAdRequest.design());
         sponsorAd.setContent(sponsorAdRequest.content());
         sponsorAd.setDesign_colors(sponsorAdRequest.designColors());
@@ -143,13 +141,14 @@ public class SponsorOfferService {
         sponsorOffer.setExplainImage(request.explainImage());
         sponsorOffer.setStatus(request.status());
         sponsorOffer.setCategory(request.category());
+        sponsorOffer.setNumberAds(request.numberAds());
         sponsorOffer.setUserId(connectedUser.getName());  // Link offer to admin who created it
 
         return sponsorOfferRepository.save(sponsorOffer).getId();
     }
 
 
-    public SponsorOfferResponse updateSponsorOffer(Authentication connectedUser, Integer offerId, SponsorOfferRequest request) {
+    public SponsorOfferResponse updateSponsorOffer(Integer offerId, SponsorOfferRequest request) {
 
 
 
@@ -197,11 +196,11 @@ public class SponsorOfferService {
         // Save the updated SponsorOffer
         sponsorOfferRepository.save(sponsorOffer);
 
-        return sponsorOfferMapper.toSponsorOfferResponse(sponsorOffer);
+        return SponsorOfferMapper.toSponsorOfferResponse(sponsorOffer);
     }
 
 
-    public void deleteSponsorOffer(Authentication connectedUser, Integer offerId) {
+    public void deleteSponsorOffer(Integer offerId) {
         // Retrieve the SponsorOffer
         SponsorOffer sponsorOffer = sponsorOfferRepository.findById(offerId)
                 .orElseThrow(() -> new EntityNotFoundException("Sponsor Offer not found"));

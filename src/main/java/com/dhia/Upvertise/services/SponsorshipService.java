@@ -1,6 +1,7 @@
 package com.dhia.Upvertise.services;
 
 import com.dhia.Upvertise.dto.SponsorshipResponse;
+import com.dhia.Upvertise.handler.*;
 import com.dhia.Upvertise.mapper.SponsorshipMapper;
 import com.dhia.Upvertise.models.common.PageResponse;
 import com.dhia.Upvertise.models.sponsorship.Sponsorship;
@@ -13,7 +14,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ import java.util.List;
 public class SponsorshipService {
 
     private final SponsorshipRepository sponsorshipRepository;
-    private final SponsorshipMapper sponsorshipMapper;
+
 
     public PageResponse<SponsorshipResponse> getAllSponsorships(Authentication connectedUser, int page, int size) {
 
@@ -45,7 +45,7 @@ public class SponsorshipService {
         List<SponsorshipResponse> sponsorshipResponses = sponsorshipsPage
                 .getContent()
                 .stream()
-                .map(sponsorshipMapper::toSponsorshipResponse)
+                .map(SponsorshipMapper::toSponsorshipResponse)
                 .toList();
 
         return new PageResponse<>(
@@ -79,7 +79,7 @@ public class SponsorshipService {
         List<SponsorshipResponse> sponsorshipResponses = sponsorshipsPage
                 .getContent()
                 .stream()
-                .map(sponsorshipMapper::toSponsorshipResponse)
+                .map(SponsorshipMapper::toSponsorshipResponse)
                 .toList();
 
         // Return paginated response
@@ -104,18 +104,35 @@ public class SponsorshipService {
         if (sponsorship.getStatus() != SponsorshipStatus.PENDING &&
                 sponsorship.getStatus() != SponsorshipStatus.REJECTED&&
                 sponsorship.getStatus() != SponsorshipStatus.FINISHED) {
-            throw new IllegalStateException("Only PENDING or REJECTED sponsorships can be deleted.");
+            throw new IllegalStateException("Only PENDING or REJECTED or FINISHED sponsorships can be deleted.");
         }
         // Ensure only the sponsor who created it or an admin can delete
         boolean isAdmin = connectedUser.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_Admin"));
+        boolean isSponsor = connectedUser.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_Sponsor"));
 
-        if (!isAdmin && !sponsorship.getCreatedBy().equals(connectedUser.getName())) {
-            throw new RuntimeException("You are not authorized to delete this sponsorship");
+
+        if (isAdmin) {
+            sponsorshipRepository.delete(sponsorship);
+
+        }else{
+            throw new ForbiddenActionException("Only Admins can delete this sponsorship.");
+
+        }
+        // Sponsor can delete only if status is PENDING or REJECTED
+        if (isSponsor && sponsorship.getUserId().equals(connectedUser.getName())) {
+            if (sponsorship.getStatus() == SponsorshipStatus.PENDING ||
+                    sponsorship.getStatus() == SponsorshipStatus.REJECTED) {
+                sponsorshipRepository.delete(sponsorship);
+
+            } else {
+                throw new UnauthorizedAccessException("You are not authorized to delete this sponsorship");
+            }
         }
 
         // Perform the deletion (SponsorOffers remain untouched)
-        sponsorshipRepository.delete(sponsorship);
+
     }
 
 
@@ -129,18 +146,18 @@ public class SponsorshipService {
         // Check if the status transition is allowed
         SponsorshipStatus currentStatus = sponsorship.getStatus();
         if (currentStatus == SponsorshipStatus.FINISHED) {
-            throw new IllegalStateException("Cannot update a finished Sponsorship.");
+            throw new BusinessException(BusinessErrorCodes.INVALID_SPONSORSHIP_STATUS, "Sponsorship must be in PENDING state to proceed.");
         }
 
         if (currentStatus == SponsorshipStatus.APPROVED && newStatus == SponsorshipStatus.REJECTED) {
-            throw new IllegalStateException("Cannot reject an already approved Sponsorship.");
+            throw new OperationNotPermittedException("Cannot reject an already approved Sponsorship.");
         }
 
         // Update status
         sponsorship.setStatus(newStatus);
         sponsorshipRepository.save(sponsorship);
 
-        return sponsorshipMapper.toSponsorshipResponse(sponsorship);
+        return SponsorshipMapper.toSponsorshipResponse(sponsorship);
     }
 
 }

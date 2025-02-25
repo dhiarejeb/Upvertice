@@ -10,6 +10,7 @@ public record SponsorOfferResponse(
         Integer gobletQuantity,
         String status,
         String category,
+        Integer numberAds,
         String explainImage
 ) {
 }

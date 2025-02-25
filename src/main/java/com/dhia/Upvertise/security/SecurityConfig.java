@@ -31,6 +31,8 @@ public class SecurityConfig  {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req ->
                         req.requestMatchers(
+                                        "/supplier-offers/status",
+                                        "/supplier-offers/AllSupplierOffers",
                                         "/sponsor-offers/sponsorOffersByStatus",
                                         "/sponsor-offers/allSponsorOffers",
                                         "/auth/**",

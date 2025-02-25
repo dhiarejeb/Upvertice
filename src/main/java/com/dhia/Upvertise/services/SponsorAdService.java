@@ -17,7 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -30,7 +29,7 @@ public class SponsorAdService {
 
     private final SponsorAdRepository sponsorAdRepository;
     private final SponsorshipRepository sponsorshipRepository;
-    private final SponsorAdMapper sponsorAdMapper;
+
 
 
     public PageResponse<SponsorAdResponse> getAllSponsorAds(Authentication connectedUser, int page, int size) {
@@ -46,7 +45,7 @@ public class SponsorAdService {
         if (isAdmin) {
             Page<SponsorAd> sponsorAdsPage = sponsorAdRepository.findAll(pageable);
             List<SponsorAdResponse> sponsorAdResponses = sponsorAdsPage.getContent().stream()
-                    .map(sponsorAdMapper::toSponsorAdResponse)
+                    .map(SponsorAdMapper::toSponsorAdResponse)
                     .collect(Collectors.toList());
 
             return new PageResponse<>(
@@ -62,7 +61,7 @@ public class SponsorAdService {
             // Sponsors can only get their own SponsorAds
             Page<SponsorAd> sponsorAdsPage = sponsorAdRepository.findByCreatedBy(userId, pageable);
             List<SponsorAdResponse> sponsorAdResponses = sponsorAdsPage.getContent().stream()
-                    .map(sponsorAdMapper::toSponsorAdResponse)
+                    .map(SponsorAdMapper::toSponsorAdResponse)
                     .collect(Collectors.toList());
 
             return new PageResponse<>(
@@ -101,9 +100,9 @@ public class SponsorAdService {
 
         // ✅ If no sponsorships exist, allow update
         if (sponsorships.isEmpty()) {
-            sponsorAdMapper.updateSponsorAdFromRequest(request, sponsorAd);
+            SponsorAdMapper.updateSponsorAdFromRequest(request, sponsorAd);
             sponsorAdRepository.save(sponsorAd);
-            return sponsorAdMapper.toSponsorAdResponse(sponsorAd);
+            return SponsorAdMapper.toSponsorAdResponse(sponsorAd);
         }
 
         // ✅ If there are sponsorships, enforce status restrictions
@@ -116,12 +115,12 @@ public class SponsorAdService {
         }
 
         // ✅ Use the mapper to update the existing SponsorAd
-        sponsorAdMapper.updateSponsorAdFromRequest(request, sponsorAd);
+        SponsorAdMapper.updateSponsorAdFromRequest(request, sponsorAd);
 
         // Save updated entity
         sponsorAdRepository.save(sponsorAd);
 
-        return sponsorAdMapper.toSponsorAdResponse(sponsorAd);
+        return SponsorAdMapper.toSponsorAdResponse(sponsorAd);
     }
 
     public void deleteSponsorAd(Authentication connectedUser, Integer adId) {

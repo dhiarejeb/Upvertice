@@ -80,19 +80,17 @@ public class SponsorOfferController {
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<SponsorOfferResponse> updateSponsorOffer(
             @PathVariable Integer offerId,
-            @RequestBody SponsorOfferRequest request,
-            Authentication connectedUser) {
+            @RequestBody SponsorOfferRequest request ) {
 
-        SponsorOfferResponse response = sponsorOfferService.updateSponsorOffer(connectedUser, offerId, request);
+        SponsorOfferResponse response = sponsorOfferService.updateSponsorOffer(offerId, request);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{offerId}/deleteSponsorOffer")
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<Void> deleteSponsorOffer(
-            @PathVariable Integer offerId,
-            Authentication connectedUser) {
-        sponsorOfferService.deleteSponsorOffer(connectedUser, offerId);
+            @PathVariable Integer offerId ) {
+        sponsorOfferService.deleteSponsorOffer(offerId);
         return ResponseEntity.noContent().build();
     }
 

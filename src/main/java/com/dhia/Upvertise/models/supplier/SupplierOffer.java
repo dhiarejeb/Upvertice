@@ -3,11 +3,10 @@ package com.dhia.Upvertise.models.supplier;
 import com.dhia.Upvertise.models.common.BaseEntity;
 import com.dhia.Upvertise.models.sponsorship.SponsorAd;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -16,12 +15,17 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@SuperBuilder
 public class SupplierOffer extends BaseEntity {
 
+    private String title ;
+    private String description ;
     private Integer quantityAvailable;
     private Double price;
     @Enumerated(EnumType.STRING)
-    private  SupplierOfferStatus status;
+    private  SupplierOfferStatus status; //COMING_SOON,AVAILABLE,CLOSED
+    private LocalDate startDate;
+    private LocalDate endDate;
 
     @OneToMany(mappedBy = "supplierOffer")
     private List<SupplierTransaction> transactions;

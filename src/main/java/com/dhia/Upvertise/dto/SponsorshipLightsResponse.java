@@ -6,13 +6,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
-public record SponsorshipResponse(
+public record SponsorshipLightsResponse(
         Integer id,
         SponsorshipStatus status,
         String userId,
         SponsorOfferResponse sponsorOffer,
         Set<SponsorAdResponse> sponsorAds,
         LocalDateTime createdDate,
-        List<ProvidershipLightResponse> providerships,
-        List<SupplierTransactionLightResponse> supplierTransactions
-) {}
+        List<ProvidershipResponse> providerships
+
+) {
+}

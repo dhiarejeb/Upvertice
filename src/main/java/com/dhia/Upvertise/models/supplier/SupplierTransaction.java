@@ -1,12 +1,14 @@
 package com.dhia.Upvertise.models.supplier;
 
 import com.dhia.Upvertise.models.common.BaseEntity;
-import com.dhia.Upvertise.models.user.Supplier;
+import com.dhia.Upvertise.models.sponsorship.Sponsorship;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Entity
 @Table(name = "supplier_transactions")
@@ -16,10 +18,22 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SupplierTransaction extends BaseEntity {
 
-    private Integer quantityPurchased;
-    private Double totalPrice;
+    private SupplierTransactionStatus supplierTransactionStatus;
+
     @Column(name = "user_id")
     private String userId;
+
+    private Integer quantitySold;
+    private Double relativePrice;
+    private Double percentage;
+    private Double discount = 0.0; // Default no discount
+    @Column(name = "proofs")
+    @ElementCollection
+    private List<String> proofs;
+    @Column(name = "locations")
+    @ElementCollection
+    private List<String> locations;
+
     //@ManyToOne
     //@JoinColumn(name = "supplier_id")
     //private Supplier supplier;
@@ -27,6 +41,12 @@ public class SupplierTransaction extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "supplier_offer_id")
     private SupplierOffer supplierOffer;
+
+    @ManyToOne
+    @JoinColumn(name = "sponsorship_id")
+    private Sponsorship  sponsorship;
+
+
 
 
 }
