@@ -28,12 +28,20 @@ spring:
         connectiontimeout: 5000
         timeout: 3000
         writetimeout: 5000
-    security:
-      oauth2:
-        resourceserver:
-          jwt:
-            issuer-uri: "http://localhost:9090/realms/Upvertise"
-            jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "http://localhost:9090/realms/Upvertise"
+          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+  cache:
+    type: redis
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 60000
 
 
 

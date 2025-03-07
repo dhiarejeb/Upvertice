@@ -128,9 +128,6 @@ public class SponsorOfferService {
     }
 
     public Integer createSponsorOffer(SponsorOfferRequest request, Authentication connectedUser) {
-        // Get authenticated user details
-        //UserDetails userDetails = (UserDetails) connectedUser.getPrincipal();
-
 
         // Create and save the SponsorOffer
         SponsorOffer sponsorOffer = new SponsorOffer();

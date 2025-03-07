@@ -27,6 +27,8 @@ public class SupplierTransactionMapper {
                 transaction.getQuantitySold(),
                 transaction.getRelativePrice(),
                 transaction.getPercentage(),
+                transaction.getLocations(),
+                transaction.getProofs(),
                 sponsorshipLightsResponse
         );
     }
@@ -46,7 +48,8 @@ public class SupplierTransactionMapper {
                 transaction.getSupplierTransactionStatus(),
                 transaction.getQuantitySold(),
                 transaction.getRelativePrice(),
-                transaction.getPercentage()
+                transaction.getPercentage(),
+                transaction.getProofs()
 
         );
     }

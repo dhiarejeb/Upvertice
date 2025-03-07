@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -14,7 +15,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -62,7 +62,7 @@ public class SecurityConfig  {
     }
     @Bean
     public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withJwkSetUri("http://localhost:9090/realms/Upvertise/protocol/openid-connect/certs")
+        return NimbusJwtDecoder.withJwkSetUri("http://localhost:9090/realms/Upvertice/protocol/openid-connect/certs")
                 .build();
     }
     @Bean
@@ -72,9 +72,33 @@ public class SecurityConfig  {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
             var authorities = jwtGrantedAuthoritiesConverter.convert(jwt);
+
+            // Extract roles from realm_access
+            var realmAccess = jwt.getClaimAsMap("realm_access");
+            if (realmAccess != null && realmAccess.containsKey("roles")) {
+                var roleList = (Collection<String>) realmAccess.get("roles");
+                var grantedAuthorities = roleList.stream()
+                        .map(role -> "ROLE_" + role)  // Add ROLE_ prefix
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toSet());
+                authorities.addAll(grantedAuthorities);
+            }
+
+            return authorities;
+        });
+
+        return converter;
+    }
+    /*@Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            var authorities = jwtGrantedAuthoritiesConverter.convert(jwt);
             var resourceRoles = jwt.getClaimAsMap("resource_access");
-            if (resourceRoles != null && resourceRoles.containsKey("Upvertise-rest-api")) {
-                var roles = (Map<String, Object>) resourceRoles.get("Upvertise-rest-api");
+            if (resourceRoles != null && resourceRoles.containsKey("Upvertice-rest-api")) {
+                var roles = (Map<String, Object>) resourceRoles.get("Upvertice-rest-api");
                 var roleList = (Collection<String>) roles.get("roles");
                 var grantedAuthorities = roleList.stream()
                         .map(role -> "ROLE_" + role)  // Add ROLE_ prefix
@@ -86,5 +110,5 @@ public class SecurityConfig  {
         });
 
         return converter;
-    }
+    }*/
 }
