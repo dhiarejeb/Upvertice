@@ -3,6 +3,7 @@ package com.dhia.Upvertise.services;
 import com.dhia.Upvertise.dto.SponsorAdRequest;
 import com.dhia.Upvertise.dto.SponsorOfferRequest;
 import com.dhia.Upvertise.dto.SponsorOfferResponse;
+import com.dhia.Upvertise.handler.OperationNotPermittedException;
 import com.dhia.Upvertise.mapper.SponsorOfferMapper;
 import com.dhia.Upvertise.models.common.PageResponse;
 import com.dhia.Upvertise.models.sponsorship.*;
@@ -11,6 +12,8 @@ import com.dhia.Upvertise.repositories.SponsorOfferRepository;
 import com.dhia.Upvertise.repositories.SponsorshipRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +29,7 @@ public class SponsorOfferService {
     private final SponsorshipRepository sponsorshipRepository;
     private final SponsorAdRepository sponsorAdRepository;
 
-
+    @Cacheable(value = "sponsorOffers", key = "'status:' + #status + '-' + #pageable.pageNumber")
     public PageResponse<SponsorOfferResponse> getSponsorOffersByStatus(Pageable pageable, SponsorOfferStatus status) {
         Page<SponsorOffer> page = sponsorOfferRepository.findByStatus(status, pageable);
         return SponsorOfferMapper.toSponsorOfferPageResponse(page);
@@ -36,6 +39,7 @@ public class SponsorOfferService {
 
 
     // Retrieve all sponsor offers with pagination
+    @Cacheable(value = "sponsorOffers", key = "'all:' + #page + '-' + #size")
     public PageResponse<SponsorOfferResponse> getAllSponsorOffers(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<SponsorOffer> sponsorOffersPage = sponsorOfferRepository.findAll(pageable);
@@ -58,50 +62,42 @@ public class SponsorOfferService {
 
     // sponsor selects an offer
     // sponsor selects an offer
+    @CacheEvict(value = "sponsorAds", allEntries = true)  // Clear cache after creating a new ad
     public Integer chooseSponsorOffer(Integer offerId, SponsorAdRequest sponsorAdRequest, Authentication connectedUser) {
 
         // Retrieve the SponsorOffer
         SponsorOffer sponsorOffer = sponsorOfferRepository.findById(offerId)
-                .orElseThrow(() -> new RuntimeException("Sponsor Offer not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Sponsor Offer not found"));
 
-        // Create a new SponsorAd
+        // Create and save the SponsorAd
         SponsorAd sponsorAd = new SponsorAd();
         sponsorAd.setTitle(sponsorAdRequest.title());
         sponsorAd.setDesign(sponsorAdRequest.design());
         sponsorAd.setContent(sponsorAdRequest.content());
         sponsorAd.setDesign_colors(sponsorAdRequest.designColors());
         sponsorAd.setUserId(connectedUser.getName());  // Link ad to sponsor
+        sponsorAd = sponsorAdRepository.saveAndFlush(sponsorAd);  // Ensure it's persisted
 
-        // Save the SponsorAd first
-        sponsorAdRepository.save(sponsorAd);
-
-        // Create a new Sponsorship entry
+        // Create the Sponsorship
         Sponsorship sponsorship = new Sponsorship();
         sponsorship.setUserId(connectedUser.getName());
         sponsorship.setSponsorOffer(sponsorOffer);
         sponsorship.setStatus(SponsorshipStatus.PENDING);
 
-        // Save the Sponsorship
-        Sponsorship savedSponsorship = sponsorshipRepository.save(sponsorship);
+        // Establish bidirectional relationship
+        sponsorship.getSponsorAds().add(sponsorAd);
+        sponsorAd.getSponsorships().add(sponsorship);
 
-//        // Link the Sponsorship to the SponsorAd (many-to-many relationship)
-//        sponsorAd.getSponsorships().add(savedSponsorship);
-//
-//        // Save the updated SponsorAd after linking the Sponsorship
-//        sponsorAdRepository.save(sponsorAd);
-        sponsorAd.getSponsorships().add(savedSponsorship);
-        savedSponsorship.getSponsorAds().add(sponsorAd);
+        // Save Sponsorship (this also updates SponsorAd due to cascading)
+        sponsorship = sponsorshipRepository.save(sponsorship);
 
-// Save the updated Sponsorship after linking the SponsorAd
-        sponsorshipRepository.save(savedSponsorship);
-
-        return savedSponsorship.getId();
+        return sponsorship.getId();
     }
     public Integer updateChosenSponsorOffer(Integer oldOfferId, Integer newOfferId, Authentication connectedUser) {
 
         // Find the Sponsorship that has the oldOfferId
         Sponsorship sponsorship = sponsorshipRepository.findBySponsorOfferIdAndUserId(oldOfferId, connectedUser.getName())
-                .orElseThrow(() -> new RuntimeException("No sponsorship found with the provided old offer ID for this user"));
+                .orElseThrow(() -> new EntityNotFoundException("No sponsorship found with the provided old offer ID for this user"));
 
         // Ensure the authenticated sponsor is the owner of the sponsorship
         if (!sponsorship.getCreatedBy().equals(connectedUser.getName())) {
@@ -110,12 +106,12 @@ public class SponsorOfferService {
 
         // Find the new SponsorOffer
         SponsorOffer newSponsorOffer = sponsorOfferRepository.findById(newOfferId)
-                .orElseThrow(() -> new RuntimeException("New Sponsor Offer not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Sponsor Offer not found"));
 
         // Business Rule: Only allow updates if sponsorship is PENDING or REJECTED
         if (sponsorship.getStatus() != SponsorshipStatus.PENDING
                 && sponsorship.getStatus() != SponsorshipStatus.REJECTED) {
-            throw new IllegalStateException("You cannot update an offer for an approved or completed sponsorship");
+            throw new OperationNotPermittedException("You cannot update an offer for an approved or completed sponsorship");
         }
 
         // Update the sponsorship with the new sponsor offer
@@ -126,7 +122,7 @@ public class SponsorOfferService {
 
         return sponsorship.getId();
     }
-
+    @CacheEvict(value = "sponsorOffers", allEntries = true)
     public Integer createSponsorOffer(SponsorOfferRequest request, Authentication connectedUser) {
 
         // Create and save the SponsorOffer
@@ -144,7 +140,7 @@ public class SponsorOfferService {
         return sponsorOfferRepository.save(sponsorOffer).getId();
     }
 
-
+    @CacheEvict(value = "sponsorOffers", allEntries = true)
     public SponsorOfferResponse updateSponsorOffer(Integer offerId, SponsorOfferRequest request) {
 
 
@@ -168,7 +164,7 @@ public class SponsorOfferService {
                         || sponsorship.getStatus() == SponsorshipStatus.FINISHED);
 
         if (!canUpdate) {
-            throw new IllegalStateException("You cannot update an offer with an active or unfinished sponsorship");
+            throw new OperationNotPermittedException("You cannot update an offer with an active or unfinished sponsorship");
         }
 
         // Apply changes and save the updated SponsorOffer
@@ -196,7 +192,7 @@ public class SponsorOfferService {
         return SponsorOfferMapper.toSponsorOfferResponse(sponsorOffer);
     }
 
-
+    @CacheEvict(value = "sponsorOffers", allEntries = true)
     public void deleteSponsorOffer(Integer offerId) {
         // Retrieve the SponsorOffer
         SponsorOffer sponsorOffer = sponsorOfferRepository.findById(offerId)
@@ -218,7 +214,7 @@ public class SponsorOfferService {
                         || sponsorship.getStatus() == SponsorshipStatus.FINISHED);
 
         if (!canDelete) {
-            throw new IllegalStateException("Cannot delete a Sponsor Offer with active or ongoing sponsorships");
+            throw new OperationNotPermittedException("Cannot delete a Sponsor Offer with active or ongoing sponsorships");
         }
 
         // Update all related Sponsorships to FINISHED

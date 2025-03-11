@@ -17,6 +17,9 @@ import com.dhia.Upvertise.repositories.SupplierOfferRepository;
 import com.dhia.Upvertise.repositories.SupplierTransactionRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -36,6 +39,7 @@ public class SupplierOfferService {
     private final SponsorAdRepository sponsorAdRepository;
     private final SupplierTransactionRepository suppliertransactionRepository;
 
+    @Cacheable(value = "supplierOffers", key = "'all:' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public PageResponse<SupplierOfferResponse> getAllSupplierOffers(Pageable pageable) {
         Page<SupplierOffer> page = supplierOfferRepository.findAll(pageable);
         List<SupplierOfferResponse> content = page.getContent().stream()
@@ -51,6 +55,7 @@ public class SupplierOfferService {
                 page.isLast()
         );
     }
+    @Cacheable(value = "supplierOffers", key = "'status:' + #status + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public PageResponse<SupplierOfferResponse> getSupplierOfferByStatus(SupplierOfferStatus status, Pageable pageable) {
         Page<SupplierOffer> page = supplierOfferRepository.findByStatus(status, pageable);
         List<SupplierOfferResponse> content = page.getContent().stream()
@@ -66,14 +71,19 @@ public class SupplierOfferService {
                 page.isLast()
         );
     }
-
+    @Caching(evict = {
+            @CacheEvict(value = "supplierOffers", key = "'all:' + #request.pageNumber + '-' + #request.pageSize", allEntries = true),
+            @CacheEvict(value = "supplierOffers", key = "'status:' + #request.status + '-' + #request.pageNumber + '-' + #request.pageSize", allEntries = true)
+    })
     public SupplierOfferResponse createSupplierOffer(SupplierOfferRequest request) {
         List<SponsorAd> sponsorAds = sponsorAdRepository.findAllById(request.sponsorAdIds());
         SupplierOffer supplierOffer = SupplierOfferMapper.toSupplierOffer(request,sponsorAds);
         SupplierOffer savedOffer = supplierOfferRepository.save(supplierOffer);
         return SupplierOfferMapper.toResponse(savedOffer);
     }
-
+    @Caching(evict = {
+            @CacheEvict(value = "supplierOffers", allEntries = true)
+    })
     public SupplierOfferResponse updateSupplierOffer(Integer id, SupplierOfferRequest request) {
         SupplierOffer existingOffer = supplierOfferRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("SupplierOffer not found"));
@@ -81,6 +91,7 @@ public class SupplierOfferService {
         SupplierOffer updatedOffer = supplierOfferRepository.save(existingOffer);
         return SupplierOfferMapper.toResponse(updatedOffer);
     }
+    @CacheEvict(value = "supplierOffers", allEntries = true)
     public void deleteSupplierOffer(Integer id) {
         SupplierOffer existingOffer = supplierOfferRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("SupplierOffer not found"));

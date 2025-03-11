@@ -11,6 +11,8 @@ import com.dhia.Upvertise.repositories.SponsorAdRepository;
 import com.dhia.Upvertise.repositories.SponsorshipRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +33,7 @@ public class SponsorAdService {
     private final SponsorshipRepository sponsorshipRepository;
 
 
-
+    @Cacheable(value = "sponsorAds", key = "#connectedUser.name + '-' + #page + '-' + #size")
     public PageResponse<SponsorAdResponse> getAllSponsorAds(Authentication connectedUser, int page, int size) {
         String userId = connectedUser.getName(); // Assuming Keycloak ID is stored here
 
@@ -79,7 +81,7 @@ public class SponsorAdService {
 
 
 
-
+    @CacheEvict(value = "sponsorAds", allEntries = true)
     public SponsorAdResponse updateSponsorAd(Authentication connectedUser, Integer adId, SponsorAdRequest request) {
 
         // Retrieve SponsorAd
@@ -122,7 +124,7 @@ public class SponsorAdService {
 
         return SponsorAdMapper.toSponsorAdResponse(sponsorAd);
     }
-
+    @CacheEvict(value = "sponsorAds", allEntries = true)
     public void deleteSponsorAd(Authentication connectedUser, Integer adId) {
         // Retrieve SponsorAd
         SponsorAd sponsorAd = sponsorAdRepository.findById(adId)
