@@ -26,6 +26,7 @@ public class SupplierOffer extends BaseEntity {
     private  SupplierOfferStatus status; //COMING_SOON,AVAILABLE,CLOSED
     private LocalDate startDate;
     private LocalDate endDate;
+    private String imageUrl;
 
     @OneToMany(mappedBy = "supplierOffer")
     private List<SupplierTransaction> transactions;

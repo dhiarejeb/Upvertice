@@ -9,8 +9,8 @@ public record SponsorOfferRequest(
         String description,
         Double price,
         String category,
-        Integer gobletQuantity,
-        String explainImage,
+        Integer productQuantity,
+        String productType,
         Integer numberAds,
         SponsorOfferStatus status
 ) {

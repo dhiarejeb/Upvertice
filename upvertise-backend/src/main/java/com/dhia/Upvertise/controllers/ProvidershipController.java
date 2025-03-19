@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/providership")
@@ -42,19 +45,21 @@ public class ProvidershipController {
     @PreAuthorize("hasAnyRole('Admin', 'Provider')")
     public ResponseEntity<ProvidershipResponse> updateProvidership(
             @PathVariable Integer id,
-            @RequestBody @Valid ProvidershipRequest request,
+            @RequestPart("request") @Valid ProvidershipRequest request,
+            @RequestPart("images") List<MultipartFile> proofFiles,
             Authentication connectedUser) {
 
-        ProvidershipResponse response = providershipService.updateProvidership(id, request, connectedUser);
+        ProvidershipResponse response = providershipService.updateProvidership(id, request, proofFiles,connectedUser);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('Provider')")
     public ResponseEntity<ProvidershipResponse> createProvidership(
-            @RequestBody @Valid ProvidershipRequest request,
+            @RequestPart("request") ProvidershipRequest request,
+            @RequestPart("images") List<MultipartFile> proofFiles,
             Authentication connectedUser) {
-        ProvidershipResponse response = providershipService.createProvidership(request,connectedUser);
+        ProvidershipResponse response = providershipService.createProvidership(request,proofFiles ,connectedUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

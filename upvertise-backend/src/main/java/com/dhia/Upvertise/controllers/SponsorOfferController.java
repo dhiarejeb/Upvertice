@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/sponsor-offers")
@@ -23,7 +26,7 @@ public class SponsorOfferController {
 
 
     @GetMapping("/sponsorOffersByStatus")
-    @PreAuthorize("hasAnyRole('Admin','Sponsor')")
+    @PreAuthorize("hasAnyRole('Admin','Advertiser')")
     public PageResponse<SponsorOfferResponse> getSponsorOffersByStatus(
             @RequestParam String status ,
             Pageable pageable) {
@@ -37,7 +40,7 @@ public class SponsorOfferController {
         return sponsorOfferService.getSponsorOffersByStatus(pageable,sponsorOfferStatus);
     }
     @GetMapping("/allSponsorOffers")
-    @PreAuthorize("hasAnyRole('Admin','Sponsor')")
+    @PreAuthorize("hasAnyRole('Admin','Advertiser')")
     public ResponseEntity<PageResponse<SponsorOfferResponse>> getAllSponsorOffers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -46,25 +49,27 @@ public class SponsorOfferController {
     @PostMapping("/createSponsorOffer")
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<String> createSponsorOffer(
-            @RequestBody SponsorOfferRequest sponsorOfferRequest,
+            @RequestPart("request") SponsorOfferRequest sponsorOfferRequest, // JSON request body
+            @RequestPart("explainImages") List<MultipartFile> images,
             Authentication connectedUser) {
 
-        Integer offerId = sponsorOfferService.createSponsorOffer(sponsorOfferRequest, connectedUser);
+        Integer offerId = sponsorOfferService.createSponsorOffer(sponsorOfferRequest,images,connectedUser);
         return ResponseEntity.ok("Sponsor Offer created successfully. Offer ID: " + offerId);
     }
 
     // sponsor selects a specific sponsor offer
     @PostMapping("/chooseSponsorOffer/{offerId}")
-    @PreAuthorize("hasRole('Sponsor')")
+    @PreAuthorize("hasRole('Advertiser')")
     public ResponseEntity<Integer> chooseSponsorOffer(
             @PathVariable Integer offerId,
-            @RequestBody SponsorAdRequest sponsorAdRequest,
+            @RequestPart("request") SponsorAdRequest sponsorAdRequest,
+            @RequestPart("images")MultipartFile image,
             Authentication connectedUser) {
 
-        return ResponseEntity.ok(sponsorOfferService.chooseSponsorOffer(offerId, sponsorAdRequest , connectedUser));
+        return ResponseEntity.ok(sponsorOfferService.chooseSponsorOffer(offerId,image, sponsorAdRequest , connectedUser));
     }
     @PutMapping("/updateSponsorOfferChoice")
-    @PreAuthorize("hasRole('Sponsor')")
+    @PreAuthorize("hasRole('Advertiser')")
     public ResponseEntity<String> updateChosenSponsorOffer(
             @RequestParam Integer oldOfferId,
             @RequestParam Integer newOfferId,
@@ -79,10 +84,12 @@ public class SponsorOfferController {
     @PutMapping("/{offerId}/updateSponsorOffer")
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<SponsorOfferResponse> updateSponsorOffer(
-            @PathVariable Integer offerId,
-            @RequestBody SponsorOfferRequest request ) {
+            @RequestPart("offerId") Integer offerId,
+            @RequestPart("sponsorOfferRequest") SponsorOfferRequest request ,
+            @RequestPart("explainImages") List<MultipartFile> images
+            ) {
 
-        SponsorOfferResponse response = sponsorOfferService.updateSponsorOffer(offerId, request);
+        SponsorOfferResponse response = sponsorOfferService.updateSponsorOffer(offerId, request, images);
         return ResponseEntity.ok(response);
     }
 

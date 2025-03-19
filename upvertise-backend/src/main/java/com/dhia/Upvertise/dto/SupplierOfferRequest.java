@@ -13,7 +13,7 @@ public record SupplierOfferRequest(
         LocalDate startDate,
         LocalDate endDate,
         SupplierOfferStatus status,
-        List<String> proofDocs,
+        //List<String> proofDocs,
         List<Integer> sponsorAdIds // Admin provides the IDs of associated SponsorAds
 
 ) {

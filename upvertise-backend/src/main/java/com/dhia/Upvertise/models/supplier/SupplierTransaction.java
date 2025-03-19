@@ -34,9 +34,7 @@ public class SupplierTransaction extends BaseEntity {
     @ElementCollection
     private List<String> locations;
 
-    //@ManyToOne
-    //@JoinColumn(name = "supplier_id")
-    //private Supplier supplier;
+
 
     @ManyToOne
     @JoinColumn(name = "supplier_offer_id")

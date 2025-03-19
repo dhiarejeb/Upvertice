@@ -1,154 +1,116 @@
 package com.dhia.listener;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-//import okhttp3.*;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.AdminEvent;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 @Slf4j
 public class KeycloakEventListener implements EventListenerProvider {
     private final KeycloakSession session;
-    //private final OkHttpClient httpClient;
-    //private final ObjectMapper objectMapper;
-    //private static final String BACKEND_URL = "http://localhost:8088/api/v1"; // Your backend URL
+    private final HttpClient httpClient;
 
-    public KeycloakEventListener(KeycloakSession session) {
+    private final ObjectMapper objectMapper;
+
+    public KeycloakEventListener(KeycloakSession session , HttpClient httpClient) {
         this.session = session;
-        //this.httpClient = new OkHttpClient();
-        //this.objectMapper = new ObjectMapper();
+        this.httpClient = httpClient;
+        this.objectMapper = new ObjectMapper();
     }
+
     @Override
     public void onEvent(Event event) {
         if (event.getType() == EventType.REGISTER) {
             String userId = event.getUserId();
-            RealmModel realm = session.getContext().getRealm(); // Get the realm
+            RealmModel realm = session.getContext().getRealm();
+            UserModel user = session.users().getUserById(realm, userId);
 
-            // Use the correct method to retrieve the user by ID
-            UserModel user = session.users().getUserById(realm ,userId);
-
-            // Get the custom role attribute from the user's profile
-            String selectedRole = user.getFirstAttribute("role"); // "role" is the custom attribute
+            String firstName = user.getFirstName();
+            String lastName = user.getLastName();
+            String email = user.getEmail();
+            String selectedRole = user.getFirstAttribute("role");
 
             if (selectedRole != null) {
-                // Directly assign the appropriate role from the realm roles
                 RoleModel roleModel = realm.getRole(selectedRole);
-
                 if (roleModel != null) {
                     user.grantRole(roleModel);
                 }
             }
+
+            sendUserToBackend(userId, firstName, lastName, email, selectedRole);
         }
     }
 
-    /*@Override
-    public void onEvent(Event event) {
+    private void sendUserToBackend(String userId, String firstName, String lastName, String email, String role) {
+        //String backendUrl = "http://host.docker.internal:8088/api/v1/users"; // Pointing to the backend running on the host machine
+        String HOST = System.getenv("KEYCLOAK_HOST") != null ? System.getenv("KEYCLOAK_HOST") : "localhost";
+        String backendUrl = "http://host.docker.internal:8088/api/v1/users";
+
+
+        Map<String, String> userData = new HashMap<>();
+        userData.put("keycloakId", userId);
+        userData.put("firstName", firstName);
+        userData.put("lastName", lastName);
+        userData.put("email", email);
+        userData.put("role", role);
+        userData.put("profilePhotoUrl", "https://default-image.com/default-profile.png");
+
         try {
-            log.info("Event Occurred: {}", event.getType());
-
-            switch (event.getType()) {
-                case REGISTER:
-                    handleRegistration(event);
-                    break;
-                case LOGIN:
-                    handleLogin(event);
-                    break;
-                case UPDATE_PROFILE:
-                    handleProfileUpdate(event);
-                    break;
-            }
-        } catch (Exception e) {
-            log.error("Error processing event", e);
-        }
-    }
-
-    private void handleRegistration(Event event) {
-        try {
-            UserModel user = session.users().getUserById(session.getContext().getRealm(), event.getUserId());
-            if (user != null) {
-                UserEventDTO userEvent = UserEventDTO.builder()
-                        .userId(user.getId())
-                        .email(user.getEmail())
-                        .username(user.getUsername())
-                        .firstName(user.getFirstName())
-                        .lastName(user.getLastName())
-                        .eventType("REGISTER")
-                        .timestamp(event.getTime())
-                        .build();
-
-                sendToBackend("/api/v1/users/register", userEvent);
-            }
-        } catch (Exception e) {
-            log.error("Error handling registration", e);
-        }
-    }
-
-    private void handleLogin(Event event) {
-        try {
-            UserModel user = session.users().getUserById(session.getContext().getRealm(), event.getUserId());
-            if (user != null) {
-                UserEventDTO userEvent = UserEventDTO.builder()
-                        .userId(user.getId())
-                        .username(user.getUsername())
-                        .eventType("LOGIN")
-                        .timestamp(event.getTime())
-                        .build();
-
-                sendToBackend("/api/v1/users/login", userEvent);
-            }
-        } catch (Exception e) {
-            log.error("Error handling login", e);
-        }
-    }
-
-    private void handleProfileUpdate(Event event) {
-        try {
-            UserModel user = session.users().getUserById(session.getContext().getRealm(), event.getUserId());
-            if (user != null) {
-                UserEventDTO userEvent = UserEventDTO.builder()
-                        .userId(user.getId())
-                        .email(user.getEmail())
-                        .username(user.getUsername())
-                        .firstName(user.getFirstName())
-                        .lastName(user.getLastName())
-                        .eventType("UPDATE_PROFILE")
-                        .timestamp(event.getTime())
-                        .build();
-
-                sendToBackend("/api/v1/users/update", userEvent);
-            }
-        } catch (Exception e) {
-            log.error("Error handling profile update", e);
-        }
-    }
-
-    private void sendToBackend(String path, UserEventDTO userEvent) {
-        try {
-            String json = objectMapper.writeValueAsString(userEvent);
-            RequestBody body = RequestBody.create(json,
-                    MediaType.parse("application/json; charset=utf-8"));
-
-            Request request = new Request.Builder()
-                    .url(BACKEND_URL + path)
-                    .post(body)
+            String requestBody = objectMapper.writeValueAsString(userData);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(backendUrl))
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + getAdminToken())
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8))
                     .build();
 
-            try (Response response = httpClient.newCall(request).execute()) {
-                if (!response.isSuccessful()) {
-                    log.error("Failed to send event to backend: {}", response.body().string());
-                }
-            }
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            log.info("User successfully sent to backend: " + response.statusCode());
         } catch (Exception e) {
-            log.error("Error sending event to backend", e);
+            log.error("Error sending user data to backend", e);
         }
-    }*/
+    }
+
+    private String getAdminToken() {
+        String HOST = System.getenv("KEYCLOAK_HOST") != null ? System.getenv("KEYCLOAK_HOST") : "localhost";
+        //String tokenUrl = "http://host.docker.internal:9090/realms/Upvertice/protocol/openid-connect/token";
+        String tokenUrl = "http://localhost:8080/realms/Upvertice/protocol/openid-connect/token";
+        String clientId = "Upvertice-rest-api"; //Upvertice-rest-api
+        String clientSecret = "n87pRqxXd6ddkDbURfsoOQ12glEeuR9E";
+
+        String requestBody = "client_id=" + clientId + "&client_secret=" + clientSecret + "&grant_type=client_credentials";
+
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(tokenUrl))
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            Map<String, Object> responseBody = objectMapper.readValue(response.body(), Map.class);
+            return (String) responseBody.get("access_token");
+        } catch (Exception e) {
+            log.error("Token retrieval error", e);
+
+            return null;
+        }
+    }
 
     @Override
     public void onEvent(AdminEvent adminEvent, boolean includeRepresentation) {
@@ -162,37 +124,4 @@ public class KeycloakEventListener implements EventListenerProvider {
 
 
 
-
-
-
-
-
-
-
-
-
-//    private final KeycloakSession keycloakSession;
-//
-//    public KeycloakEventListener(KeycloakSession session) {
-//        this.keycloakSession= session;
-//    }
-//    private static final Logger log = LoggerFactory.getLogger(KeycloakEventListener.class);
-//
-//    private final RestTemplate restTemplate = new RestTemplate();
-//
-//    @Override
-//    public void onEvent(Event event) {
-//        log.info("Keycloak Event: Type={} UserId={}", event.getType(), event.getUserId());
-//
-//    }
-//
-//    @Override
-//    public void onEvent(AdminEvent adminEvent, boolean includeRepresentation) {
-//        log.info("Keycloak Admin Event: Type={} Resource={}", adminEvent.getOperationType(), adminEvent.getResourcePath());
-//    }
-//
-//    @Override
-//    public void close() {
-//        log.info("Closing KeycloakEventListener...");
-//    }
 }

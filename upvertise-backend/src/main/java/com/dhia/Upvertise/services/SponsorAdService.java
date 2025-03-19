@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Set;
@@ -31,6 +32,8 @@ public class SponsorAdService {
 
     private final SponsorAdRepository sponsorAdRepository;
     private final SponsorshipRepository sponsorshipRepository;
+    private final CloudinaryService cloudinaryService;
+    private final SponsorAdMapper sponsorAdMapper;
 
 
     @Cacheable(value = "sponsorAds", key = "#connectedUser.name + '-' + #page + '-' + #size")
@@ -42,47 +45,36 @@ public class SponsorAdService {
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_Admin"));
 
         Pageable pageable = PageRequest.of(page, size);
+        Page<SponsorAd> sponsorAdsPage;
 
-        // If the user is an Admin, return all SponsorAds
+        // Fetch based on user role
         if (isAdmin) {
-            Page<SponsorAd> sponsorAdsPage = sponsorAdRepository.findAll(pageable);
-            List<SponsorAdResponse> sponsorAdResponses = sponsorAdsPage.getContent().stream()
-                    .map(SponsorAdMapper::toSponsorAdResponse)
-                    .collect(Collectors.toList());
-
-            return new PageResponse<>(
-                    sponsorAdResponses,
-                    sponsorAdsPage.getNumber(),
-                    sponsorAdsPage.getSize(),
-                    sponsorAdsPage.getTotalElements(),
-                    sponsorAdsPage.getTotalPages(),
-                    sponsorAdsPage.isFirst(),
-                    sponsorAdsPage.isLast()
-            );
+            sponsorAdsPage = sponsorAdRepository.findAll(pageable);
         } else {
-            // Sponsors can only get their own SponsorAds
-            Page<SponsorAd> sponsorAdsPage = sponsorAdRepository.findByCreatedBy(userId, pageable);
-            List<SponsorAdResponse> sponsorAdResponses = sponsorAdsPage.getContent().stream()
-                    .map(SponsorAdMapper::toSponsorAdResponse)
-                    .collect(Collectors.toList());
-
-            return new PageResponse<>(
-                    sponsorAdResponses,
-                    sponsorAdsPage.getNumber(),
-                    sponsorAdsPage.getSize(),
-                    sponsorAdsPage.getTotalElements(),
-                    sponsorAdsPage.getTotalPages(),
-                    sponsorAdsPage.isFirst(),
-                    sponsorAdsPage.isLast()
-            );
+            sponsorAdsPage = sponsorAdRepository.findByCreatedBy(userId, pageable);
         }
+
+        // Convert to response with Cloudinary image URLs
+        List<SponsorAdResponse> sponsorAdResponses = sponsorAdsPage.getContent().stream()
+                .map(sponsorAd -> sponsorAdMapper.toSponsorAdResponseWithImageUrl(sponsorAd))
+                .collect(Collectors.toList());
+
+        return new PageResponse<>(
+                sponsorAdResponses,
+                sponsorAdsPage.getNumber(),
+                sponsorAdsPage.getSize(),
+                sponsorAdsPage.getTotalElements(),
+                sponsorAdsPage.getTotalPages(),
+                sponsorAdsPage.isFirst(),
+                sponsorAdsPage.isLast()
+        );
     }
 
 
 
 
     @CacheEvict(value = "sponsorAds", allEntries = true)
-    public SponsorAdResponse updateSponsorAd(Authentication connectedUser, Integer adId, SponsorAdRequest request) {
+    public SponsorAdResponse updateSponsorAd(Authentication connectedUser, Integer adId, SponsorAdRequest request , MultipartFile image) {
 
         // Retrieve SponsorAd
         SponsorAd sponsorAd = sponsorAdRepository.findById(adId)
@@ -101,10 +93,10 @@ public class SponsorAdService {
         List<Sponsorship> sponsorships = sponsorshipRepository.findBySponsorAdsContaining(sponsorAd);
 
         // ✅ If no sponsorships exist, allow update
-        if (sponsorships.isEmpty()) {
-            SponsorAdMapper.updateSponsorAdFromRequest(request, sponsorAd);
+        if (sponsorships.isEmpty() ) {
+            sponsorAdMapper.updateSponsorAdFromRequest(request, sponsorAd, image);
             sponsorAdRepository.save(sponsorAd);
-            return SponsorAdMapper.toSponsorAdResponse(sponsorAd);
+            return sponsorAdMapper.toSponsorAdResponseWithImageUrl(sponsorAd);
         }
 
         // ✅ If there are sponsorships, enforce status restrictions
@@ -117,12 +109,12 @@ public class SponsorAdService {
         }
 
         // ✅ Use the mapper to update the existing SponsorAd
-        SponsorAdMapper.updateSponsorAdFromRequest(request, sponsorAd);
+        sponsorAdMapper.updateSponsorAdFromRequest(request, sponsorAd, image);
 
         // Save updated entity
         sponsorAdRepository.save(sponsorAd);
 
-        return SponsorAdMapper.toSponsorAdResponse(sponsorAd);
+        return sponsorAdMapper.toSponsorAdResponseWithImageUrl(sponsorAd);
     }
     @CacheEvict(value = "sponsorAds", allEntries = true)
     public void deleteSponsorAd(Authentication connectedUser, Integer adId) {
@@ -143,6 +135,7 @@ public class SponsorAdService {
 
         // ✅ If there are no sponsorships, allow deletion
         if (sponsorships.isEmpty()) {
+            cloudinaryService.deleteImage(sponsorAd.getDesign()); // Delete image from Cloudinary
             sponsorAdRepository.delete(sponsorAd);
             return;
         }
@@ -158,7 +151,8 @@ public class SponsorAdService {
 
         // Remove the links between this ad and all Sponsorships
         sponsorships.forEach(sponsorship -> sponsorship.getSponsorAds().remove(sponsorAd));
-
+        // ✅ Delete associated image if exists
+        cloudinaryService.deleteImage(sponsorAd.getDesign());
         // Delete the ad
         sponsorAdRepository.delete(sponsorAd);
     }

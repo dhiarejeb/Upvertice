@@ -2,15 +2,19 @@ package com.dhia.Upvertise.dto;
 
 import lombok.Builder;
 
+import java.util.List;
+
 @Builder
 public record SponsorOfferResponse(
         String title,
         String description,
         Double price,
-        Integer gobletQuantity,
+        Integer productQuantity,
         String status,
         String category,
         Integer numberAds,
-        String explainImage
+        String productType,
+        List<String> explainImages  // Change to a list
+
 ) {
 }

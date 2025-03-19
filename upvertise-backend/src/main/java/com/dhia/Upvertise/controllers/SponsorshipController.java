@@ -22,7 +22,7 @@ public class SponsorshipController {
     private final SponsorshipService sponsorshipService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('Admin','Sponsor')")
+    @PreAuthorize("hasAnyRole('Admin','Advertiser')")
     public ResponseEntity<PageResponse<SponsorshipResponse>> getAllSponsorships(
             Authentication connectedUser,
             @RequestParam(defaultValue = "0") int page,
@@ -31,7 +31,7 @@ public class SponsorshipController {
     }
 
     @GetMapping("/status/{status}")
-    @PreAuthorize("hasAnyRole('Admin','Sponsor')")
+    @PreAuthorize("hasAnyRole('Admin','Advertiser')")
     public ResponseEntity<PageResponse<SponsorshipResponse>> getSponsorshipsByStatus(
             @PathVariable SponsorshipStatus status,
             @RequestParam(defaultValue = "0") int page,  // Default page is 0
@@ -44,7 +44,7 @@ public class SponsorshipController {
 
 
     @DeleteMapping("/{sponsorshipId}/delete")
-    @PreAuthorize("hasAnyRole('Admin','Sponsor')")
+    @PreAuthorize("hasAnyRole('Admin','Advertiser')")
     public ResponseEntity<?> deleteSponsorship(
             @PathVariable Integer sponsorshipId,
             Authentication connectedUser) {

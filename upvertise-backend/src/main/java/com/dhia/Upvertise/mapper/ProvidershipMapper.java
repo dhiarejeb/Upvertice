@@ -65,7 +65,7 @@ public class ProvidershipMapper {
         providership.setTotalProduct(request.totalProduct());
         providership.setBonusEarned(request.bonusEarned());
         providership.setProvidershipApprovalStatus(request.providershipApprovalStatus());
-        providership.setProofDocs(request.proofDocs());
+        //providership.setProofDocs(request.proofDocs());
 
         return providership;
     }

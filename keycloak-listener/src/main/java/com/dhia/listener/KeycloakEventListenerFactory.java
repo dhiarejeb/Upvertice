@@ -1,18 +1,25 @@
 package com.dhia.listener;
 
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventListenerProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.client.RestTemplate;
+
+import java.net.http.HttpClient;
 
 public class KeycloakEventListenerFactory implements EventListenerProviderFactory {
     private static final Logger logger = LoggerFactory.getLogger(KeycloakEventListenerFactory.class);
     private static final String PROVIDER_ID = "Upvertice-listener";
+    private final HttpClient httpClient = HttpClient.newHttpClient();
+
     @Override
     public EventListenerProvider create(KeycloakSession keycloakSession) {
-        return new KeycloakEventListener(keycloakSession);
+        return new KeycloakEventListener(keycloakSession, httpClient);
     }
 
     @Override

@@ -31,6 +31,7 @@ public class SecurityConfig  {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req ->
                         req.requestMatchers(
+                                "/cloudinary/upload",
                                         "/supplier-offers/status",
                                         "/supplier-offers/AllSupplierOffers",
                                         "/sponsor-offers/sponsorOffersByStatus",
@@ -89,26 +90,5 @@ public class SecurityConfig  {
 
         return converter;
     }
-    /*@Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
 
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            var authorities = jwtGrantedAuthoritiesConverter.convert(jwt);
-            var resourceRoles = jwt.getClaimAsMap("resource_access");
-            if (resourceRoles != null && resourceRoles.containsKey("Upvertice-rest-api")) {
-                var roles = (Map<String, Object>) resourceRoles.get("Upvertice-rest-api");
-                var roleList = (Collection<String>) roles.get("roles");
-                var grantedAuthorities = roleList.stream()
-                        .map(role -> "ROLE_" + role)  // Add ROLE_ prefix
-                        .map(org.springframework.security.core.authority.SimpleGrantedAuthority::new)
-                        .collect(Collectors.toSet());
-                authorities.addAll(grantedAuthorities);
-            }
-            return authorities;
-        });
-
-        return converter;
-    }*/
 }

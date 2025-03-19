@@ -32,11 +32,14 @@ services:
       - spring-demo
     volumes:
       - ./keycloak-extensions:/opt/keycloak/providers
+    # Add host.docker.internal for Linux
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command:
       - "start-dev"
   redis:
     image: redis:latest
-    container_name: redis_upvertise
+    container_name: redis_upvertice
     restart: always
     ports:
       - "6379:6379"

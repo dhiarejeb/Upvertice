@@ -7,7 +7,7 @@ import java.util.List;
 public record SupplierTransactionUpdateRequest(
         Integer quantitySold,
         SupplierTransactionStatus status,
-        List<String> proofs,
+        //List<String> proofs,
         List<String> locations
 ) {
 }

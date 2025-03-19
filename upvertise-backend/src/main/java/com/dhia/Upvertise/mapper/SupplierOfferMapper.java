@@ -21,9 +21,8 @@ public class SupplierOfferMapper {
                 .startDate(supplierOffer.getStartDate())
                 .endDate(supplierOffer.getEndDate())
                 .status(supplierOffer.getStatus())
-                .sponsorAdIds(supplierOffer.getSponsorAds().stream()
-                        .map(SponsorAd::getId)
-                        .collect(Collectors.toList()))
+                .imageUrl(supplierOffer.getImageUrl())
+                .sponsorAds(supplierOffer.getSponsorAds())  // Return the full SponsorAds list
                 .build();
     }
 
@@ -39,6 +38,7 @@ public class SupplierOfferMapper {
                 .status(request.status())
                 .sponsorAds(sponsorAds) // Set fetched SponsorAds
                 .build();
+        // Image URL will be set after Cloudinary upload
     }
     public static void updateSupplierOffer(SupplierOffer entity, SupplierOfferRequest request) {
         entity.setTitle(request.title());
@@ -48,6 +48,24 @@ public class SupplierOfferMapper {
         entity.setStartDate(request.startDate());
         entity.setEndDate(request.endDate());
         entity.setStatus(request.status());
+    }
+
+    public static SupplierOfferResponse toResponseWithImageUrl(SupplierOffer supplierOffer) {
+        // Build the SupplierOfferResponse with the builder pattern
+        SupplierOfferResponse response = SupplierOfferResponse.builder()
+                .id(supplierOffer.getId())
+                .title(supplierOffer.getTitle())
+                .description(supplierOffer.getDescription())
+                .quantityAvailable(supplierOffer.getQuantityAvailable())
+                .price(supplierOffer.getPrice())
+                .startDate(supplierOffer.getStartDate())
+                .endDate(supplierOffer.getEndDate())
+                .status(supplierOffer.getStatus())
+                .sponsorAds(supplierOffer.getSponsorAds())  // Add SponsorAds if needed
+                .imageUrl(supplierOffer.getImageUrl())     // Add image URL if exists
+                .build();
+
+        return response;
     }
     }
 

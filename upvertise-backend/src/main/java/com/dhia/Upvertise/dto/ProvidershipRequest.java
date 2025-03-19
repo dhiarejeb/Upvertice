@@ -13,7 +13,7 @@ public record ProvidershipRequest(
         Integer totalProduct,
         Double bonusEarned,
         ProvidershipApprovalStatus providershipApprovalStatus,
-        List<String> proofDocs,
+        //List<String> proofDocs,
         String location, // Provider's location
         Boolean hasPrintMachine // Does the provider have a print machine?
 ) {

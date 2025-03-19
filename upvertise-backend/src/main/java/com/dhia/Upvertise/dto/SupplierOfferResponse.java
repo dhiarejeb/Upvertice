@@ -1,5 +1,6 @@
 package com.dhia.Upvertise.dto;
 
+import com.dhia.Upvertise.models.sponsorship.SponsorAd;
 import com.dhia.Upvertise.models.supplier.SupplierOfferStatus;
 import lombok.Builder;
 
@@ -15,6 +16,7 @@ public record SupplierOfferResponse(
         LocalDate startDate,
         LocalDate endDate,
         SupplierOfferStatus status,
-        List<Integer> sponsorAdIds
+        String imageUrl,
+        List<SponsorAd> sponsorAds
 ) {
 }

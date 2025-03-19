@@ -19,8 +19,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,11 +31,27 @@ public class SponsorOfferService {
     private final SponsorOfferRepository sponsorOfferRepository;
     private final SponsorshipRepository sponsorshipRepository;
     private final SponsorAdRepository sponsorAdRepository;
+    private final CloudinaryService cloudinaryService;
 
     @Cacheable(value = "sponsorOffers", key = "'status:' + #status + '-' + #pageable.pageNumber")
     public PageResponse<SponsorOfferResponse> getSponsorOffersByStatus(Pageable pageable, SponsorOfferStatus status) {
         Page<SponsorOffer> page = sponsorOfferRepository.findByStatus(status, pageable);
-        return SponsorOfferMapper.toSponsorOfferPageResponse(page);
+        // Use the toResponseWithImagesUrls method here
+        List<SponsorOfferResponse> sponsorOfferResponses = page
+                .getContent()
+                .stream()
+                .map(sponsorOffer -> SponsorOfferMapper.toResponseWithImagesUrls(sponsorOffer, cloudinaryService))
+                .collect(Collectors.toList());
+
+        return new PageResponse<>(
+                sponsorOfferResponses,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.isFirst(),
+                page.isLast()
+        );
     }
 
 
@@ -44,13 +63,13 @@ public class SponsorOfferService {
         Pageable pageable = PageRequest.of(page, size);
         Page<SponsorOffer> sponsorOffersPage = sponsorOfferRepository.findAll(pageable);
 
-        List<SponsorOfferResponse> SponsorOfferResponses = sponsorOffersPage
+        List<SponsorOfferResponse> sponsorOfferResponses = sponsorOffersPage
                 .getContent()
                 .stream()
-                .map(SponsorOfferMapper::toSponsorOfferResponse)
-                .toList();
+                .map(sponsorOffer -> SponsorOfferMapper.toResponseWithImagesUrls(sponsorOffer, cloudinaryService))
+                .collect(Collectors.toList());
         return new PageResponse<>(
-                SponsorOfferResponses,
+                sponsorOfferResponses,
                 sponsorOffersPage.getNumber(),
                 sponsorOffersPage.getSize(),
                 sponsorOffersPage.getTotalElements(),
@@ -63,16 +82,22 @@ public class SponsorOfferService {
     // sponsor selects an offer
     // sponsor selects an offer
     @CacheEvict(value = "sponsorAds", allEntries = true)  // Clear cache after creating a new ad
-    public Integer chooseSponsorOffer(Integer offerId, SponsorAdRequest sponsorAdRequest, Authentication connectedUser) {
+    public Integer chooseSponsorOffer(Integer offerId,MultipartFile image, SponsorAdRequest sponsorAdRequest, Authentication connectedUser) {
 
         // Retrieve the SponsorOffer
         SponsorOffer sponsorOffer = sponsorOfferRepository.findById(offerId)
                 .orElseThrow(() -> new EntityNotFoundException("Sponsor Offer not found"));
 
+        // Upload the image to Cloudinary (if provided)
+        String imageUrl = null;
+        if (image != null && !image.isEmpty()) {
+            imageUrl = cloudinaryService.uploadImage(image);
+        }
+
         // Create and save the SponsorAd
         SponsorAd sponsorAd = new SponsorAd();
         sponsorAd.setTitle(sponsorAdRequest.title());
-        sponsorAd.setDesign(sponsorAdRequest.design());
+        sponsorAd.setDesign(imageUrl);
         sponsorAd.setContent(sponsorAdRequest.content());
         sponsorAd.setDesign_colors(sponsorAdRequest.designColors());
         sponsorAd.setUserId(connectedUser.getName());  // Link ad to sponsor
@@ -123,28 +148,34 @@ public class SponsorOfferService {
         return sponsorship.getId();
     }
     @CacheEvict(value = "sponsorOffers", allEntries = true)
-    public Integer createSponsorOffer(SponsorOfferRequest request, Authentication connectedUser) {
+    public Integer createSponsorOffer(SponsorOfferRequest request, List<MultipartFile> images, Authentication connectedUser) {
+
+        List<String> imageUrls = new ArrayList<>();
+
+        for (MultipartFile image : images) {
+            String imageUrl = cloudinaryService.uploadImage(image);  // Upload to Cloudinary
+            imageUrls.add(imageUrl);
+        }
 
         // Create and save the SponsorOffer
         SponsorOffer sponsorOffer = new SponsorOffer();
         sponsorOffer.setTitle(request.title());
         sponsorOffer.setDescription(request.description());
         sponsorOffer.setPrice(request.price());
-        sponsorOffer.setGobletQuantity(request.gobletQuantity());
-        sponsorOffer.setExplainImage(request.explainImage());
+        sponsorOffer.setProductType(request.productType());
+        sponsorOffer.setProductQuantity(request.productQuantity());
+        sponsorOffer.setExplainImages(imageUrls);
         sponsorOffer.setStatus(request.status());
         sponsorOffer.setCategory(request.category());
         sponsorOffer.setNumberAds(request.numberAds());
         sponsorOffer.setUserId(connectedUser.getName());  // Link offer to admin who created it
 
+
         return sponsorOfferRepository.save(sponsorOffer).getId();
     }
 
     @CacheEvict(value = "sponsorOffers", allEntries = true)
-    public SponsorOfferResponse updateSponsorOffer(Integer offerId, SponsorOfferRequest request) {
-
-
-
+    public SponsorOfferResponse updateSponsorOffer(Integer offerId, SponsorOfferRequest request, List<MultipartFile> images) {
         // Retrieve the SponsorOffer
         SponsorOffer sponsorOffer = sponsorOfferRepository.findById(offerId)
                 .orElseThrow(() -> new EntityNotFoundException("Sponsor Offer not found"));
@@ -166,6 +197,19 @@ public class SponsorOfferService {
         if (!canUpdate) {
             throw new OperationNotPermittedException("You cannot update an offer with an active or unfinished sponsorship");
         }
+            List<String> newImageUrls = new ArrayList<>();
+            if (images != null && !images.isEmpty()) {
+                // Upload new images to Cloudinary
+                for (MultipartFile image : images) {
+                    String imageUrl = cloudinaryService.uploadImage(image);
+                    newImageUrls.add(imageUrl);
+                }
+            }
+
+            // **Update SponsorOffer**
+            if (!newImageUrls.isEmpty()) {
+                sponsorOffer.setExplainImages(newImageUrls); // Replace old images
+            }
 
         // Apply changes and save the updated SponsorOffer
         return updateSponsorOfferDetails(sponsorOffer, request);
@@ -178,9 +222,9 @@ public class SponsorOfferService {
         if (request.description() != null) sponsorOffer.setDescription(request.description());
         if (request.price() != null) sponsorOffer.setPrice(request.price());
         if (request.category() != null) sponsorOffer.setCategory(request.category());
-        if (request.explainImage() != null) sponsorOffer.setExplainImage(request.explainImage());
         if (request.numberAds() != null) sponsorOffer.setNumberAds(request.numberAds());
-        if (request.gobletQuantity() != null) sponsorOffer.setGobletQuantity(request.gobletQuantity());
+        if (request.productQuantity() != null) sponsorOffer.setProductQuantity(request.productQuantity());
+        if (request.productType() != null) sponsorOffer.setProductType(request.productType());
 
 
         // Update SponsorOffer status if provided
@@ -201,8 +245,13 @@ public class SponsorOfferService {
         // Fetch associated Sponsorships
         List<Sponsorship> sponsorships = sponsorshipRepository.findBySponsorOffer(sponsorOffer);
 
+        // Extract Cloudinary image URL
+        List<String> imageUrls = sponsorOffer.getExplainImages(); // Ensure this field exists
+
+        // If no Sponsorships exist, delete immediately
         // If no Sponsorships exist, delete immediately
         if (sponsorships == null || sponsorships.isEmpty()) {
+            cloudinaryService.deleteImagesFromCloudinary(imageUrls);
             sponsorOfferRepository.delete(sponsorOffer);
             return;
         }
@@ -220,6 +269,8 @@ public class SponsorOfferService {
         // Update all related Sponsorships to FINISHED
         sponsorships.forEach(sponsorship -> sponsorship.setStatus(SponsorshipStatus.FINISHED));
         sponsorshipRepository.saveAll(sponsorships);
+
+        cloudinaryService.deleteImagesFromCloudinary(imageUrls);
 
         // Delete the SponsorOffer
         sponsorOfferRepository.delete(sponsorOffer);

@@ -18,6 +18,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,8 @@ public class ProvidershipService {
     private final ProvidershipRepository providershipRepository;
 
     private final SponsorshipRepository sponsorshipRepository;
+
+    private final CloudinaryService cloudinaryService;
 
 
 
@@ -100,13 +103,14 @@ public class ProvidershipService {
             if (providership.getProvidershipApprovalStatus() == ProvidershipApprovalStatus.APPROVED) {
                 throw new IllegalStateException("Cannot delete an approved providership.");
             }
+            deleteProofsFromCloudinary(providership.getProofDocs()); // Delete proofs first
             providershipRepository.delete(providership);
         } else {
             throw new SecurityException("Access denied. Only admins and providers can delete providerships.");
         }
     }
 
-    public ProvidershipResponse updateProvidership(Integer id, ProvidershipRequest request, Authentication connectedUser) {
+    public ProvidershipResponse updateProvidership(Integer id, ProvidershipRequest request, List<MultipartFile> proofFiles, Authentication connectedUser) {
         Providership providership = providershipRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Providership not found"));
 
@@ -158,9 +162,11 @@ public class ProvidershipService {
                         : request.producedProduct());
 
 
-                providership.setProofDocs(request.proofDocs() == null
-                        ? providership.getProofDocs()
-                        : request.proofDocs());
+                // ✅ Update Proof Docs if provided (upload to Cloudinary)
+                if (proofFiles != null && !proofFiles.isEmpty()) {
+                    List<String> uploadedProofs = uploadProofs(proofFiles); // Upload to Cloudinary
+                    providership.setProofDocs(uploadedProofs);
+                }
             }
 
         }
@@ -169,7 +175,7 @@ public class ProvidershipService {
         return ProvidershipMapper.toProvidershipResponse(providership);
     }
 
-    public ProvidershipResponse createProvidership(ProvidershipRequest request , Authentication  connectedUser) {
+    public ProvidershipResponse createProvidership(ProvidershipRequest request , List<MultipartFile> proofFiles, Authentication  connectedUser) {
         String userId = connectedUser.getName(); // Get provider's Keycloak ID
 
         // Create a new Providership
@@ -180,7 +186,9 @@ public class ProvidershipService {
         providership.setBonusEarned(0.0); // No bonus yet
         providership.setStatus(ProvidershipStatus.PENDING);
         providership.setProvidershipApprovalStatus(ProvidershipApprovalStatus.PENDING);
-        providership.setProofDocs(new ArrayList<>()); // Empty initially
+        // ✅ Store Proof Docs in Cloudinary
+        List<String> uploadedProofs = uploadProofs(proofFiles);
+        providership.setProofDocs(uploadedProofs);
         // Add new fields
         providership.setLocation(request.location());
         providership.setHasPrintMachine(request.hasPrintMachine());
@@ -190,6 +198,19 @@ public class ProvidershipService {
 
         // Convert to DTO and return
         return ProvidershipMapper.toProvidershipResponse(providership);
+    }
+
+    // ✅ Upload images to Cloudinary and return URLs
+    private List<String> uploadProofs(List<MultipartFile> proofFiles) {
+        if (proofFiles == null || proofFiles.isEmpty()) return new ArrayList<>();
+        return proofFiles.stream()
+                .map(cloudinaryService::uploadImage) // Upload each file and get URL
+                .collect(Collectors.toList());
+    }
+    // ✅ Helper function to delete images from Cloudinary
+    private void deleteProofsFromCloudinary(List<String> proofDocs) {
+        if (proofDocs == null || proofDocs.isEmpty()) return;
+        proofDocs.forEach(cloudinaryService::deleteImage); // Assuming you have a service for deleting Cloudinary images
     }
 
 

@@ -2,6 +2,8 @@ package com.dhia.Upvertise.mapper;
 
 import com.dhia.Upvertise.dto.*;
 import com.dhia.Upvertise.models.sponsorship.Sponsorship;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -11,6 +13,7 @@ import java.util.stream.Collectors;
 
 
 public class SponsorshipMapper {
+
 
 
     public static SponsorshipResponse toSponsorshipResponse(Sponsorship sponsorship) {

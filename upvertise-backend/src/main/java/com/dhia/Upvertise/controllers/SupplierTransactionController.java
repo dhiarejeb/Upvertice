@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/supplier-transactions")
@@ -37,11 +40,12 @@ public class SupplierTransactionController {
     @PreAuthorize("hasAnyRole('Admin','Supplier')")
     public ResponseEntity<SupplierTransactionResponse> updateSupplierTransaction(
             @PathVariable Integer transactionId,
-            @RequestBody SupplierTransactionUpdateRequest request,
+            @RequestPart("request") SupplierTransactionUpdateRequest request,
+            @RequestPart("images") List<MultipartFile> proofsFiles,
             Authentication connectedUser) {
 
         SupplierTransactionResponse updatedTransaction = supplierTransactionService.updateSupplierTransaction(
-                connectedUser, transactionId, request);
+                connectedUser, transactionId, request , proofsFiles);
 
         return ResponseEntity.ok(updatedTransaction);
     }

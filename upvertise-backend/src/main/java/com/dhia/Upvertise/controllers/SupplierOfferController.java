@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/supplier-offers")
@@ -41,15 +42,17 @@ public class SupplierOfferController {
     @PostMapping("/create")
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<SupplierOfferResponse> createSupplierOffer(
-            @RequestBody SupplierOfferRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.createSupplierOffer(request));
+            @RequestPart("request") SupplierOfferRequest request ,
+            @RequestPart("image") MultipartFile image) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.createSupplierOffer(request , image));
     }
     @PutMapping("/update/{id}")
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<SupplierOfferResponse> updateSupplierOffer(
             @PathVariable Integer id,
-            @RequestBody SupplierOfferRequest request) {
-        return ResponseEntity.ok(service.updateSupplierOffer(id, request));
+            @RequestPart("request") SupplierOfferRequest request,
+            @RequestPart("newImage") MultipartFile image) {
+        return ResponseEntity.ok(service.updateSupplierOffer(id, request , image));
     }
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasRole('Admin')")

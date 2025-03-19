@@ -17,7 +17,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,6 +29,7 @@ public class SupplierTransactionService {
     private final SupplierTransactionRepository transactionRepository;
 
     private final SupplierOfferRepository supplierOfferRepository;
+    private final CloudinaryService cloudinaryService;
 
 
     // Get SupplierTransactions (Admin can see all, Supplier can see only theirs)
@@ -62,7 +65,8 @@ public class SupplierTransactionService {
     public SupplierTransactionResponse updateSupplierTransaction(
             Authentication connectedUser,
             Integer transactionId,
-            SupplierTransactionUpdateRequest request) {
+            SupplierTransactionUpdateRequest request,
+            List<MultipartFile> proofsFiles) {
 
         // Fetch the SupplierTransaction
         SupplierTransaction transaction = transactionRepository.findById(transactionId)
@@ -81,6 +85,17 @@ public class SupplierTransactionService {
                 throw new OperationNotPermittedException("Suppliers can only update 'APPROVED' transactions.");
             }
             updateSupplierTransactionFields(transaction, request);
+            // ✅ Handle proof image uploads to Cloudinary
+            if (proofsFiles != null && !proofsFiles.isEmpty()) {
+                List<String> uploadedProofs = proofsFiles.stream()
+                        .map(cloudinaryService::uploadImage)
+                        .collect(Collectors.toList());
+
+                // Merge new proofs with existing ones
+                List<String> existingProofs = transaction.getProofs();
+                existingProofs.addAll(uploadedProofs);
+                transaction.setProofs(existingProofs);
+            }
         }
 
         // Save updated transaction
@@ -109,10 +124,6 @@ public class SupplierTransactionService {
             transaction.setQuantitySold(quantitySold);
             transaction.setRelativePrice(relativePrice);
             transaction.setPercentage(percentage);
-        }
-
-        if (request.proofs() != null) {
-            transaction.setProofs(request.proofs());
         }
 
         if (request.locations() != null) {
@@ -147,6 +158,7 @@ public class SupplierTransactionService {
 
         // Admin can delete any SupplierTransaction
         if (isAdmin) {
+            deleteProofs(transaction.getProofs());
             transactionRepository.delete(transaction);
             return;
         }
@@ -155,6 +167,7 @@ public class SupplierTransactionService {
         if (isSupplier && transaction.getUserId().equals(connectedUser.getName())) {
             if (transaction.getSupplierTransactionStatus() == SupplierTransactionStatus.PENDING ||
                     transaction.getSupplierTransactionStatus() == SupplierTransactionStatus.REJECTED) {
+                deleteProofs(transaction.getProofs());
                 transactionRepository.delete(transaction);
                 return;
             } else {
@@ -187,6 +200,11 @@ public class SupplierTransactionService {
             transactionRepository.save(transaction);
         }
 
+    }
+    // ✅ Uses CloudinaryService to delete images
+    private void deleteProofs(List<String> proofs) {
+        if (proofs == null || proofs.isEmpty()) return;
+        proofs.forEach(cloudinaryService::deleteImage);
     }
     private boolean hasRole(Authentication user, String role) {
         return user.getAuthorities().stream()

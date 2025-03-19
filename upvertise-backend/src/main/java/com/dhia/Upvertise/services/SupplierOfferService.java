@@ -25,11 +25,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,12 +36,13 @@ public class SupplierOfferService {
     private final SupplierOfferRepository supplierOfferRepository;
     private final SponsorAdRepository sponsorAdRepository;
     private final SupplierTransactionRepository suppliertransactionRepository;
+    private final CloudinaryService  cloudinaryService;
 
     @Cacheable(value = "supplierOffers", key = "'all:' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public PageResponse<SupplierOfferResponse> getAllSupplierOffers(Pageable pageable) {
         Page<SupplierOffer> page = supplierOfferRepository.findAll(pageable);
         List<SupplierOfferResponse> content = page.getContent().stream()
-                .map(SupplierOfferMapper::toResponse)
+                .map(SupplierOfferMapper::toResponseWithImageUrl)
                 .collect(Collectors.toList());
         return new PageResponse<>(
                 content,
@@ -59,7 +58,7 @@ public class SupplierOfferService {
     public PageResponse<SupplierOfferResponse> getSupplierOfferByStatus(SupplierOfferStatus status, Pageable pageable) {
         Page<SupplierOffer> page = supplierOfferRepository.findByStatus(status, pageable);
         List<SupplierOfferResponse> content = page.getContent().stream()
-                .map(SupplierOfferMapper::toResponse)
+                .map(SupplierOfferMapper::toResponseWithImageUrl)
                 .collect(Collectors.toList());
         return new PageResponse<>(
                 content,
@@ -75,18 +74,32 @@ public class SupplierOfferService {
             @CacheEvict(value = "supplierOffers", key = "'all:' + #request.pageNumber + '-' + #request.pageSize", allEntries = true),
             @CacheEvict(value = "supplierOffers", key = "'status:' + #request.status + '-' + #request.pageNumber + '-' + #request.pageSize", allEntries = true)
     })
-    public SupplierOfferResponse createSupplierOffer(SupplierOfferRequest request) {
+    public SupplierOfferResponse createSupplierOffer(SupplierOfferRequest request , MultipartFile image) {
         List<SponsorAd> sponsorAds = sponsorAdRepository.findAllById(request.sponsorAdIds());
         SupplierOffer supplierOffer = SupplierOfferMapper.toSupplierOffer(request,sponsorAds);
+        // Upload the image to Cloudinary and set the URL
+        String imageUrl = cloudinaryService.uploadImage(image);
+        supplierOffer.setImageUrl(imageUrl);
         SupplierOffer savedOffer = supplierOfferRepository.save(supplierOffer);
         return SupplierOfferMapper.toResponse(savedOffer);
     }
     @Caching(evict = {
             @CacheEvict(value = "supplierOffers", allEntries = true)
     })
-    public SupplierOfferResponse updateSupplierOffer(Integer id, SupplierOfferRequest request) {
+    public SupplierOfferResponse updateSupplierOffer(Integer id, SupplierOfferRequest request, MultipartFile image) {
         SupplierOffer existingOffer = supplierOfferRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("SupplierOffer not found"));
+        // If a new image is provided, upload it and update the URL
+        if (image != null && !image.isEmpty()) {
+            // Delete old image from Cloudinary (optional but recommended)
+            if (existingOffer.getImageUrl() != null) {
+                cloudinaryService.deleteImage(existingOffer.getImageUrl());
+            }
+
+            // Upload new image and set new URL
+            String newImageUrl = cloudinaryService.uploadImage(image);
+            existingOffer.setImageUrl(newImageUrl);
+        }
         SupplierOfferMapper.updateSupplierOffer(existingOffer, request);
         SupplierOffer updatedOffer = supplierOfferRepository.save(existingOffer);
         return SupplierOfferMapper.toResponse(updatedOffer);
@@ -95,10 +108,14 @@ public class SupplierOfferService {
     public void deleteSupplierOffer(Integer id) {
         SupplierOffer existingOffer = supplierOfferRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("SupplierOffer not found"));
+        // Delete the image from Cloudinary if it exists
+        if (existingOffer.getImageUrl() != null && !existingOffer.getImageUrl().isEmpty()) {
+            cloudinaryService.deleteImage(existingOffer.getImageUrl());
+        }
         supplierOfferRepository.delete(existingOffer);
     }
 
-    public SupplierTransactionResponse chooseSupplierOffer(Authentication connectedUser, Integer supplierOfferId) {
+    public SupplierTransactionResponse chooseSupplierOffer(Authentication connectedUser, Integer supplierOfferId ) {
         SupplierOffer supplierOffer = supplierOfferRepository.findById(supplierOfferId)
                 .orElseThrow(() -> new EntityNotFoundException("SupplierOffer not found"));
 
@@ -122,11 +139,23 @@ public class SupplierOfferService {
         }
         Sponsorship sponsorship = commonSponsorships.iterator().next();
 
+        // Upload proofs to Cloudinary
+//        List<String> proofUrls = new ArrayList<>();
+//        if (proofs != null && !proofs.isEmpty()) {
+//            for (MultipartFile proof : proofs) {
+//                if (!proof.isEmpty()) {
+//                    String url = cloudinaryService.uploadImage(proof);
+//                    proofUrls.add(url);
+//                }
+//            }
+//        }
+
         SupplierTransaction transaction = new SupplierTransaction();
         transaction.setUserId(connectedUser.getName());
         transaction.setSupplierOffer(supplierOffer);
         transaction.setSupplierTransactionStatus(SupplierTransactionStatus.PENDING);
         transaction.setSponsorship(sponsorship);
+//        transaction.setProofs(proofUrls);  // Store uploaded proof URLs
         SupplierTransaction savedTransaction = suppliertransactionRepository.save(transaction);
         return SupplierTransactionMapper.toSupplierTransactionResponse(savedTransaction);
 

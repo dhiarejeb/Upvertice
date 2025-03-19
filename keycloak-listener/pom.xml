@@ -50,21 +50,12 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!--<dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>4.12.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hibernate</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.hibernate.orm</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-    </dependency>-->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <scope>compile</scope> <!-- Change from provided to compile -->
+        </dependency>
+
     </dependencies>
 
 

@@ -109,8 +109,8 @@ public class SponsorshipService {
         // Ensure only the sponsor who created it or an admin can delete
         boolean isAdmin = connectedUser.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_Admin"));
-        boolean isSponsor = connectedUser.getAuthorities().stream()
-                .anyMatch(role -> role.getAuthority().equals("ROLE_Sponsor"));
+        boolean isAdvertiser = connectedUser.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_Advertiser"));
 
 
         if (isAdmin) {
@@ -121,7 +121,7 @@ public class SponsorshipService {
 
         }
         // Sponsor can delete only if status is PENDING or REJECTED
-        if (isSponsor && sponsorship.getUserId().equals(connectedUser.getName())) {
+        if (isAdvertiser && sponsorship.getUserId().equals(connectedUser.getName())) {
             if (sponsorship.getStatus() == SponsorshipStatus.PENDING ||
                     sponsorship.getStatus() == SponsorshipStatus.REJECTED) {
                 sponsorshipRepository.delete(sponsorship);

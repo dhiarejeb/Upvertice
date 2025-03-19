@@ -1,50 +1,40 @@
 package com.dhia.Upvertise.services;
-//@Service
-//@Slf4j
-//@RequiredArgsConstructor
+
+import com.dhia.Upvertise.handler.EntityNotFoundException;
+import com.dhia.Upvertise.models.user.User;
+import com.dhia.Upvertise.repositories.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
 public class UserService {
-//    private final UserRepository userRepository;
-//
-//    @Transactional
-//    public void createUser(UserEventDTO event) {
-//        // Check if user already exists
-//        if (userRepository.existsById(event.getUserId())) {
-//            log.warn("User already exists: {}", event.getUserId());
-//            return;
-//        }
-//
-//        User user = User.builder()
-//                .id(event.getUserId())
-//                .email(event.getEmail())
-//                .username(event.getUsername())
-//                .firstName(event.getFirstName())
-//                .lastName(event.getLastName())
-//                .createdAt(new Date(event.getTimestamp()))
-//                .build();
-//
-//        userRepository.save(user);
-//        log.info("Created new user: {}", event.getEmail());
-//    }
-//
-//    @Transactional
-//    public void updateLastLogin(String userId) {
-//        userRepository.findById(userId).ifPresent(user -> {
-//            user.setLastLoginAt(new Date());
-//            userRepository.save(user);
-//            log.info("Updated last login for user: {}", userId);
-//        });
-//    }
-//
-//    @Transactional
-//    public void updateUser(UserEventDTO event) {
-//        userRepository.findById(event.getUserId()).ifPresent(user -> {
-//            user.setEmail(event.getEmail());
-//            user.setUsername(event.getUsername());
-//            user.setFirstName(event.getFirstName());
-//            user.setLastName(event.getLastName());
-//            user.setUpdatedAt(new Date());
-//            userRepository.save(user);
-//            log.info("Updated user profile: {}", event.getUserId());
-//        });
-//    }
+    private final UserRepository userRepository;
+    private final CloudinaryService cloudinaryService;
+
+    public User createUser(User userRequest) {
+        User user = new User();
+        user.setKeycloakId(userRequest.getKeycloakId());
+        user.setFirstName(userRequest.getFirstName());
+        user.setLastName(userRequest.getLastName());
+        user.setEmail(userRequest.getEmail());
+        user.setRole(userRequest.getRole());
+        user.setProfilePhotoUrl(userRequest.getProfilePhotoUrl());
+        return userRepository.save(user);
+    }
+
+    public String updateProfilePhoto(Integer userId, MultipartFile file) throws IOException {
+        String imageUrl = cloudinaryService.uploadProfilePhoto(file);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User",userId));
+        user.setProfilePhotoUrl(imageUrl);
+        userRepository.save(user);
+        return imageUrl;
+    }
+
 }
