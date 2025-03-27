@@ -37,4 +37,22 @@ public class UserService {
         return imageUrl;
     }
 
+    public User updateUser(User userUpdate) {
+        User existingUser = userRepository.findByKeycloakId(userUpdate.getKeycloakId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        existingUser.setFirstName(userUpdate.getFirstName());
+        existingUser.setLastName(userUpdate.getLastName());
+        existingUser.setEmail(userUpdate.getEmail());
+        existingUser.setRole(userUpdate.getRole());
+
+        return userRepository.save(existingUser);
+    }
+    public void deleteUserByKeycloakId(String keycloakId) {
+        User user = userRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        userRepository.delete(user);
+    }
+
 }

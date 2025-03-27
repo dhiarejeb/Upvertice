@@ -14,7 +14,7 @@ public record SponsorOfferResponse(
         String category,
         Integer numberAds,
         String productType,
-        List<String> explainImages  // Change to a list
+        List<String> explainImages
 
 ) {
 }

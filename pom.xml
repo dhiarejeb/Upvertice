@@ -25,8 +25,9 @@
 		<module>keycloak-listener</module>
 
 		<module>upvertise-backend</module>
+        <module>email-service</module>
 
-	</modules>
+    </modules>
 	<scm>
 		<connection/>
 		<developerConnection/>

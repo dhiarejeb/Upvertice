@@ -32,6 +32,7 @@ public class SponsorOfferService {
     private final SponsorshipRepository sponsorshipRepository;
     private final SponsorAdRepository sponsorAdRepository;
     private final CloudinaryService cloudinaryService;
+    private final KafkaProducerService kafkaProducerService;
 
     @Cacheable(value = "sponsorOffers", key = "'status:' + #status + '-' + #pageable.pageNumber")
     public PageResponse<SponsorOfferResponse> getSponsorOffersByStatus(Pageable pageable, SponsorOfferStatus status) {
@@ -171,7 +172,12 @@ public class SponsorOfferService {
         sponsorOffer.setUserId(connectedUser.getName());  // Link offer to admin who created it
 
 
-        return sponsorOfferRepository.save(sponsorOffer).getId();
+        Integer sponsorOfferId = sponsorOfferRepository.save(sponsorOffer).getId();
+        // Publish event to Kafka
+        kafkaProducerService.sendMessage("sponsorOfferTopic", "New sponsor offer created with ID: " + sponsorOfferId);
+
+        return sponsorOfferId;
+
     }
 
     @CacheEvict(value = "sponsorOffers", allEntries = true)

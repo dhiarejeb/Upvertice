@@ -11,12 +11,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
 
+    private final UserRepository userRepository;
     private final UserService userService;
 
     @PostMapping
@@ -44,5 +46,9 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(e.getMessage());
         }
+    }
+    @GetMapping("/advertiser-emails")
+    public List<String> getAdvertiserEmails() {
+        return userRepository.findEmailsByRole("Advertiser");
     }
 }

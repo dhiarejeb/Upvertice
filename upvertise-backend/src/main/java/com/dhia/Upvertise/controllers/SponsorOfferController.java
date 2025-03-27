@@ -6,8 +6,11 @@ import com.dhia.Upvertise.dto.SponsorOfferResponse;
 import com.dhia.Upvertise.models.common.PageResponse;
 import com.dhia.Upvertise.models.sponsorship.SponsorOfferStatus;
 import com.dhia.Upvertise.services.SponsorOfferService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -46,16 +49,34 @@ public class SponsorOfferController {
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(sponsorOfferService.getAllSponsorOffers(page, size));
     }
-    @PostMapping("/createSponsorOffer")
+    @PostMapping(value = "/createSponsorOffer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('Admin')")
+    public ResponseEntity<String> createSponsorOffer(
+            @RequestPart(value = "request", required = true) String sponsorOfferJson,
+            @RequestPart(value = "explainImages", required = false) List<MultipartFile> images,
+            Authentication connectedUser) {
+        try {
+            // Convert JSON String to SponsorOfferRequest object
+            ObjectMapper objectMapper = new ObjectMapper();
+            SponsorOfferRequest sponsorOfferRequest = objectMapper.readValue(sponsorOfferJson, SponsorOfferRequest.class);
+
+            Integer offerId = sponsorOfferService.createSponsorOffer(sponsorOfferRequest, images, connectedUser);
+            return ResponseEntity.ok("Sponsor Offer created successfully. Offer ID: " + offerId);
+        } catch (Exception e) {
+            e.printStackTrace();  // Log the full error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+    /*@PostMapping(value = "/createSponsorOffer" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<String> createSponsorOffer(
             @RequestPart("request") SponsorOfferRequest sponsorOfferRequest, // JSON request body
-            @RequestPart("explainImages") List<MultipartFile> images,
+            @RequestPart(value = "explainImages" , required = false) List<MultipartFile> images,
             Authentication connectedUser) {
 
         Integer offerId = sponsorOfferService.createSponsorOffer(sponsorOfferRequest,images,connectedUser);
         return ResponseEntity.ok("Sponsor Offer created successfully. Offer ID: " + offerId);
-    }
+    }*/
 
     // sponsor selects a specific sponsor offer
     @PostMapping("/chooseSponsorOffer/{offerId}")
