@@ -27,6 +27,7 @@ public class SponsorOffer extends BaseEntity {
     private String category;
     private String productType;
     private Integer productQuantity;
+    private String salesArea;
     @ElementCollection
     private List<String> explainImages;
     private Integer numberAds;

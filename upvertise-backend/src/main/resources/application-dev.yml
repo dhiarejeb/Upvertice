@@ -6,7 +6,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: false
     properties:
       hibernate:
@@ -42,6 +42,7 @@ spring:
 
 
 
+
 server:
   port: 8088
 
@@ -50,3 +51,9 @@ jwt:
     converter:
       resource-id: Upvertise-rest-api
       principle-attribute: preferred_username
+
+keycloak:
+  server-url: http://localhost:9090
+  realm: Upvertice
+  client-id: Upvertice-rest-api
+  client-secret: n87pRqxXd6ddkDbURfsoOQ12glEeuR9E

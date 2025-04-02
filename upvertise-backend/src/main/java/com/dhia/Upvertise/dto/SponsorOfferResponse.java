@@ -14,6 +14,7 @@ public record SponsorOfferResponse(
         String category,
         Integer numberAds,
         String productType,
+        String salesArea,
         List<String> explainImages
 
 ) {

@@ -1,11 +1,14 @@
 package com.dhia.Upvertise.services;
 
+import com.dhia.Upvertise.dto.UserUpdateRequest;
 import com.dhia.Upvertise.handler.EntityNotFoundException;
+import com.dhia.Upvertise.handler.UserNotFoundException;
 import com.dhia.Upvertise.models.user.User;
 import com.dhia.Upvertise.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -16,16 +19,19 @@ import java.io.IOException;
 public class UserService {
     private final UserRepository userRepository;
     private final CloudinaryService cloudinaryService;
+    private final KeycloakService keycloakService;
 
+    /**
+     * Creates a user in Keycloak first, then stores them in Upvertise.
+     */
     public User createUser(User userRequest) {
-        User user = new User();
-        user.setKeycloakId(userRequest.getKeycloakId());
-        user.setFirstName(userRequest.getFirstName());
-        user.setLastName(userRequest.getLastName());
-        user.setEmail(userRequest.getEmail());
-        user.setRole(userRequest.getRole());
-        user.setProfilePhotoUrl(userRequest.getProfilePhotoUrl());
-        return userRepository.save(user);
+        // Only create in Keycloak if NOT coming from Keycloak sync
+        if (userRequest.getKeycloakId() == null) {
+            String keycloakId = keycloakService.createUserInKeycloak(userRequest);
+            userRequest.setKeycloakId(keycloakId);
+        }
+
+        return userRepository.save(userRequest);
     }
 
     public String updateProfilePhoto(Integer userId, MultipartFile file) throws IOException {
@@ -37,7 +43,9 @@ public class UserService {
         return imageUrl;
     }
 
-    public User updateUser(User userUpdate) {
+
+    public User updateUserFromKeycloak(User userUpdate) {
+        // Update database ONLY (no Keycloak sync)
         User existingUser = userRepository.findByKeycloakId(userUpdate.getKeycloakId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -48,11 +56,21 @@ public class UserService {
 
         return userRepository.save(existingUser);
     }
-    public void deleteUserByKeycloakId(String keycloakId) {
-        User user = userRepository.findByKeycloakId(keycloakId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        userRepository.delete(user);
+
+    @Transactional
+    public void deleteUserEverywhere(String keycloakId) {
+
+
+        // Then delete from DB
+        userRepository.deleteByKeycloakId(keycloakId)
+                .orElseThrow(() -> new UserNotFoundException(keycloakId));
     }
+
+
+
+
+
+    
 
 }

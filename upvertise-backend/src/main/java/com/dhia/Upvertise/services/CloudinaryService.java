@@ -47,8 +47,24 @@ public class CloudinaryService {
             throw new RuntimeException("Error generating signed upload parameters", e);
         }
     }
+    // Method to upload profile photo to Cloudinary
     public String uploadProfilePhoto(MultipartFile file) throws IOException {
-        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("folder", "profile_photos"));
+        // Check if the file is not empty
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("File must not be empty");
+        }
+
+        // Validate file type (optional)
+        String contentType = file.getContentType();
+        if (!contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Only image files are allowed");
+        }
+
+        // Upload file to Cloudinary's 'profile_photos' folder
+        Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                ObjectUtils.asMap("folder", "profile_photos"));
+
+        // Return the secure URL of the uploaded photo
         return uploadResult.get("secure_url").toString();
     }
 

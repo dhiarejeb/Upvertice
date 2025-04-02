@@ -169,6 +169,7 @@ public class SponsorOfferService {
         sponsorOffer.setStatus(request.status());
         sponsorOffer.setCategory(request.category());
         sponsorOffer.setNumberAds(request.numberAds());
+        sponsorOffer.setSalesArea(request.salesArea());
         sponsorOffer.setUserId(connectedUser.getName());  // Link offer to admin who created it
 
 
@@ -231,6 +232,8 @@ public class SponsorOfferService {
         if (request.numberAds() != null) sponsorOffer.setNumberAds(request.numberAds());
         if (request.productQuantity() != null) sponsorOffer.setProductQuantity(request.productQuantity());
         if (request.productType() != null) sponsorOffer.setProductType(request.productType());
+        if (request.salesArea() != null) sponsorOffer.setSalesArea(request.salesArea());
+
 
 
         // Update SponsorOffer status if provided
