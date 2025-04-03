@@ -1,15 +1,14 @@
 package com.dhia.Upvertise.config;
+
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.info.License;
-import io.swagger.v3.oas.annotations.servers.Server;
-import io.swagger.v3.oas.annotations.security.OAuthFlow;
-import io.swagger.v3.oas.annotations.security.OAuthFlows;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import io.swagger.v3.oas.annotations.servers.Server;
 @OpenAPIDefinition(
         info = @Info(
                 title = "Upvertice API Documentation",
@@ -22,7 +21,8 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
                         url = "https://upvertice.com"
                 ),
                 license = @License(
-
+                        name = "Proprietary License",
+                        url = "https://upvertice.com/license"
                 )
         ),
         servers = {
@@ -41,17 +41,11 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 )
 @SecurityScheme(
         name = "bearerAuth",
-        description = "JWT Authentication using Keycloak",
+        type = SecuritySchemeType.HTTP,
         scheme = "bearer",
-        type = SecuritySchemeType.OAUTH2,
         bearerFormat = "JWT",
-        in = SecuritySchemeIn.HEADER,
-        flows = @OAuthFlows(
-                authorizationCode = @OAuthFlow(
-                        authorizationUrl = "https://keycloak.upvertice.com/realms/upvertice/protocol/openid-connect/auth",
-                        tokenUrl = "https://keycloak.upvertice.com/realms/upvertice/protocol/openid-connect/token"
-                )
-        )
+        description = "JWT Authentication using Keycloak",
+        in = SecuritySchemeIn.HEADER
 )
 public class OpenApiConfig {
 }
