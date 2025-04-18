@@ -6,6 +6,6 @@ export interface SponsorAdResponse {
   content?: string;
   design?: string;
   designColors?: Array<string>;
-  placement?: string;
+  id?: number;
   title?: string;
 }

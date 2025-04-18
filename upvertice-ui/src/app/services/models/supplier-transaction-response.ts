@@ -5,6 +5,7 @@
 import { SponsorshipLightsResponse } from '../models/sponsorship-lights-response';
 import { SupplierOfferResponse } from '../models/supplier-offer-response';
 export interface SupplierTransactionResponse {
+  discount?: number;
   id?: number;
   locations?: Array<string>;
   percentage?: number;

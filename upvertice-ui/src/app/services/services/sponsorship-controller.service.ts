@@ -15,9 +15,12 @@ import { deleteSponsorship } from '../fn/sponsorship-controller/delete-sponsorsh
 import { DeleteSponsorship$Params } from '../fn/sponsorship-controller/delete-sponsorship';
 import { getAllSponsorships } from '../fn/sponsorship-controller/get-all-sponsorships';
 import { GetAllSponsorships$Params } from '../fn/sponsorship-controller/get-all-sponsorships';
+import { getSponsorshipById } from '../fn/sponsorship-controller/get-sponsorship-by-id';
+import { GetSponsorshipById$Params } from '../fn/sponsorship-controller/get-sponsorship-by-id';
 import { getSponsorshipsByStatus } from '../fn/sponsorship-controller/get-sponsorships-by-status';
 import { GetSponsorshipsByStatus$Params } from '../fn/sponsorship-controller/get-sponsorships-by-status';
 import { PageResponseSponsorshipResponse } from '../models/page-response-sponsorship-response';
+import { SponsorshipResponse } from '../models/sponsorship-response';
 import { updateSponsorshipStatus } from '../fn/sponsorship-controller/update-sponsorship-status';
 import { UpdateSponsorshipStatus$Params } from '../fn/sponsorship-controller/update-sponsorship-status';
 
@@ -78,6 +81,31 @@ export class SponsorshipControllerService extends BaseService {
   getAllSponsorships(params?: GetAllSponsorships$Params, context?: HttpContext): Observable<PageResponseSponsorshipResponse> {
     return this.getAllSponsorships$Response(params, context).pipe(
       map((r: StrictHttpResponse<PageResponseSponsorshipResponse>): PageResponseSponsorshipResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `getSponsorshipById()` */
+  static readonly GetSponsorshipByIdPath = '/sponsorships/{sponsorshipId}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getSponsorshipById()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getSponsorshipById$Response(params: GetSponsorshipById$Params, context?: HttpContext): Observable<StrictHttpResponse<SponsorshipResponse>> {
+    return getSponsorshipById(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getSponsorshipById$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getSponsorshipById(params: GetSponsorshipById$Params, context?: HttpContext): Observable<SponsorshipResponse> {
+    return this.getSponsorshipById$Response(params, context).pipe(
+      map((r: StrictHttpResponse<SponsorshipResponse>): SponsorshipResponse => r.body)
     );
   }
 

@@ -28,18 +28,18 @@ public class SponsorAdMapper {
     }
     public static SponsorAdResponse toSponsorAdResponse(SponsorAd sponsorAd) {
         return new SponsorAdResponse(
+                sponsorAd.getId(),
                 sponsorAd.getTitle(),
                 sponsorAd.getContent(),
-                sponsorAd.getPlacement(),
                 sponsorAd.getDesign(),
                 sponsorAd.getDesign_colors()
         );
     }
-    public SponsorAdResponse toSponsorAdResponseWithImageUrl(SponsorAd sponsorAd) {
+    public static SponsorAdResponse toSponsorAdResponseWithImageUrl(SponsorAd sponsorAd) {
         return SponsorAdResponse.builder()
+                .id(sponsorAd.getId())
                 .title(sponsorAd.getTitle())
                 .content(sponsorAd.getContent())
-                .placement(sponsorAd.getPlacement())
                 .design(sponsorAd.getDesign()) // ✅ This is now the Cloudinary URL
                 .designColors(sponsorAd.getDesign_colors())
                 .build();

@@ -24,7 +24,7 @@ public class SponsorAd extends BaseEntity {
 
     private String title;
     private String content; // Ad content
-    private String placement;// Where the ad is placed on the goblet
+    //private String placement;// Where the ad is placed on the goblet
     private String design;
     @ElementCollection
     private List<String> design_colors;

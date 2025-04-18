@@ -19,7 +19,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,6 +29,7 @@ public class SupplierTransactionService {
 
     private final SupplierOfferRepository supplierOfferRepository;
     private final CloudinaryService cloudinaryService;
+    //private final SupplierTransactionMapper supplierTransactionMapper;
 
 
     // Get SupplierTransactions (Admin can see all, Supplier can see only theirs)
@@ -74,29 +74,37 @@ public class SupplierTransactionService {
 
         // Determine user role
         boolean isAdmin = hasRole(connectedUser, "ROLE_Admin");
+        boolean isProvider = hasRole(connectedUser, "ROLE_Provider");
         boolean isSupplier = hasRole(connectedUser, "ROLE_Supplier");
 
-        if (isAdmin) {
+        if (isAdmin || isProvider) {
             updateTransactionStatus(transaction, request.status());
+        }
+        // Admin or Provider can set discount
+        if (isAdmin || isProvider) {
+            if (request.discount() != null) {
+                transaction.setDiscount(request.discount());
+            }
         }
 
         if (isSupplier) {
             if (transaction.getSupplierTransactionStatus() != SupplierTransactionStatus.APPROVED) {
                 throw new OperationNotPermittedException("Suppliers can only update 'APPROVED' transactions.");
             }
+        }
             updateSupplierTransactionFields(transaction, request);
             // ✅ Handle proof image uploads to Cloudinary
+            // ✅ Always store uploaded images into `proofs` field
             if (proofsFiles != null && !proofsFiles.isEmpty()) {
                 List<String> uploadedProofs = proofsFiles.stream()
                         .map(cloudinaryService::uploadImage)
                         .collect(Collectors.toList());
 
-                // Merge new proofs with existing ones
                 List<String> existingProofs = transaction.getProofs();
                 existingProofs.addAll(uploadedProofs);
                 transaction.setProofs(existingProofs);
             }
-        }
+
 
         // Save updated transaction
         SupplierTransaction updatedTransaction = transactionRepository.save(transaction);
@@ -125,8 +133,10 @@ public class SupplierTransactionService {
             transaction.setRelativePrice(relativePrice);
             transaction.setPercentage(percentage);
         }
+        //transaction.setDiscount(request.discount());
 
-        if (request.locations() != null) {
+        // ⚠️ Only set locations if not null and not empty
+        if (request.locations() != null && !request.locations().isEmpty()) {
             transaction.setLocations(request.locations());
         }
     }
@@ -178,29 +188,9 @@ public class SupplierTransactionService {
         throw new AccessDeniedException("You are not authorized to delete this SupplierTransaction.");
     }
 
-    // ✅ Apply Discount to a SupplierTransaction
-    public void applyDiscount(
-            Integer supplierTransactionId ,
-            Integer numberOfCompletedTransactionNeeded,
-            Double discount) {
-        SupplierTransaction transaction = transactionRepository.findById(supplierTransactionId)
-                .orElseThrow(() -> new EntityNotFoundException("SupplierTransaction not found"));
 
-        // Count completed transactions for the supplier
-        Integer completedTransactions = transactionRepository.countByUserIdAndSupplierTransactionStatus(
-                transaction.getUserId(), SupplierTransactionStatus.COMPLETED);
 
-        // If supplier has completed at least 2 transactions, apply discount
-        if (completedTransactions >= numberOfCompletedTransactionNeeded) {
-            transaction.setDiscount(discount); // Example: 10% discount
-
-            Double price = transaction.getSupplierOffer().getPrice();
-            Double discountedPrice = price - (price * discount / 100);
-            transaction.setRelativePrice(discountedPrice);
-            transactionRepository.save(transaction);
-        }
-
-    }
+    
     // ✅ Uses CloudinaryService to delete images
     private void deleteProofs(List<String> proofs) {
         if (proofs == null || proofs.isEmpty()) return;

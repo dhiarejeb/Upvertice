@@ -31,11 +31,6 @@ public class SecurityConfig  {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req ->
                         req.requestMatchers(
-                                "/cloudinary/upload",
-                                        "/supplier-offers/status",
-                                        "/supplier-offers/AllSupplierOffers",
-                                        "/sponsor-offers/sponsorOffersByStatus",
-                                        "/sponsor-offers/allSponsorOffers",
                                         "/auth/**",
                                         "/v2/api-docs",
                                         "/v3/api-docs",

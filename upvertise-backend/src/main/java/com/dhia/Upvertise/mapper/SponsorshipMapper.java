@@ -2,7 +2,9 @@ package com.dhia.Upvertise.mapper;
 
 import com.dhia.Upvertise.dto.*;
 import com.dhia.Upvertise.models.sponsorship.Sponsorship;
+import com.dhia.Upvertise.services.CloudinaryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -11,8 +13,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
+@RequiredArgsConstructor
+@Component
 public class SponsorshipMapper {
+
+
 
 
 
@@ -27,7 +32,7 @@ public class SponsorshipMapper {
         // Map the sponsor ads associated with this sponsorship
         Set<SponsorAdResponse> sponsorAdResponses = (sponsorship.getSponsorAds() != null)
                 ? sponsorship.getSponsorAds().stream()
-                .map(SponsorAdMapper::toSponsorAdResponse)
+                .map(SponsorAdMapper::toSponsorAdResponseWithImageUrl)
                 .collect(Collectors.toSet())
                 : new HashSet<>();
 
@@ -69,7 +74,7 @@ public class SponsorshipMapper {
         // Map the sponsor ads associated with this sponsorship
         Set<SponsorAdResponse> sponsorAdResponses = (sponsorship.getSponsorAds() != null)
                 ? sponsorship.getSponsorAds().stream()
-                .map(SponsorAdMapper::toSponsorAdResponse)
+                .map(SponsorAdMapper::toSponsorAdResponseWithImageUrl)
                 .collect(Collectors.toSet())
                 : new HashSet<>();
 
@@ -104,14 +109,15 @@ public class SponsorshipMapper {
         // Map the sponsor ads associated with this sponsorship
         Set<SponsorAdResponse> sponsorAdResponses = (sponsorship.getSponsorAds() != null)
                 ? sponsorship.getSponsorAds().stream()
-                .map(SponsorAdMapper::toSponsorAdResponse)
+                .map(SponsorAdMapper::toSponsorAdResponseWithImageUrl)
                 .collect(Collectors.toSet())
                 : new HashSet<>();
 
         // Map related providerships (reverse mapping)
-        List<ProvidershipResponse> providershipResponses = (sponsorship.getProviderships() != null)
+        //.map(ProvidershipMapper::toProvidershipResponse)
+        List<ProvidershipLightResponse> providershipResponses = (sponsorship.getProviderships() != null)
                 ? sponsorship.getProviderships().stream()
-                .map(ProvidershipMapper::toProvidershipResponse)
+                .map(ProvidershipMapper::toProvidershipLightResponse)
                 .collect(Collectors.toList())
                 : new ArrayList<>();
 

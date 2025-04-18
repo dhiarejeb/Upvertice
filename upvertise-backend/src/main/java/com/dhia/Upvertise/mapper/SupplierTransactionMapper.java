@@ -2,11 +2,14 @@ package com.dhia.Upvertise.mapper;
 
 import com.dhia.Upvertise.dto.*;
 import com.dhia.Upvertise.models.supplier.SupplierTransaction;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 
 
-
+@RequiredArgsConstructor
+@Component
 public class SupplierTransactionMapper {
-
 
     public static SupplierTransactionResponse toSupplierTransactionResponse(SupplierTransaction transaction) {
         if (transaction == null) {
@@ -27,9 +30,11 @@ public class SupplierTransactionMapper {
                 transaction.getQuantitySold(),
                 transaction.getRelativePrice(),
                 transaction.getPercentage(),
-                transaction.getLocations(),
-                transaction.getProofs(),
-                sponsorshipLightsResponse
+                transaction.getProofs(),      // ✅ correct
+                transaction.getLocations(),   // ✅ correct
+                sponsorshipLightsResponse,
+                transaction.getDiscount()
+
         );
     }
 
@@ -49,7 +54,8 @@ public class SupplierTransactionMapper {
                 transaction.getQuantitySold(),
                 transaction.getRelativePrice(),
                 transaction.getPercentage(),
-                transaction.getProofs()
+                transaction.getProofs(),
+                transaction.getDiscount()
 
         );
     }

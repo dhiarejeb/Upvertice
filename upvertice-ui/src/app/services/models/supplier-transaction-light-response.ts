@@ -4,6 +4,7 @@
 
 import { SupplierOfferResponse } from '../models/supplier-offer-response';
 export interface SupplierTransactionLightResponse {
+  discount?: number;
   id?: number;
   percentage?: number;
   proofs?: Array<string>;

@@ -9,11 +9,14 @@ import com.dhia.Upvertise.models.sponsorship.SponsorshipStatus;
 import com.dhia.Upvertise.repositories.SponsorshipRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 
@@ -23,6 +26,7 @@ import java.util.List;
 public class SponsorshipService {
 
     private final SponsorshipRepository sponsorshipRepository;
+
 
 
     public PageResponse<SponsorshipResponse> getAllSponsorships(Authentication connectedUser, int page, int size) {
@@ -57,6 +61,22 @@ public class SponsorshipService {
                 sponsorshipsPage.isFirst(),
                 sponsorshipsPage.isLast()
         );
+    }
+    public SponsorshipResponse getSponsorshipById(Authentication connectedUser, Integer sponsorshipId){
+        String userId = connectedUser.getName();
+        boolean isAdmin = connectedUser.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_Admin"));
+
+        // Fetch sponsorship or throw 404
+        Sponsorship sponsorship = sponsorshipRepository.findById(sponsorshipId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sponsorship not found"));
+
+        // Authorization check
+        if (!isAdmin && !sponsorship.getCreatedBy().equals(userId)) {
+            throw new AccessDeniedException("You don't have permission to access this sponsorship");
+        }
+
+        return SponsorshipMapper.toSponsorshipResponse(sponsorship);
     }
 
     public PageResponse<SponsorshipResponse> getSponsorshipsByStatus(SponsorshipStatus status, Authentication connectedUser, int page, int size) {
@@ -102,37 +122,30 @@ public class SponsorshipService {
 
         // Check if the sponsorship status allows deletion
         if (sponsorship.getStatus() != SponsorshipStatus.PENDING &&
-                sponsorship.getStatus() != SponsorshipStatus.REJECTED&&
+                sponsorship.getStatus() != SponsorshipStatus.REJECTED &&
                 sponsorship.getStatus() != SponsorshipStatus.FINISHED) {
-            throw new IllegalStateException("Only PENDING or REJECTED or FINISHED sponsorships can be deleted.");
+            throw new IllegalStateException("Only PENDING, REJECTED, or FINISHED sponsorships can be deleted.");
         }
-        // Ensure only the sponsor who created it or an admin can delete
+
+        // Check if the user is an Admin or the creator of the sponsorship (Advertiser)
         boolean isAdmin = connectedUser.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_Admin"));
+
         boolean isAdvertiser = connectedUser.getAuthorities().stream()
                 .anyMatch(role -> role.getAuthority().equals("ROLE_Advertiser"));
 
-
         if (isAdmin) {
             sponsorshipRepository.delete(sponsorship);
-
-        }else{
-            throw new ForbiddenActionException("Only Admins can delete this sponsorship.");
-
-        }
-        // Sponsor can delete only if status is PENDING or REJECTED
-        if (isAdvertiser && sponsorship.getUserId().equals(connectedUser.getName())) {
+        } else if (isAdvertiser && sponsorship.getUserId().equals(connectedUser.getName())) {
             if (sponsorship.getStatus() == SponsorshipStatus.PENDING ||
                     sponsorship.getStatus() == SponsorshipStatus.REJECTED) {
                 sponsorshipRepository.delete(sponsorship);
-
             } else {
-                throw new UnauthorizedAccessException("You are not authorized to delete this sponsorship");
+                throw new UnauthorizedAccessException("You are not authorized to delete this sponsorship.");
             }
+        } else {
+            throw new ForbiddenActionException("You are not authorized to perform this action.");
         }
-
-        // Perform the deletion (SponsorOffers remain untouched)
-
     }
 
 

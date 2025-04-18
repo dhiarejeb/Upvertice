@@ -14,7 +14,7 @@ import { ProvidershipResponse } from '../../models/providership-response';
 export interface CreateProvidership$Params {
       body?: {
 'request': ProvidershipRequest;
-'images': Array<Blob>;
+'images'?: Array<Blob>;
 }
 }
 

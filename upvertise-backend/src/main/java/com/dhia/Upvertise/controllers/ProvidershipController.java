@@ -4,6 +4,8 @@ import com.dhia.Upvertise.dto.ProvidershipRequest;
 import com.dhia.Upvertise.dto.ProvidershipResponse;
 import com.dhia.Upvertise.models.common.PageResponse;
 import com.dhia.Upvertise.services.ProvidershipService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -45,22 +47,53 @@ public class ProvidershipController {
     @PreAuthorize("hasAnyRole('Admin', 'Provider')")
     public ResponseEntity<ProvidershipResponse> updateProvidership(
             @PathVariable Integer id,
-            @RequestPart("request") @Valid ProvidershipRequest request,
-            @RequestPart("images") List<MultipartFile> proofFiles,
+            @RequestPart(value = "request", required = false) @Valid ProvidershipRequest request,
+            @RequestPart(value = "images", required = false) List<MultipartFile> proofFiles,
             Authentication connectedUser) {
 
         ProvidershipResponse response = providershipService.updateProvidership(id, request, proofFiles,connectedUser);
         return ResponseEntity.ok(response);
     }
+    /*@PatchMapping("/update/{id}")
+    @PreAuthorize("hasAnyRole('Admin', 'Provider')")
+    public ResponseEntity<ProvidershipResponse> updateProvidership(
+            @PathVariable Integer id,
+            @RequestPart("request") String requestJson, // 📌 Accept as raw JSON string
+            @RequestPart(value = "images", required = false) List<MultipartFile> proofFiles,
+            Authentication connectedUser) throws JsonProcessingException {
+
+        // 🔄 Deserialize manually
+        ObjectMapper objectMapper = new ObjectMapper();
+        ProvidershipRequest request = objectMapper.readValue(requestJson, ProvidershipRequest.class);
+
+        ProvidershipResponse response = providershipService.updateProvidership(id, request, proofFiles, connectedUser);
+        return ResponseEntity.ok(response);
+    }*/
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('Provider')")
     public ResponseEntity<ProvidershipResponse> createProvidership(
             @RequestPart("request") ProvidershipRequest request,
-            @RequestPart("images") List<MultipartFile> proofFiles,
+            @RequestPart(value = "images", required = false) List<MultipartFile> proofFiles,
             Authentication connectedUser) {
         ProvidershipResponse response = providershipService.createProvidership(request,proofFiles ,connectedUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+    /*@PostMapping("/create")
+    @PreAuthorize("hasRole('Provider')")
+    public ResponseEntity<ProvidershipResponse> createProvidership(
+            @RequestPart("request") String request, // Accept JSON string
+            @RequestPart(value = "images", required = false) List<MultipartFile> proofFiles,
+            Authentication connectedUser) throws JsonProcessingException {
+
+        // Deserialize the request JSON string to ProvidershipRequest
+        ObjectMapper objectMapper = new ObjectMapper();
+        ProvidershipRequest providershipRequest = objectMapper.readValue(request, ProvidershipRequest.class);
+
+        // Now you can pass the deserialized ProvidershipRequest to the service
+        ProvidershipResponse response = providershipService.createProvidership(providershipRequest, proofFiles, connectedUser);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }*/
 
 }

@@ -14,7 +14,7 @@ export interface ProvidershipResponse {
   proofDocs?: Array<string>;
   providershipApprovalStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
   sponsorship?: SponsorshipLightResponse;
-  status?: 'PENDING' | 'DESIGNING_CUP' | 'PRODUCING_CUP' | 'PRODUCING_AND_SELLING' | 'SELLING' | 'COMPLETED';
+  status?: 'PENDING' | 'DESIGNING' | 'PRODUCING' | 'PRODUCING_AND_SELLING' | 'SELLING' | 'COMPLETED';
   totalProduct?: number;
   userId?: string;
 }

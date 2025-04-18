@@ -6,6 +6,7 @@ import com.dhia.Upvertise.dto.SupplierTransactionResponse;
 import com.dhia.Upvertise.models.common.PageResponse;
 import com.dhia.Upvertise.models.supplier.SupplierOfferStatus;
 import com.dhia.Upvertise.services.SupplierOfferService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +24,6 @@ public class SupplierOfferController {
     private final SupplierOfferService service;
 
     @GetMapping("AllSupplierOffers")
-    //@PreAuthorize("hasAnyRole('Admin','Su')")
     public ResponseEntity<PageResponse<SupplierOfferResponse>> getAllSupplierOffers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -46,8 +46,28 @@ public class SupplierOfferController {
             @RequestPart("image") MultipartFile image) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.createSupplierOffer(request , image));
     }
+    /*@PostMapping("/create")
+    @PreAuthorize("hasAnyRole('Admin', 'Provider')")
+    public ResponseEntity<SupplierOfferResponse> createSupplierOffer(
+            @RequestPart("request") String requestJson,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+
+        try {
+            // Use ObjectMapper to deserialize the JSON string into SupplierOfferRequest
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.findAndRegisterModules(); // This handles LocalDateTime and other Java 8 types
+
+            SupplierOfferRequest request = objectMapper.readValue(requestJson, SupplierOfferRequest.class);
+
+            SupplierOfferResponse response = service.createSupplierOffer(request, image);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }*/
     @PutMapping("/update/{id}")
-    @PreAuthorize("hasRole('Admin')")
+    @PreAuthorize("hasAnyRole('Admin', 'Provider')")
     public ResponseEntity<SupplierOfferResponse> updateSupplierOffer(
             @PathVariable Integer id,
             @RequestPart("request") SupplierOfferRequest request,
@@ -55,7 +75,7 @@ public class SupplierOfferController {
         return ResponseEntity.ok(service.updateSupplierOffer(id, request , image));
     }
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasRole('Admin')")
+    @PreAuthorize("hasAnyRole('Admin', 'Provider')")
     public ResponseEntity<Void> deleteSupplierOffer(
             @PathVariable Integer id) {
         service.deleteSupplierOffer(id);
@@ -63,7 +83,7 @@ public class SupplierOfferController {
     }
 
     @PostMapping("/{supplierOfferId}/choose")
-    @PreAuthorize("hasRole('Supplier')")
+    @PreAuthorize("hasAnyRole('Supplier', 'Provider')")
     public ResponseEntity<SupplierTransactionResponse> chooseSupplierOffer(
             @PathVariable Integer supplierOfferId,
             Authentication connectedUser) {
@@ -72,7 +92,7 @@ public class SupplierOfferController {
     }
 
     @PutMapping("/{transactionId}/update-choice/{newSupplierOfferId}")
-    @PreAuthorize("hasRole('Supplier')")
+    @PreAuthorize("hasAnyRole('Supplier', 'Provider')")
     public ResponseEntity<SupplierTransactionResponse> updateSupplierChoice(
             @PathVariable Integer transactionId,
             @PathVariable Integer newSupplierOfferId,

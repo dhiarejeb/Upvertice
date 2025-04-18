@@ -1,0 +1,29 @@
+<div class="p-6 space-y-6">
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl font-bold">My Sponsorships</h2>
+    <select (change)="onStatusChange($event)">
+      <option value="">All</option>
+      <option value="PENDING">Pending</option>
+      <option value="APPROVED">Approved</option>
+      <option value="REJECTED">Rejected</option>
+      <option value="FINISHED">Finished</option>
+    </select>
+  </div>
+
+  <div class="grid gap-4">
+    <div
+      *ngFor="let sponsorship of sponsorships"
+      class="bg-white shadow p-4 rounded cursor-pointer hover:bg-gray-50 transition"
+      (click)="goToDetails(sponsorship.id)"
+    >
+      <h3 class="text-lg font-semibold">Sponsorship #{{ sponsorship.id }}</h3>
+      <p class="text-sm text-gray-600">Status: {{ sponsorship.status }}</p>
+      <p class="text-sm">Created: {{ sponsorship.createdDate | date }}</p>
+    </div>
+  </div>
+
+  <div class="flex justify-between mt-4">
+    <button (click)="prevPage()" [disabled]="page === 0" class="btn">Previous</button>
+    <button (click)="nextPage()" [disabled]="page + 1 >= totalPages" class="btn">Next</button>
+  </div>
+</div>

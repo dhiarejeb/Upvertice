@@ -9,6 +9,7 @@ import java.util.List;
 
 @Builder
 public record ProvidershipResponse(
+        //dto having sponsorship data
         Integer id,
         SponsorshipLightResponse sponsorship, // Now contains details
         String userId,
@@ -22,5 +23,6 @@ public record ProvidershipResponse(
         Boolean hasPrintMachine,
         LocalDateTime createdDate,
         LocalDateTime lastModifiedDate
+        //List<SupplierTransactionLightResponse> supplierTransactions //  NEW
 
 ) {}

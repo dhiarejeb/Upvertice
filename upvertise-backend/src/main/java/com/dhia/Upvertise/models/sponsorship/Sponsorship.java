@@ -22,6 +22,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class Sponsorship extends BaseEntity {
 
+    @Enumerated(EnumType.STRING)
     private SponsorshipStatus status;
     @Column(name = "user_id")
     private String userId;

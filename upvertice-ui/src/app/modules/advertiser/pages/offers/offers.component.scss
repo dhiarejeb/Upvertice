@@ -1,0 +1,491 @@
+// Enhanced styling with Bootstrap customizations
+
+// Card styling - smaller and more compact
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .card-title {
+    font-weight: 600;
+    font-size: 1rem;
+  }
+}
+
+// Update the image container styling for better clarity
+.image-container {
+  height: 220px; // Increased from 180px for better visibility
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 0.5rem;
+
+  .carousel {
+    height: 100%;
+  }
+
+  .carousel-item {
+    height: 100%;
+    background-color: #f8f9fa; // Light background for images
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain; // Changed from cover to contain to show full image
+      object-position: center;
+      padding: 10px; // Add some padding around the image
+    }
+  }
+
+  // Make carousel controls more visible
+  .carousel-control-prev, .carousel-control-next {
+    width: 15%;
+    background: rgba(0, 0, 0, 0.2);
+    opacity: 0.8;
+    height: 100%;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.4);
+      opacity: 1;
+    }
+
+    .carousel-control-prev-icon, .carousel-control-next-icon {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+
+  // Add a subtle border to the image container
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+// List group styling - more compact
+.list-group-item {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+
+  strong {
+    font-weight: 600;
+    margin-right: 0.25rem;
+  }
+
+  i {
+    font-size: 0.8rem;
+  }
+}
+
+// Status colors
+.status-available {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.status-pending {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.status-sold {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.status-expired {
+  background-color: #e2e3e5;
+  color: #383d41;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+// Price styling
+.price-item {
+  .text-success {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  i.text-primary {
+    font-size: 0.9rem;
+  }
+}
+
+// Modal styling - Fixed transparency issues
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .modal-dialog {
+    width: 100%;
+    max-width: 500px;
+    margin: 1.75rem auto;
+    z-index: 1051;
+  }
+
+  .modal-content {
+    background-color: #fff;
+    border-radius: 0.3rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  }
+
+  .modal-header {
+    border-top-left-radius: 0.3rem;
+    border-top-right-radius: 0.3rem;
+  }
+}
+
+// Toast styling
+.toast {
+  min-width: 300px;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+
+  &.show {
+    opacity: 1;
+  }
+
+  .toast-header {
+    padding: 0.5rem 0.75rem;
+
+    .btn-close {
+      margin-left: auto;
+    }
+  }
+}
+
+// Pagination styling
+.pagination {
+  .page-link {
+    color: #007bff;
+    border-color: #dee2e6;
+
+    &:hover {
+      background-color: #e9ecef;
+    }
+  }
+
+  .page-item.disabled .page-link {
+    color: #6c757d;
+  }
+}
+
+// Loading spinner
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+
+  &.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+// Form styling
+.form-control:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+// No image placeholder
+.no-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background-color: #f8f9fa;
+
+  i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 0.9rem;
+  }
+}
+
+// Responsive adjustments - show more cards on larger screens
+@media (min-width: 992px) {
+  .row-cols-lg-3 > * {
+    flex: 0 0 auto;
+    width: 33.333333%;
+  }
+}
+
+
+
+/*
+// Enhanced styling with Bootstrap customizations
+
+// Card styling - smaller and more compact
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .card-title {
+    font-weight: 600;
+    font-size: 1rem;
+  }
+}
+
+// Update the image container styling for better clarity
+.image-container {
+  height: 220px; // Increased from 180px for better visibility
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 0.5rem;
+
+  .carousel {
+    height: 100%;
+  }
+
+  .carousel-item {
+    height: 100%;
+    background-color: #f8f9fa; // Light background for images
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain; // Changed from cover to contain to show full image
+      object-position: center;
+      padding: 10px; // Add some padding around the image
+    }
+  }
+
+  // Make carousel controls more visible
+  .carousel-control-prev, .carousel-control-next {
+    width: 15%;
+    background: rgba(0, 0, 0, 0.2);
+    opacity: 0.8;
+    height: 100%;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.4);
+      opacity: 1;
+    }
+
+    .carousel-control-prev-icon, .carousel-control-next-icon {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+
+  // Add a subtle border to the image container
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+// List group styling - more compact
+.list-group-item {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+
+  strong {
+    font-weight: 600;
+    margin-right: 0.25rem;
+  }
+
+  i {
+    font-size: 0.8rem;
+  }
+}
+
+// Status colors
+.status-available {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.status-pending {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.status-sold {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.status-expired {
+  background-color: #e2e3e5;
+  color: #383d41;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+// Price tag styling - more compact
+.price-tag {
+  background-color: #f8f9fa;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  text-align: center;
+
+  h5 {
+    margin-bottom: 0;
+    color: #28a745;
+    font-weight: 600;
+  }
+}
+
+// Modal styling - Fixed transparency issues
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .modal-dialog {
+    width: 100%;
+    max-width: 500px;
+    margin: 1.75rem auto;
+    z-index: 1051;
+  }
+
+  .modal-content {
+    background-color: #fff;
+    border-radius: 0.3rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  }
+
+  .modal-header {
+    border-top-left-radius: 0.3rem;
+    border-top-right-radius: 0.3rem;
+  }
+}
+
+// Toast styling
+.toast {
+  min-width: 300px;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+
+  &.show {
+    opacity: 1;
+  }
+
+  .toast-header {
+    padding: 0.5rem 0.75rem;
+
+    .btn-close {
+      margin-left: auto;
+    }
+  }
+}
+
+// Pagination styling
+.pagination {
+  .page-link {
+    color: #007bff;
+    border-color: #dee2e6;
+
+    &:hover {
+      background-color: #e9ecef;
+    }
+  }
+
+  .page-item.disabled .page-link {
+    color: #6c757d;
+  }
+}
+
+// Loading spinner
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+// Form styling
+.form-control:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+// Responsive adjustments - show more cards on larger screens
+@media (min-width: 992px) {
+  .row-cols-lg-3 > * {
+    flex: 0 0 auto;
+    width: 33.333333%;
+  }
+}
+
+
+// Update the price item styling
+.price-item {
+  .text-success {
+    font-size: 1.1rem;
+  }
+
+  i.fas.fa-dollar-sign {
+    font-size: 0.9rem;
+  }
+}
+// Add styling for no-image placeholder
+.no-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background-color: #f8f9fa;
+
+  i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 0.9rem;
+  }
+}
+*/

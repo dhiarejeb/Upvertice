@@ -27,7 +27,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +40,7 @@ public class SupplierOfferService {
     private final SponsorAdRepository sponsorAdRepository;
     private final SupplierTransactionRepository suppliertransactionRepository;
     private final CloudinaryService  cloudinaryService;
+    private final SupplierTransactionMapper supplierTransactionMapper;
 
     @Cacheable(value = "supplierOffers", key = "'all:' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public PageResponse<SupplierOfferResponse> getAllSupplierOffers(Pageable pageable) {
@@ -157,7 +161,7 @@ public class SupplierOfferService {
         transaction.setSponsorship(sponsorship);
 //        transaction.setProofs(proofUrls);  // Store uploaded proof URLs
         SupplierTransaction savedTransaction = suppliertransactionRepository.save(transaction);
-        return SupplierTransactionMapper.toSupplierTransactionResponse(savedTransaction);
+        return supplierTransactionMapper.toSupplierTransactionResponse(savedTransaction);
 
     }
 
@@ -184,7 +188,7 @@ public class SupplierOfferService {
         SupplierTransaction updatedTransaction = suppliertransactionRepository.save(transaction);
 
         // Convert to response DTO
-        return SupplierTransactionMapper.toSupplierTransactionResponse(updatedTransaction);
+        return supplierTransactionMapper.toSupplierTransactionResponse(updatedTransaction);
     }
 
 }

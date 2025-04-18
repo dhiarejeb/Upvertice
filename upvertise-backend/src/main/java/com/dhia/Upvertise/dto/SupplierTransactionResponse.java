@@ -5,6 +5,7 @@ import com.dhia.Upvertise.models.supplier.SupplierTransactionStatus;
 import java.util.List;
 
 public record SupplierTransactionResponse(
+        //with sponsorship
         Integer id,
         String userId,
         SupplierOfferResponse supplierOffer,
@@ -14,6 +15,7 @@ public record SupplierTransactionResponse(
         Double percentage,
         List<String> proofs,
         List<String> locations,
-        SponsorshipLightsResponse sponsorship
+        SponsorshipLightsResponse sponsorship,
+        Double discount
 
 ) {}

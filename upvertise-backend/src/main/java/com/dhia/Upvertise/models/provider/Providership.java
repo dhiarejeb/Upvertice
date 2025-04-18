@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -25,10 +26,6 @@ public class Providership extends BaseEntity {
 
     @Column(name = "user_id")
     private String userId;
-
-    //@ManyToOne()
-    //@JoinColumn(name = "provider_id", nullable = false)
-    //private Provider provider;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -57,4 +54,10 @@ public class Providership extends BaseEntity {
 
     @Column(name = "has_print_machine", nullable = false)
     private Boolean hasPrintMachine;
+
+    @ElementCollection(targetClass = ProvidedProductType.class)
+    @CollectionTable(name = "providership_product_types", joinColumns = @JoinColumn(name = "providership_id"))
+    @Column(name = "product_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Set<ProvidedProductType> providedProductTypes;
 }

@@ -1,0 +1,71 @@
+<div *ngIf="sponsorship" class="p-6 space-y-8">
+  <!-- Sponsorship Header -->
+  <div class="border-b pb-4">
+    <h2 class="text-2xl font-bold text-gray-800">Sponsorship: {{ sponsorship?.sponsorOffer?.title }}</h2>
+    <p class="text-sm text-gray-500">Status: <strong>{{ sponsorship.status }}</strong></p>
+    <p class="text-sm text-gray-500">Created: {{ sponsorship.createdDate | date:'medium' }}</p>
+    <div class="mt-2 text-sm text-gray-600">
+      <p>Category: {{ sponsorship?.sponsorOffer?.category}}</p>
+      <p>Product Type: {{ sponsorship?.sponsorOffer?.productType }}</p>
+      <p>Price: {{ sponsorship?.sponsorOffer?.price | currency }}</p>
+    </div>
+  </div>
+
+  <!-- Providers Section -->
+  <div>
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Production Progress</h3>
+    <div *ngFor="let p of sponsorship.providerships" class="bg-white shadow rounded-lg p-4 mb-4">
+      <div class="flex justify-between items-center mb-2">
+        <p class="text-sm text-gray-700">Location: {{ p.location }}</p>
+        <span
+          class="text-xs px-2 py-1 rounded-full"
+          [ngClass]="p.hasPrintMachine ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'">
+          {{ p.hasPrintMachine ? 'Has Print Machine' : 'No Print Machine' }}
+        </span>
+      </div>
+      <p class="text-sm text-gray-500 mb-1">Status: {{ p.status }}</p>
+      <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+        <div
+          class="bg-blue-600 h-3 rounded-full"
+          [style.width.%]="getProviderProgress(p)">
+        </div>
+      </div>
+      <p class="text-xs text-gray-500">Progress: {{ getProviderProgress(p) }}%</p>
+      <div class="mt-2">
+        <div class="flex flex-wrap gap-2">
+          <img
+            *ngFor="let img of p.proofDocs"
+            [src]="img"
+            class="w-24 h-24 object-cover rounded shadow" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supplier Transactions Section -->
+  <div>
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Sales Analytics</h3>
+    <div *ngFor="let tx of sponsorship.supplierTransactions" class="bg-white shadow rounded-lg p-4 mb-4 space-y-2">
+      <p class="text-sm text-gray-700 font-medium">Offer: {{ tx.supplierOffer?.title }}</p>
+      <p class="text-sm text-gray-500">Quantity Sold: {{ tx.quantitySold }} / {{ tx.supplierOffer?.quantityAvailable }}</p>
+      <div class="w-full bg-gray-200 rounded-full h-3">
+        <div
+          class="bg-green-500 h-3 rounded-full"
+          [style.width.%]="getSupplierProgress(tx)">
+        </div>
+      </div>
+      <p class="text-xs text-gray-500">Progress: {{ getSupplierProgress(tx) }}%</p>
+      <p class="text-sm text-gray-500">Relative Price: {{ tx.relativePrice | currency }}</p>
+      <p class="text-sm text-gray-500">Discount: {{ tx.discount }}%</p>
+
+      <div class="mt-2">
+        <div class="flex flex-wrap gap-2">
+          <img
+            *ngFor="let img of tx.proofs"
+            [src]="img"
+            class="w-24 h-24 object-cover rounded shadow" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

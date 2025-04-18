@@ -10,8 +10,13 @@ export class KeycloakService {
 
   private _profile: UserProfile | undefined;
   private _keycloak: Keycloak | undefined;
+  private _isBrowser: boolean;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: object) {}
+
+  constructor(@Inject(PLATFORM_ID) private platformId: string) {
+    this._isBrowser = isPlatformBrowser(this.platformId);
+
+  }
 
   get keycloak() {
     if (!this._keycloak && isPlatformBrowser(this.platformId)) {
@@ -40,22 +45,54 @@ export class KeycloakService {
     }
   }
 
-
-
   get profile(): UserProfile | undefined {
     return this._profile;
   }
 
 
 
-  login() {
-    return this.keycloak.login();
-  }
 
-  logout() {
+
+  login() {
+     return this.keycloak.login();
+   }
+
+
+  // @ts-ignore
+  // login() {
+  //   if (this._isBrowser && this._keycloak) {
+  //     return this._keycloak.login({ redirectUri: window.location.origin + '/advertiser/welcome' });
+  //   }
+  //   console.warn("Login called outside of browser or before Keycloak init");
+  // }
+
+   logout() {
     // this.keycloak.accountManagement();
     return this.keycloak.logout({redirectUri: 'http://localhost:4200'});
+   }
+
+  // // @ts-ignore
+  // logout() {
+  //   if (this._isBrowser && this._keycloak) {
+  //     return this._keycloak.logout({ redirectUri: window.location.origin });
+  //   }
+  //   console.warn("Logout called outside of browser or before Keycloak init");
+  // }
+
+  getUserRoles(): string[] {
+    return this.keycloak?.realmAccess?.roles || [];
   }
+
+  hasRole(role: string): boolean {
+    return this.getUserRoles().includes(role);
+  }
+
+
+  isTokenExpired(): boolean {
+    return this.keycloak ? this.keycloak.isTokenExpired() : true;
+  }
+
+
 
 
 

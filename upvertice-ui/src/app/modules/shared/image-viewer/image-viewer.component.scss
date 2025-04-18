@@ -1,0 +1,10 @@
+.image-viewer {
+  .modal-body {
+    background-color: #f8f9fa;
+
+    img {
+      max-height: 70vh;
+      object-fit: contain;
+    }
+  }
+}

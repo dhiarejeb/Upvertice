@@ -3,3 +3,52 @@
 
 @import "bootstrap/dist/css/bootstrap.min.css";
 @import "@fortawesome/fontawesome-free/css/all.min.css";
+
+// Global styles (styles.scss)
+$primary-color: #6f4f28;   // Caramel Brown
+$secondary-color: #f5e0c3; // White-Cramel
+$accent-color: #d4af37;    // Accent gold for highlighting
+
+body {
+  background-color: $secondary-color;
+  color: $primary-color;
+  font-family: Arial, sans-serif;
+}
+
+button {
+  background-color: $primary-color;
+  color: white;
+}
+
+.mat-toolbar {
+  background-color: $primary-color;
+  color: white;
+}
+/* Add snackbar styles */
+.app-snackbar {
+  .mat-simple-snackbar {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+
+    button {
+      color: rgba(255, 255, 255, 0.8);
+      margin-left: 16px;
+    }
+  }
+}
+
+.success-snackbar {
+  background-color: #4CAF50 !important;
+  color: white !important;
+}
+
+.error-snackbar {
+  background-color: #f44336 !important;
+  color: white !important;
+}
+
+.info-snackbar {
+  background-color: #2196F3 !important;
+  color: white !important;
+}

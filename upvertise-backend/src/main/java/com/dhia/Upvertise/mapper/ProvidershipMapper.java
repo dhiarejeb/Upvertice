@@ -3,10 +3,15 @@ package com.dhia.Upvertise.mapper;
 import com.dhia.Upvertise.dto.*;
 import com.dhia.Upvertise.models.provider.Providership;
 import com.dhia.Upvertise.models.sponsorship.Sponsorship;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 
 
-
+@Component
+@RequiredArgsConstructor
 public class ProvidershipMapper {
+
 
 
     /**
@@ -15,7 +20,7 @@ public class ProvidershipMapper {
      * @param providership the entity to map
      * @return the mapped response record
      */
-    public static ProvidershipResponse toProvidershipResponse(Providership providership) {
+    public ProvidershipResponse toProvidershipResponse(Providership providership) {
         if (providership == null) {
             return null;
         }

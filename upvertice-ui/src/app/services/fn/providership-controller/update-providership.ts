@@ -14,8 +14,8 @@ import { ProvidershipResponse } from '../../models/providership-response';
 export interface UpdateProvidership$Params {
   id: number;
       body?: {
-'request': ProvidershipRequest;
-'images': Array<Blob>;
+'request'?: ProvidershipRequest;
+'images'?: Array<Blob>;
 }
 }
 

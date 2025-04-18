@@ -9,12 +9,11 @@ import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
 import { SupplierTransactionResponse } from '../../models/supplier-transaction-response';
-import { SupplierTransactionUpdateRequest } from '../../models/supplier-transaction-update-request';
 
 export interface UpdateSupplierTransaction$Params {
   transactionId: number;
       body?: {
-'request': SupplierTransactionUpdateRequest;
+'request': string;
 'images': Array<Blob>;
 }
 }

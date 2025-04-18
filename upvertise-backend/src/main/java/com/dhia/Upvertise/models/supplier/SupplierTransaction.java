@@ -2,6 +2,7 @@ package com.dhia.Upvertise.models.supplier;
 
 import com.dhia.Upvertise.models.common.BaseEntity;
 import com.dhia.Upvertise.models.sponsorship.Sponsorship;
+import com.dhia.Upvertise.models.sponsorship.SponsorshipStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SupplierTransaction extends BaseEntity {
-
+    @Enumerated(EnumType.STRING)
     private SupplierTransactionStatus supplierTransactionStatus;
 
     @Column(name = "user_id")

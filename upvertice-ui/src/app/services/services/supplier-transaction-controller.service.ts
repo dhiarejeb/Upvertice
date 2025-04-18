@@ -11,8 +11,6 @@ import { BaseService } from '../base-service';
 import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
-import { applyDiscount } from '../fn/supplier-transaction-controller/apply-discount';
-import { ApplyDiscount$Params } from '../fn/supplier-transaction-controller/apply-discount';
 import { deleteSupplierTransaction } from '../fn/supplier-transaction-controller/delete-supplier-transaction';
 import { DeleteSupplierTransaction$Params } from '../fn/supplier-transaction-controller/delete-supplier-transaction';
 import { getSupplierTransactions } from '../fn/supplier-transaction-controller/get-supplier-transactions';
@@ -50,31 +48,6 @@ export class SupplierTransactionControllerService extends BaseService {
   updateSupplierTransaction(params: UpdateSupplierTransaction$Params, context?: HttpContext): Observable<SupplierTransactionResponse> {
     return this.updateSupplierTransaction$Response(params, context).pipe(
       map((r: StrictHttpResponse<SupplierTransactionResponse>): SupplierTransactionResponse => r.body)
-    );
-  }
-
-  /** Path part for operation `applyDiscount()` */
-  static readonly ApplyDiscountPath = '/supplier-transactions/{transactionId}/apply-discount';
-
-  /**
-   * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `applyDiscount()` instead.
-   *
-   * This method doesn't expect any request body.
-   */
-  applyDiscount$Response(params: ApplyDiscount$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
-    return applyDiscount(this.http, this.rootUrl, params, context);
-  }
-
-  /**
-   * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `applyDiscount$Response()` instead.
-   *
-   * This method doesn't expect any request body.
-   */
-  applyDiscount(params: ApplyDiscount$Params, context?: HttpContext): Observable<void> {
-    return this.applyDiscount$Response(params, context).pipe(
-      map((r: StrictHttpResponse<void>): void => r.body)
     );
   }
 

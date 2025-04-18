@@ -23,7 +23,11 @@ public record SupplierOfferRequest(
         @FutureOrPresent(message = "End date must be in the present or future") LocalDate endDate,
 
         @NotNull(message = "Status is required") SupplierOfferStatus status,
-
         List<@NotNull(message = "SponsorAd IDs cannot be null") Integer> sponsorAdIds
+
+
+
+
+
 ) {
 }

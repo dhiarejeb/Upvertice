@@ -6,6 +6,7 @@ import java.util.List;
 
 @Builder
 public record SponsorOfferResponse(
+        Integer id,
         String title,
         String description,
         Double price,

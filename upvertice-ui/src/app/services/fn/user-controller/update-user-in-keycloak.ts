@@ -8,10 +8,11 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
+import { UserUpdateRequest } from '../../models/user-update-request';
 
 export interface UpdateUserInKeycloak$Params {
       body?: {
-'userUpdateRequest': string;
+'userUpdateRequest': UserUpdateRequest;
 'profilePhoto': Blob;
 }
 }

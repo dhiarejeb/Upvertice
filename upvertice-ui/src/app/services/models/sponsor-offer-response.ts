@@ -6,6 +6,7 @@ export interface SponsorOfferResponse {
   category?: string;
   description?: string;
   explainImages?: Array<string>;
+  id?: number;
   numberAds?: number;
   price?: number;
   productQuantity?: number;

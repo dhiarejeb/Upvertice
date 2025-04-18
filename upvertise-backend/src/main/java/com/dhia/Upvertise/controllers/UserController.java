@@ -52,35 +52,18 @@ public class UserController {
                     .body("Error updating user: " + e.getMessage());
         }
     }
-//    @PutMapping("/update-in-keycloak")
-//    public ResponseEntity<?> updateUserInKeycloak(@RequestBody UserUpdateRequest userUpdateRequest) {
-//        try {
-//            keycloakService.updateUserInKeycloak(userUpdateRequest);
-//            return ResponseEntity.ok("User successfully updated in Keycloak.");
-//        } catch (Exception e) {
-//            log.error("Failed to update user in Keycloak: {}", e.getMessage());
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                    .body("Error updating user in Keycloak: " + e.getMessage());
-//        }
-//    }
+
 @PutMapping(value = "/update-in-keycloak", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 public ResponseEntity<?> updateUserInKeycloak(
-        @RequestPart("userUpdateRequest") String userUpdateRequestString,
-        @RequestPart("profilePhoto") MultipartFile profilePhoto) {
-    try {
-        // Map the JSON string to UserUpdateRequest
-        ObjectMapper objectMapper = new ObjectMapper();
-        UserUpdateRequest userUpdateRequest = objectMapper.readValue(userUpdateRequestString, UserUpdateRequest.class);
+        @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
+        @RequestPart("profilePhoto") MultipartFile profilePhoto) throws IOException {
+
 
         // Call the service to update the user in Keycloak
         keycloakService.updateUserInKeycloak(userUpdateRequest, profilePhoto);
 
         return ResponseEntity.ok("User successfully updated in Keycloak.");
-    } catch (Exception e) {
-        log.error("Failed to update user in Keycloak: {}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error updating user in Keycloak: " + e.getMessage());
-    }
+
 }
 
     @DeleteMapping("/delete/{keycloakId}")

@@ -30,6 +30,14 @@ public class SponsorshipController {
         return ResponseEntity.ok(sponsorshipService.getAllSponsorships(connectedUser, page, size));
     }
 
+    @GetMapping("/{sponsorshipId}")
+    @PreAuthorize("hasAnyRole('Admin','Advertiser')")
+    public ResponseEntity<SponsorshipResponse> getSponsorshipById(
+            Authentication connectedUser,
+            @PathVariable Integer sponsorshipId) {
+        return ResponseEntity.ok(sponsorshipService.getSponsorshipById(connectedUser, sponsorshipId));
+    }
+
     @GetMapping("/status/{status}")
     @PreAuthorize("hasAnyRole('Admin','Advertiser')")
     public ResponseEntity<PageResponse<SponsorshipResponse>> getSponsorshipsByStatus(
@@ -48,6 +56,7 @@ public class SponsorshipController {
     public ResponseEntity<?> deleteSponsorship(
             @PathVariable Integer sponsorshipId,
             Authentication connectedUser) {
+
         sponsorshipService.deleteSponsorship(sponsorshipId, connectedUser);
         return ResponseEntity.ok("Sponsorship deleted successfully");
     }

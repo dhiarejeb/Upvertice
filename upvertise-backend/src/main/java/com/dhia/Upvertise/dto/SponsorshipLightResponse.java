@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 public record SponsorshipLightResponse(
+        //dto having no providership data
         Integer id,
         SponsorshipStatus status,
         String userId,

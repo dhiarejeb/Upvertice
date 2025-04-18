@@ -17,6 +17,7 @@ public record SupplierOfferResponse(
         LocalDate endDate,
         SupplierOfferStatus status,
         String imageUrl,
-        List<SponsorAd> sponsorAds
+        List<SponsorAdResponse> sponsorAds
+
 ) {
 }

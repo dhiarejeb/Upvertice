@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record ProvidershipLightResponse(
+        //dto having no sponsorship data no supplierTransaction data
+
         Integer id,
         String userId,
         ProvidershipStatus status,

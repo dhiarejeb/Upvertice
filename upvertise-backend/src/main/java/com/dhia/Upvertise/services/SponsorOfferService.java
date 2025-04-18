@@ -33,6 +33,7 @@ public class SponsorOfferService {
     private final SponsorAdRepository sponsorAdRepository;
     private final CloudinaryService cloudinaryService;
     private final KafkaProducerService kafkaProducerService;
+    private final SponsorOfferMapper sponsorOfferMapper;
 
     @Cacheable(value = "sponsorOffers", key = "'status:' + #status + '-' + #pageable.pageNumber")
     public PageResponse<SponsorOfferResponse> getSponsorOffersByStatus(Pageable pageable, SponsorOfferStatus status) {
@@ -41,7 +42,7 @@ public class SponsorOfferService {
         List<SponsorOfferResponse> sponsorOfferResponses = page
                 .getContent()
                 .stream()
-                .map(sponsorOffer -> SponsorOfferMapper.toResponseWithImagesUrls(sponsorOffer, cloudinaryService))
+                .map(sponsorOffer -> sponsorOfferMapper.toResponseWithImagesUrls(sponsorOffer))
                 .collect(Collectors.toList());
 
         return new PageResponse<>(
@@ -67,7 +68,7 @@ public class SponsorOfferService {
         List<SponsorOfferResponse> sponsorOfferResponses = sponsorOffersPage
                 .getContent()
                 .stream()
-                .map(sponsorOffer -> SponsorOfferMapper.toResponseWithImagesUrls(sponsorOffer, cloudinaryService))
+                .map(sponsorOffer -> sponsorOfferMapper.toResponseWithImagesUrls(sponsorOffer))
                 .collect(Collectors.toList());
         return new PageResponse<>(
                 sponsorOfferResponses,
@@ -236,13 +237,14 @@ public class SponsorOfferService {
 
 
 
+
         // Update SponsorOffer status if provided
         if (request.status() != null) sponsorOffer.setStatus(request.status());
 
         // Save the updated SponsorOffer
         sponsorOfferRepository.save(sponsorOffer);
 
-        return SponsorOfferMapper.toSponsorOfferResponse(sponsorOffer);
+        return sponsorOfferMapper.toResponseWithImagesUrls(sponsorOffer);
     }
 
     @CacheEvict(value = "sponsorOffers", allEntries = true)

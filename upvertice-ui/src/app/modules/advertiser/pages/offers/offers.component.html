@@ -1,0 +1,304 @@
+<div class="container mt-4">
+  <div class="row mb-4">
+    <div class="col">
+      <h2><i class="fas fa-tags"></i> Offers</h2>
+    </div>
+  </div>
+
+  <!-- Loading spinner -->
+  <div *ngIf="loading" class="text-center my-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Display a message if no offers are available -->
+  <div *ngIf="!loading && sponsorOffers.length === 0" class="alert alert-info">
+    <i class="fas fa-info-circle"></i> No offers available.
+  </div>
+
+  <!-- Update the card structure to be more compact -->
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <div *ngFor="let offer of sponsorOffers" class="col">
+      <div class="card h-100 shadow-sm">
+        <!-- Card header -->
+        <div class="card-header bg-light py-2">
+          <h5 class="card-title mb-0 fs-6">{{ offer.title }}</h5>
+        </div>
+
+        <!--&lt;!&ndash; Images carousel if available &ndash;&gt;
+        <div *ngIf="offer.explainImages && offer.explainImages.length > 0" class="image-container">
+          <div id="carousel-{{offer.id}}" class="carousel slide" data-bs-ride="false">
+            <div class="carousel-inner">
+              <div *ngFor="let image of offer.explainImages; let i = index"
+                   [class.active]="i === 0"
+                   class="carousel-item">
+                <img [src]="image" class="d-block w-100 card-img-top" alt="Offer Image">
+              </div>
+            </div>
+            <button class="carousel-control-prev" type="button" (click)="prevImage(offer.id!)">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" (click)="nextImage(offer.id!)">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Next</span>
+            </button>
+          </div>
+        </div>-->
+        <!-- Update the image container in the card -->
+        <div class="image-container">
+          <div *ngIf="offer.explainImages && offer.explainImages.length > 0" class="carousel slide" [id]="'carousel-' + offer.id">
+            <div class="carousel-inner">
+              <div *ngFor="let image of offer.explainImages; let i = index"
+                   [class.active]="i === 0"
+                   class="carousel-item">
+                <img [src]="image" class="d-block" alt="Offer Image">
+              </div>
+            </div>
+            <button class="carousel-control-prev" type="button" (click)="prevImage(offer.id!)" *ngIf="offer.explainImages && offer.explainImages.length > 1">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" (click)="nextImage(offer.id!)" *ngIf="offer.explainImages && offer.explainImages.length > 1">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Next</span>
+            </button>
+          </div>
+          <!-- Fallback if no images -->
+          <div *ngIf="!offer.explainImages || offer.explainImages.length === 0" class="no-image-placeholder">
+            <i class="fas fa-image text-muted"></i>
+            <p class="text-muted">No image available</p>
+          </div>
+        </div>
+
+        <!-- Card body with vertical layout -->
+        <div class="card-body p-2">
+          <ul class="list-group list-group-flush mb-2">
+            <li class="list-group-item py-1 px-2">
+              <i class="fas fa-folder text-primary me-2"></i>
+              <strong>Category:</strong> {{ offer.category }}
+            </li>
+            <li class="list-group-item py-1 px-2">
+              <i class="fas fa-align-left text-primary me-2"></i>
+              <strong>Description:</strong> {{ offer.description }}
+            </li>
+            <li class="list-group-item py-1 px-2">
+              <i class="fas fa-map-marker-alt text-primary me-2"></i>
+              <strong>Sales Area:</strong> {{ offer.salesArea }}
+            </li>
+            <li class="list-group-item py-1 px-2">
+              <i class="fas fa-tag text-primary me-2"></i>
+              <strong>Product Type:</strong> {{ offer.productType }}
+            </li>
+            <li class="list-group-item py-1 px-2">
+              <i class="fas fa-box text-primary me-2"></i>
+              <strong>Product Quantity:</strong> {{ offer.productQuantity }}
+            </li>
+            <li class="list-group-item py-1 px-2">
+              <i class="fas fa-chart-line text-primary me-2"></i>
+              <strong>Status:</strong>
+              <span [ngClass]="getStatusClass(offer.status!)">{{ offer.status }}</span>
+            </li>
+            <li class="list-group-item py-1 px-2">
+              <i class="fas fa-ad text-primary me-2"></i>
+              <strong>Number of Ads:</strong> {{ offer.numberAds }}
+            </li>
+            <li class="list-group-item price-item">
+              <i class="fas fa-dollar-sign text-primary me-2"></i>
+              <strong>Price:</strong>
+              <span class="text-success fw-bold">{{ offer.price | currency }}</span>
+            </li>
+          </ul>
+
+<!--          <div class="price-tag mb-2">-->
+<!--            <h5 class="fs-6"><i class="fas fa-dollar-sign"></i> {{ offer.price | currency }}</h5>-->
+<!--          </div>-->
+        </div>
+
+
+        <!-- Card footer with action buttons -->
+        <!-- Card footer with action buttons -->
+        <div class="card-footer bg-white border-top-0">
+          <div class="d-grid gap-2">
+            <!-- Show Choose button if this offer doesn't have an active sponsorship -->
+            <button *ngIf="!hasActiveSponsorship(offer.id!)"
+                    class="btn btn-primary"
+                    (click)="onChoose(offer)">
+              <i class="fas fa-check-circle me-2"></i> Choose
+            </button>
+
+            <!-- Show Undo button if this offer has an active sponsorship -->
+            <button *ngIf="hasActiveSponsorship(offer.id!)"
+                    class="btn btn-danger"
+                    (click)="onUndo(offer.id!, getSponsorshipId(offer.id!))">
+              <i class="fas fa-undo me-2"></i> Undo Sponsorship
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ad form for the selected offer -->
+  <!-- Ad form for the selected offer - Fixed z-index and transparency issues -->
+  <!-- Ad form for the selected offer -->
+  <div *ngIf="selectedOfferId" class="modal-overlay">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title"><i class="fas fa-ad me-2"></i>Create Sponsorship Ad</h5>
+          <button type="button" class="btn-close" (click)="onCancelForm()"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="adForm" (ngSubmit)="onSubmitAd(selectedOfferId)">
+            <div class="mb-3">
+              <label for="title" class="form-label">Ad Title</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-heading"></i></span>
+                <input id="title" formControlName="title" type="text" class="form-control" placeholder="Enter ad title">
+              </div>
+              <div *ngIf="adForm.get('title')?.invalid && adForm.get('title')?.touched" class="text-danger small mt-1">
+                Title is required
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="content" class="form-label">Ad Content</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-align-left"></i></span>
+                <textarea id="content" formControlName="content" class="form-control" rows="4" placeholder="Enter ad content"></textarea>
+              </div>
+              <div *ngIf="adForm.get('content')?.invalid && adForm.get('content')?.touched" class="text-danger small mt-1">
+                Content is required
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="adImage" class="form-label">Ad Image (Optional)</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-image"></i></span>
+                <input id="adImage" type="file" class="form-control" (change)="onImageSelected($event)" accept="image/*">
+              </div>
+              <div class="form-text">Upload an image for your ad (optional)</div>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-success" [disabled]="adForm.invalid || isSubmitting">
+              <span *ngIf="!isSubmitting">
+                <i class="fas fa-paper-plane me-2"></i> Submit Ad
+              </span>
+                <span *ngIf="isSubmitting">
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Processing...
+              </span>
+              </button>
+              <button type="button" class="btn btn-outline-secondary" (click)="onCancelForm()">
+                <i class="fas fa-times me-2"></i> Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification for success/error messages -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="successToast" class="toast" [class.show]="showToast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header" [ngClass]="toastType === 'success' ? 'bg-success text-white' : 'bg-danger text-white'">
+        <i [class]="toastType === 'success' ? 'fas fa-check-circle me-2' : 'fas fa-exclamation-circle me-2'"></i>
+        <strong class="me-auto">{{ toastTitle }}</strong>
+        <button type="button" class="btn-close btn-close-white" (click)="hideToast()"></button>
+      </div>
+      <div class="toast-body">
+        {{ toastMessage }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination Controls -->
+  <nav aria-label="Page navigation" class="my-4">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" [class.disabled]="page === 0">
+        <a class="page-link" href="javascript:void(0)" (click)="onPageChange(page - 1)">
+          <i class="fas fa-chevron-left"></i> Previous
+        </a>
+      </li>
+      <li class="page-item disabled">
+        <span class="page-link">Page {{ page + 1 }} of {{ totalPages || 1 }}</span>
+      </li>
+      <li class="page-item" [class.disabled]="page + 1 >= totalPages">
+        <a class="page-link" href="javascript:void(0)" (click)="onPageChange(page + 1)">
+          Next <i class="fas fa-chevron-right"></i>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+
+<!--
+<div class="offer-list">
+  <h2>Offers</h2>
+
+  &lt;!&ndash; Display a message if no offers are available &ndash;&gt;
+  <div *ngIf="sponsorOffers.length === 0">No offers available.</div>
+
+  &lt;!&ndash; Loop through the offers and display details &ndash;&gt;
+  <div *ngFor="let offer of sponsorOffers" class="offer-card">
+    <h3>{{ offer.title }}</h3>
+    <p><strong>Category:</strong> {{ offer.category }}</p>
+    <p><strong>Description:</strong> {{ offer.description }}</p>
+    <p><strong>Sales Area:</strong> {{ offer.salesArea }}</p>
+    <p><strong>Product Type:</strong> {{ offer.productType }}</p>
+    <p><strong>Product Quantity:</strong> {{ offer.productQuantity }}</p>
+    <p><strong>Status:</strong> {{ offer.status }}</p>
+    <p><strong>Price:</strong> {{ offer.price | currency }}</p>
+    <p><strong>Number of Ads:</strong> {{ offer.numberAds }}</p>
+
+    &lt;!&ndash; Show images if available &ndash;&gt;
+    <div *ngIf="offer.explainImages && offer.explainImages.length > 0">
+      <h4>Offer Images</h4>
+      <div class="offer-images">
+        <img *ngFor="let image of offer.explainImages" [src]="image" alt="Offer Image" class="offer-image" />
+      </div>
+    </div>
+
+    &lt;!&ndash; Display buttons if there's an active sponsorship for this offer &ndash;&gt;
+    <button *ngIf="offer.id !== currentSponsorshipOfferId && !createdSponsorshipId" (click)="onChoose(offer)">Choose</button>
+    <button *ngIf="offer.id === currentSponsorshipOfferId && createdSponsorshipId" (click)="onUndo()">Undo Sponsorship</button>
+
+    &lt;!&ndash; Ad form for the selected offer &ndash;&gt;
+    <div *ngIf="offer.id === selectedOfferId">
+      <h4>Create Sponsorship Ad</h4>
+      <form [formGroup]="adForm" (ngSubmit)="onSubmitAd(offer.id)">
+        <div>
+          <label for="title">Ad Title</label>
+          <input id="title" formControlName="title" type="text" />
+        </div>
+        <div>
+          <label for="content">Ad Content</label>
+          <textarea id="content" formControlName="content"></textarea>
+        </div>
+        <div>
+          <div>
+            <label for="adImage">Ad Image</label>
+            <input id="adImage" type="file" (change)="onImageSelected($event)" />
+          </div>
+        </div>
+        <button type="submit" [disabled]="adForm.invalid">Submit Ad</button>
+        <button type="button" (click)="onCancelForm()">Cancel</button>
+      </form>
+    </div>
+  </div>
+
+  &lt;!&ndash; Pagination Controls &ndash;&gt;
+  <div class="pagination">
+    <button [disabled]="page === 0" (click)="onPageChange(page - 1)">Previous</button>
+    <span>Page {{ page + 1 }} of {{ totalPages }}</span>
+    <button [disabled]="page + 1 >= totalPages" (click)="onPageChange(page + 1)">Next</button>
+  </div>
+</div>
+
+-->

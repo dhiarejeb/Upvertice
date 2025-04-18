@@ -8,10 +8,11 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
+import { SponsorOfferRequest } from '../../models/sponsor-offer-request';
 
 export interface CreateSponsorOffer$Params {
       body?: {
-'request': string;
+'request': SponsorOfferRequest;
 'explainImages'?: Array<Blob>;
 }
 }

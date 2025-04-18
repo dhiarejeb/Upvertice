@@ -34,6 +34,7 @@ public class ProvidershipService {
     private final SponsorshipRepository sponsorshipRepository;
 
     private final CloudinaryService cloudinaryService;
+    private final ProvidershipMapper providershipMapper;
 
 
 
@@ -55,7 +56,7 @@ public class ProvidershipService {
         }
 
         List<ProvidershipResponse> content = providershipPage.getContent().stream()
-                .map(ProvidershipMapper::toProvidershipResponse)
+                .map(providershipMapper::toProvidershipResponse)
                 .collect(Collectors.toList());
 
         return PageResponse.<ProvidershipResponse>builder()
@@ -172,7 +173,7 @@ public class ProvidershipService {
         }
 
         providershipRepository.save(providership);
-        return ProvidershipMapper.toProvidershipResponse(providership);
+        return providershipMapper.toProvidershipResponse(providership);
     }
 
     public ProvidershipResponse createProvidership(ProvidershipRequest request , List<MultipartFile> proofFiles, Authentication  connectedUser) {
@@ -186,24 +187,29 @@ public class ProvidershipService {
         providership.setBonusEarned(0.0); // No bonus yet
         providership.setStatus(ProvidershipStatus.PENDING);
         providership.setProvidershipApprovalStatus(ProvidershipApprovalStatus.PENDING);
-        // ✅ Store Proof Docs in Cloudinary
-        List<String> uploadedProofs = uploadProofs(proofFiles);
+        // ✅ Store Proof Docs in Cloudinary (optional)
+        List<String> uploadedProofs = new ArrayList<>();
+        if (proofFiles != null && !proofFiles.isEmpty()) {
+            uploadedProofs = uploadProofs(proofFiles);
+        }
         providership.setProofDocs(uploadedProofs);
         // Add new fields
         providership.setLocation(request.location());
         providership.setHasPrintMachine(request.hasPrintMachine());
+        providership.setProvidedProductTypes(request.providedProductTypes());
 
         // Save it
         providership = providershipRepository.save(providership);
 
         // Convert to DTO and return
-        return ProvidershipMapper.toProvidershipResponse(providership);
+        return providershipMapper.toProvidershipResponse(providership);
     }
 
     // ✅ Upload images to Cloudinary and return URLs
     private List<String> uploadProofs(List<MultipartFile> proofFiles) {
         if (proofFiles == null || proofFiles.isEmpty()) return new ArrayList<>();
         return proofFiles.stream()
+                .filter(file -> !file.isEmpty())
                 .map(cloudinaryService::uploadImage) // Upload each file and get URL
                 .collect(Collectors.toList());
     }

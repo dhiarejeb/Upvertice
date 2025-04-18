@@ -2,8 +2,8 @@ package com.dhia.Upvertise.models.provider;
 
 public enum ProvidershipStatus {
     PENDING,
-    DESIGNING_CUP,
-    PRODUCING_CUP,
+    DESIGNING,
+    PRODUCING,
     PRODUCING_AND_SELLING,
     SELLING,
     COMPLETED
