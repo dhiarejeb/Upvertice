@@ -72,6 +72,8 @@
             <artifactId>keycloak-spring-boot-starter</artifactId>
             <version>20.0.2</version> <!-- Use the latest version -->
         </dependency>
+
+
     </dependencies>
 
 

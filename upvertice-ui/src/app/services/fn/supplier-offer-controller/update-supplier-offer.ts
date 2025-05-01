@@ -8,22 +8,19 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { SupplierOfferRequest } from '../../models/supplier-offer-request';
+import { SupplierOfferMultipartRequest } from '../../models/supplier-offer-multipart-request';
 import { SupplierOfferResponse } from '../../models/supplier-offer-response';
 
 export interface UpdateSupplierOffer$Params {
   id: number;
-      body?: {
-'request': SupplierOfferRequest;
-'newImage': Blob;
-}
+      body?: SupplierOfferMultipartRequest
 }
 
 export function updateSupplierOffer(http: HttpClient, rootUrl: string, params: UpdateSupplierOffer$Params, context?: HttpContext): Observable<StrictHttpResponse<SupplierOfferResponse>> {
-  const rb = new RequestBuilder(rootUrl, updateSupplierOffer.PATH, 'put');
+  const rb = new RequestBuilder(rootUrl, updateSupplierOffer.PATH, 'patch');
   if (params) {
     rb.path('id', params.id, {});
-    rb.body(params.body, 'application/json');
+    rb.body(params.body, 'multipart/form-data');
   }
 
   return http.request(

@@ -58,26 +58,11 @@ export class KeycloakService {
    }
 
 
-  // @ts-ignore
-  // login() {
-  //   if (this._isBrowser && this._keycloak) {
-  //     return this._keycloak.login({ redirectUri: window.location.origin + '/advertiser/welcome' });
-  //   }
-  //   console.warn("Login called outside of browser or before Keycloak init");
-  // }
-
    logout() {
     // this.keycloak.accountManagement();
     return this.keycloak.logout({redirectUri: 'http://localhost:4200'});
    }
 
-  // // @ts-ignore
-  // logout() {
-  //   if (this._isBrowser && this._keycloak) {
-  //     return this._keycloak.logout({ redirectUri: window.location.origin });
-  //   }
-  //   console.warn("Logout called outside of browser or before Keycloak init");
-  // }
 
   getUserRoles(): string[] {
     return this.keycloak?.realmAccess?.roles || [];

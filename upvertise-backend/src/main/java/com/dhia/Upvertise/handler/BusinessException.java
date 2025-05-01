@@ -1,5 +1,8 @@
 package com.dhia.Upvertise.handler;
 
+import lombok.Getter;
+
+@Getter
 public class BusinessException extends RuntimeException {
         private final BusinessErrorCodes errorCode;
 
@@ -13,7 +16,4 @@ public class BusinessException extends RuntimeException {
             this.errorCode = errorCode;
         }
 
-        public BusinessErrorCodes getErrorCode() {
-            return errorCode;
-        }
 }

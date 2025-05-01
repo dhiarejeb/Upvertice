@@ -1,24 +1,32 @@
 package com.dhia.Upvertise.services;
 
+import com.dhia.Upvertise.dto.SponsorshipPatchRequest;
 import com.dhia.Upvertise.dto.SponsorshipResponse;
 import com.dhia.Upvertise.handler.*;
+import com.dhia.Upvertise.mapper.SponsorAdMapper;
 import com.dhia.Upvertise.mapper.SponsorshipMapper;
 import com.dhia.Upvertise.models.common.PageResponse;
+import com.dhia.Upvertise.models.sponsorship.SponsorAd;
 import com.dhia.Upvertise.models.sponsorship.Sponsorship;
 import com.dhia.Upvertise.models.sponsorship.SponsorshipStatus;
+import com.dhia.Upvertise.repositories.SponsorAdRepository;
 import com.dhia.Upvertise.repositories.SponsorshipRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +34,9 @@ import java.util.List;
 public class SponsorshipService {
 
     private final SponsorshipRepository sponsorshipRepository;
+    private final SponsorAdMapper sponsorAdMapper;
+    private final SponsorAdRepository sponsorAdRepository;
+    private final CloudinaryService cloudinaryService;
 
 
 
@@ -113,9 +124,50 @@ public class SponsorshipService {
                 sponsorshipsPage.isLast()
         );
     }
-
-
+    @CacheEvict(value = "sponsorAds", allEntries = true)
     public void deleteSponsorship(Integer sponsorshipId, Authentication connectedUser) {
+        Sponsorship sponsorship = sponsorshipRepository.findById(sponsorshipId)
+                .orElseThrow(() -> new RuntimeException("Sponsorship not found"));
+
+        if (sponsorship.getStatus() != SponsorshipStatus.PENDING &&
+                sponsorship.getStatus() != SponsorshipStatus.REJECTED &&
+                sponsorship.getStatus() != SponsorshipStatus.FINISHED) {
+            throw new IllegalStateException("Only PENDING, REJECTED, or FINISHED sponsorships can be deleted.");
+        }
+
+        boolean isAdmin = connectedUser.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_Admin"));
+
+        boolean isAdvertiser = connectedUser.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_Advertiser"));
+
+        if (!isAdmin && (!isAdvertiser || !sponsorship.getUserId().equals(connectedUser.getName()))) {
+            throw new ForbiddenActionException("You are not authorized to perform this action.");
+        }
+
+        // Detach sponsorAds before deleting them
+        Set<SponsorAd> relatedAds = new HashSet<>(sponsorship.getSponsorAds());
+
+        for (SponsorAd ad : relatedAds) {
+            ad.getSponsorships().remove(sponsorship);           // Remove sponsorship from ad
+        }
+        sponsorship.getSponsorAds().clear();                    // Remove ads from sponsorship
+
+        sponsorshipRepository.save(sponsorship); // Persist the relationship break before deletion
+
+        // Now safely delete the ads if they are orphan
+        for (SponsorAd ad : relatedAds) {
+            if (ad.getSponsorships().isEmpty()) {
+                cloudinaryService.deleteImage(ad.getDesign());
+                sponsorAdRepository.delete(ad);
+            }
+        }
+
+        // Finally, delete the sponsorship
+        sponsorshipRepository.delete(sponsorship);
+    }
+
+/*    public void deleteSponsorship(Integer sponsorshipId, Authentication connectedUser) {
         // Find the sponsorship by ID
         Sponsorship sponsorship = sponsorshipRepository.findById(sponsorshipId)
                 .orElseThrow(() -> new RuntimeException("Sponsorship not found"));
@@ -146,7 +198,7 @@ public class SponsorshipService {
         } else {
             throw new ForbiddenActionException("You are not authorized to perform this action.");
         }
-    }
+    }*/
 
 
     public SponsorshipResponse updateSponsorshipStatus(Authentication connectedUser, Integer sponsorshipId, SponsorshipStatus newStatus) {
@@ -170,6 +222,37 @@ public class SponsorshipService {
         sponsorship.setStatus(newStatus);
         sponsorshipRepository.save(sponsorship);
 
+        return SponsorshipMapper.toSponsorshipResponse(sponsorship);
+    }
+
+
+    @CacheEvict(value = "sponsorAds", allEntries = true)
+    public SponsorshipResponse patchSponsorship(Integer sponsorshipId, SponsorshipPatchRequest request,
+                                                MultipartFile image, Authentication connectedUser) {
+
+        Sponsorship sponsorship = sponsorshipRepository.findById(sponsorshipId)
+                .orElseThrow(() -> new EntityNotFoundException("Sponsorship not found"));
+        boolean isAdmin = connectedUser.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_Admin"));
+
+        if (!isAdmin) {
+            throw new AccessDeniedException("Only Admins can patch sponsorships");
+        }
+
+        // Only update the status if it was provided in the request
+        if (request != null && request.getNewStatus() != null) {
+            sponsorship.setStatus(request.getNewStatus());
+        }
+
+        // Only update SponsorAd fields if request is not null and contains data, or if an image is provided
+        if (request != null && (request.getSponsorAdData() != null || (image != null && !image.isEmpty()))) {
+            for (SponsorAd ad : sponsorship.getSponsorAds()) {
+                sponsorAdMapper.updateSponsorAdFromRequest(request.getSponsorAdData(), ad, image);
+                sponsorAdRepository.save(ad);
+            }
+        }
+
+        sponsorshipRepository.save(sponsorship);
         return SponsorshipMapper.toSponsorshipResponse(sponsorship);
     }
 

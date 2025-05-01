@@ -7,12 +7,12 @@ import { HttpClient } from '@angular/common/http';
 import { ApiConfiguration, ApiConfigurationParams } from './api-configuration';
 
 import { UserControllerService } from './services/user-controller.service';
-import { SupplierTransactionControllerService } from './services/supplier-transaction-controller.service';
 import { SupplierOfferControllerService } from './services/supplier-offer-controller.service';
 import { SponsorAdControllerService } from './services/sponsor-ad-controller.service';
 import { SponsorOfferControllerService } from './services/sponsor-offer-controller.service';
 import { ProvidershipControllerService } from './services/providership-controller.service';
 import { CloudinaryControllerService } from './services/cloudinary-controller.service';
+import { SupplierTransactionControllerService } from './services/supplier-transaction-controller.service';
 import { SponsorshipControllerService } from './services/sponsorship-controller.service';
 
 /**
@@ -24,12 +24,12 @@ import { SponsorshipControllerService } from './services/sponsorship-controller.
   declarations: [],
   providers: [
     UserControllerService,
-    SupplierTransactionControllerService,
     SupplierOfferControllerService,
     SponsorAdControllerService,
     SponsorOfferControllerService,
     ProvidershipControllerService,
     CloudinaryControllerService,
+    SupplierTransactionControllerService,
     SponsorshipControllerService,
     ApiConfiguration
   ],

@@ -1,17 +1,26 @@
 package com.dhia.Upvertise.services;
 
+import com.dhia.Upvertise.dto.UserResponse;
 import com.dhia.Upvertise.dto.UserUpdateRequest;
 import com.dhia.Upvertise.handler.EntityNotFoundException;
 import com.dhia.Upvertise.handler.UserNotFoundException;
+import com.dhia.Upvertise.mapper.UserMapper;
+import com.dhia.Upvertise.models.common.PageResponse;
 import com.dhia.Upvertise.models.user.User;
 import com.dhia.Upvertise.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -20,6 +29,44 @@ public class UserService {
     private final UserRepository userRepository;
     private final CloudinaryService cloudinaryService;
     private final KeycloakService keycloakService;
+    private final UserMapper userMapper;
+
+
+    public PageResponse<UserResponse> getAllUsers(Pageable pageable) {
+        Page<User> userPage = userRepository.findAll(pageable);
+
+        List<UserResponse> content = userPage.getContent()
+                .stream()
+                .map(userMapper::toUserResponse)
+                .collect(Collectors.toList());
+
+        return PageResponse.<UserResponse>builder()
+                .content(content)
+                .number(userPage.getNumber())
+                .size(userPage.getSize())
+                .totalElements(userPage.getTotalElements())
+                .totalPages(userPage.getTotalPages())
+                .first(userPage.isFirst())
+                .last(userPage.isLast())
+                .build();
+    }
+
+    public PageResponse<UserResponse> getUserById(String userId) {
+        User user = userRepository.findByKeycloakId(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<UserResponse> content = List.of(userMapper.toUserResponse(user));
+
+        return PageResponse.<UserResponse>builder()
+                .content(content)
+                .number(0)
+                .size(1)
+                .totalElements(1)
+                .totalPages(1)
+                .first(true)
+                .last(true)
+                .build();
+    }
 
     /**
      * Creates a user in Keycloak first, then stores them in Upvertise.

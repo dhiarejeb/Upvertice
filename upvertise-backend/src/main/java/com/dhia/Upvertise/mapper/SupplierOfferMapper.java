@@ -7,12 +7,17 @@ import com.dhia.Upvertise.models.sponsorship.SponsorAd;
 import com.dhia.Upvertise.models.supplier.SupplierOffer;
 import org.springframework.stereotype.Component;
 
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
 // SupplierOfferMapper
 
 public class SupplierOfferMapper {
+
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
     public static SupplierOfferResponse toResponse(SupplierOffer supplierOffer) {
         return new SupplierOfferResponse(
                 supplierOffer.getId(),
@@ -20,8 +25,8 @@ public class SupplierOfferMapper {
                 supplierOffer.getDescription(),
                 supplierOffer.getQuantityAvailable(),
                 supplierOffer.getPrice(),
-                supplierOffer.getStartDate(),
-                supplierOffer.getEndDate(),
+                supplierOffer.getStartDate().format(formatter),  // Format LocalDate to String
+                supplierOffer.getEndDate().format(formatter),
                 supplierOffer.getStatus(),
                 supplierOffer.getImageUrl(),
                 supplierOffer.getSponsorAds().stream()
@@ -30,7 +35,7 @@ public class SupplierOfferMapper {
                                 ad.getTitle(),
                                 ad.getContent(),
                                 ad.getDesign(),
-                                ad.getDesign_colors()
+                                new ArrayList<>(ad.getDesignColors())
                         ))
                         .toList()
         );
@@ -46,7 +51,8 @@ public class SupplierOfferMapper {
                 .startDate(request.startDate())
                 .endDate(request.endDate())
                 .status(request.status())
-                .sponsorAds(sponsorAds) // Set fetched SponsorAds
+                .sponsorAds(new HashSet<>(sponsorAds)) // Convert List to Set
+                //.sponsorAds(sponsorAds) // Set fetched SponsorAds
                 .build();
         // Image URL will be set after Cloudinary upload
     }
@@ -69,8 +75,8 @@ public class SupplierOfferMapper {
                 supplierOffer.getDescription(),
                 supplierOffer.getQuantityAvailable(),
                 supplierOffer.getPrice(),
-                supplierOffer.getStartDate(),
-                supplierOffer.getEndDate(),
+                supplierOffer.getStartDate().format(formatter), // Convert to String
+                supplierOffer.getEndDate().format(formatter),   // Convert to String
                 supplierOffer.getStatus(),
                 supplierOffer.getImageUrl(),
                 supplierOffer.getSponsorAds().stream()
@@ -79,7 +85,8 @@ public class SupplierOfferMapper {
                                 ad.getTitle(),
                                 ad.getContent(),
                                 ad.getDesign(),
-                                ad.getDesign_colors() // make sure this method name is correct
+                                new ArrayList<>(ad.getDesignColors()) // <-- convert Set to List for the DTO
+                                //ad.getDesignColors() // make sure this method name is correct
                         ))
                         .toList()
         );

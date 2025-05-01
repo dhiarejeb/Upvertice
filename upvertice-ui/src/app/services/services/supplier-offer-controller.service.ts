@@ -60,31 +60,6 @@ export class SupplierOfferControllerService extends BaseService {
     );
   }
 
-  /** Path part for operation `updateSupplierOffer()` */
-  static readonly UpdateSupplierOfferPath = '/supplier-offers/update/{id}';
-
-  /**
-   * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `updateSupplierOffer()` instead.
-   *
-   * This method sends `application/json` and handles request body of type `application/json`.
-   */
-  updateSupplierOffer$Response(params: UpdateSupplierOffer$Params, context?: HttpContext): Observable<StrictHttpResponse<SupplierOfferResponse>> {
-    return updateSupplierOffer(this.http, this.rootUrl, params, context);
-  }
-
-  /**
-   * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `updateSupplierOffer$Response()` instead.
-   *
-   * This method sends `application/json` and handles request body of type `application/json`.
-   */
-  updateSupplierOffer(params: UpdateSupplierOffer$Params, context?: HttpContext): Observable<SupplierOfferResponse> {
-    return this.updateSupplierOffer$Response(params, context).pipe(
-      map((r: StrictHttpResponse<SupplierOfferResponse>): SupplierOfferResponse => r.body)
-    );
-  }
-
   /** Path part for operation `chooseSupplierOffer()` */
   static readonly ChooseSupplierOfferPath = '/supplier-offers/{supplierOfferId}/choose';
 
@@ -114,23 +89,64 @@ export class SupplierOfferControllerService extends BaseService {
   static readonly CreateSupplierOfferPath = '/supplier-offers/create';
 
   /**
+   * Create a new SupplierOffer.
+   *
+   * Allows admin to create a supplier offer with optional image upload
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `createSupplierOffer()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
   createSupplierOffer$Response(params?: CreateSupplierOffer$Params, context?: HttpContext): Observable<StrictHttpResponse<SupplierOfferResponse>> {
     return createSupplierOffer(this.http, this.rootUrl, params, context);
   }
 
   /**
+   * Create a new SupplierOffer.
+   *
+   * Allows admin to create a supplier offer with optional image upload
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `createSupplierOffer$Response()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
   createSupplierOffer(params?: CreateSupplierOffer$Params, context?: HttpContext): Observable<SupplierOfferResponse> {
     return this.createSupplierOffer$Response(params, context).pipe(
+      map((r: StrictHttpResponse<SupplierOfferResponse>): SupplierOfferResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `updateSupplierOffer()` */
+  static readonly UpdateSupplierOfferPath = '/supplier-offers/update/{id}';
+
+  /**
+   * Update an existing SupplierOffer.
+   *
+   * Allows admin or provider to update a supplier offer with optional new image
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `updateSupplierOffer()` instead.
+   *
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
+   */
+  updateSupplierOffer$Response(params: UpdateSupplierOffer$Params, context?: HttpContext): Observable<StrictHttpResponse<SupplierOfferResponse>> {
+    return updateSupplierOffer(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Update an existing SupplierOffer.
+   *
+   * Allows admin or provider to update a supplier offer with optional new image
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `updateSupplierOffer$Response()` instead.
+   *
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
+   */
+  updateSupplierOffer(params: UpdateSupplierOffer$Params, context?: HttpContext): Observable<SupplierOfferResponse> {
+    return this.updateSupplierOffer$Response(params, context).pipe(
       map((r: StrictHttpResponse<SupplierOfferResponse>): SupplierOfferResponse => r.body)
     );
   }

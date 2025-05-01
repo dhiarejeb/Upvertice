@@ -20,6 +20,7 @@ import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -147,7 +148,7 @@ public class KeycloakService {
 //
 //        log.info("Successfully updated user in Keycloak: {}", userUpdateRequest.getKeycloakId());
 //    }
-
+    @Transactional
     public void updateUserInKeycloak(UserUpdateRequest userUpdateRequest, MultipartFile profilePhoto) throws IOException {
         // Upload the profile photo to Cloudinary if present
         String uploadedPhotoUrl = null;
@@ -195,10 +196,18 @@ public class KeycloakService {
         // Update the user profile photo URL in your local database (PostgreSQL)
         User user = userRepository.findByKeycloakId(userUpdateRequest.getKeycloakId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        if (user != null) {
-            user.setProfilePhotoUrl(uploadedPhotoUrl);
+
+            user.setFirstName(userUpdateRequest.getFirstName());
+            user.setLastName(userUpdateRequest.getLastName());
+            user.setEmail(userUpdateRequest.getEmail());
+            user.setRole(userUpdateRequest.getRole());
+            // Only update the profile photo URL if a new one was uploaded
+            if (uploadedPhotoUrl != null) {
+                user.setProfilePhotoUrl(uploadedPhotoUrl);
+            }
+
             userRepository.save(user);  // Save the updated user entity
-        }
+
 
         log.info("Successfully updated user in Keycloak: {}", userUpdateRequest.getKeycloakId());
     }
@@ -260,7 +269,7 @@ public class KeycloakService {
             throw new RuntimeException("Failed to assign role to user in Keycloak: " + roleResponse.getBody());
         }
     }
-
+    @Transactional
     public void deleteUserFromKeycloak(String keycloakUserId) {
         String keycloakUserUrl = serverUrl + "/admin/realms/" + realm + "/users/" + keycloakUserId;
 
@@ -291,6 +300,9 @@ public class KeycloakService {
         }
 
         log.info("User {} successfully deleted from Keycloak.", keycloakUserId);
+        // After successful Keycloak deletion
+        userRepository.deleteByKeycloakId(keycloakUserId);
+        log.info("User {} successfully deleted from database.", keycloakUserId);
     }
 
     private void removeUserRoles(String keycloakUserId, String adminAccessToken) {

@@ -27,14 +27,6 @@ public class Sponsorship extends BaseEntity {
     @Column(name = "user_id")
     private String userId;
 
-    //@ManyToOne
-    //@JoinColumn(name = "sponsor_id")
-    //private Sponsor sponsor;
-
-    //@ManyToOne
-    //@JoinColumn(name = "admin_id")
-    //private Admin admin;
-
     @ManyToOne
     @JoinColumn(name = "sponsor_offer_id")
     private SponsorOffer sponsorOffer;

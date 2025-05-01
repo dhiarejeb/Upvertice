@@ -1,0 +1,15 @@
+<!-- delete-confirmation-modal.component.html -->
+<h2 mat-dialog-title class="delete-title">
+  <mat-icon class="warning-icon">warning</mat-icon>
+  Delete Confirmation
+</h2>
+
+<mat-dialog-content>
+  <p class="confirmation-message">Are you sure you want to delete sponsorship ID {{ data.sponsorshipId }}?</p>
+  <p class="warning-message">This action cannot be undone.</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="warn" (click)="onConfirm()">Confirm Delete</button>
+</mat-dialog-actions>

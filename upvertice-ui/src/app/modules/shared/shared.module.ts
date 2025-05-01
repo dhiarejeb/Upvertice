@@ -1,25 +1,17 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatDialogModule } from '@angular/material/dialog';
-import { ImageViewerComponent } from './image-viewer/image-viewer.component';
-import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
-import {MatButtonModule} from '@angular/material/button';
+import { UserManagementComponent } from './user-management/user-management.component';
+import {FormsModule} from "@angular/forms";
+
+
 
 @NgModule({
   declarations: [
-    ImageViewerComponent,
-    ConfirmationDialogComponent
+    UserManagementComponent
   ],
-  imports: [
-    CommonModule,
-    MatDialogModule,
-    MatButtonModule
-  ],
-  exports: [
-    ImageViewerComponent,
-    ConfirmationDialogComponent,
-    MatDialogModule,
-    MatButtonModule
-  ]
+    imports: [
+        CommonModule,
+        FormsModule
+    ]
 })
 export class SharedModule { }

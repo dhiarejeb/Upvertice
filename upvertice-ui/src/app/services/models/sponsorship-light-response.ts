@@ -4,13 +4,13 @@
 
 import { SponsorAdResponse } from '../models/sponsor-ad-response';
 import { SponsorOfferResponse } from '../models/sponsor-offer-response';
-import { SupplierTransactionResponse } from '../models/supplier-transaction-response';
+import { SupplierTransactionLightResponse } from '../models/supplier-transaction-light-response';
 export interface SponsorshipLightResponse {
   createdDate?: string;
   id?: number;
   sponsorAds?: Array<SponsorAdResponse>;
   sponsorOffer?: SponsorOfferResponse;
   status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'FINISHED';
-  supplierTransactions?: Array<SupplierTransactionResponse>;
+  supplierTransactions?: Array<SupplierTransactionLightResponse>;
   userId?: string;
 }

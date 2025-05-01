@@ -1,12 +1,12 @@
 package com.dhia.Upvertise.controllers;
 
-import com.dhia.Upvertise.dto.SponsorAdRequest;
-import com.dhia.Upvertise.dto.SponsorOfferRequest;
-import com.dhia.Upvertise.dto.SponsorOfferResponse;
+import com.dhia.Upvertise.dto.*;
 import com.dhia.Upvertise.models.common.PageResponse;
 import com.dhia.Upvertise.models.sponsorship.SponsorOfferStatus;
 import com.dhia.Upvertise.services.SponsorOfferService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.media.SchemaProperty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -16,6 +16,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.StringToClassMapItem;
 
 import java.util.List;
 
@@ -25,6 +30,7 @@ import java.util.List;
 public class SponsorOfferController {
 
     private final SponsorOfferService sponsorOfferService;
+    private final ObjectMapper objectMapper;
 
 
 
@@ -49,7 +55,7 @@ public class SponsorOfferController {
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(sponsorOfferService.getAllSponsorOffers(page, size));
     }
-    @PostMapping(value = "/createSponsorOffer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    /*@PostMapping(value = "/createSponsorOffer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<String> createSponsorOffer(
             @RequestPart(value = "request", required = true) SponsorOfferRequest sponsorOfferRequest,
@@ -66,11 +72,58 @@ public class SponsorOfferController {
             //e.printStackTrace();  // Log the full error
             //return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         //}
+    }*/
+    @Operation(
+            summary = "Create Sponsor Offer",
+            requestBody = @RequestBody(
+                    content = @Content(
+                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                            schema = @Schema(implementation = SponsorOfferMultipartRequest.class)
+                    )
+            )
+    )
+    @PostMapping(value = "/createSponsorOffer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('Admin')")
+    public ResponseEntity<SponsorOfferResponse> createSponsorOffer(
+            @RequestPart(value = "request") String sponsorOfferJson,
+            @RequestPart(value = "explainImages", required = false) List<MultipartFile> images,
+            Authentication connectedUser) {
+
+        try {
+            SponsorOfferRequest sponsorOfferRequest = objectMapper.readValue(sponsorOfferJson, SponsorOfferRequest.class);
+            SponsorOfferResponse createdOffer = sponsorOfferService.createSponsorOffer(sponsorOfferRequest, images, connectedUser);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdOffer);
+        } catch (Exception e) {
+            e.printStackTrace(); // or use logger
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
+        }
     }
 
 
     // sponsor selects a specific sponsor offer
+    @Operation(
+            summary = "choose Sponsor Offer",
+            requestBody = @RequestBody(
+                    content = @Content(
+                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                            schema = @Schema(implementation = SponsorOfferMultipartRequest.class)
+                    )
+            )
+    )
     @PostMapping("/chooseSponsorOffer/{offerId}")
+    @PreAuthorize("hasRole('Advertiser')")
+    public ResponseEntity<Integer> chooseSponsorOffer(
+            @PathVariable Integer offerId,
+            @RequestPart("request") String sponsorAdRequestJson,
+            @RequestPart(value = "images", required = false) MultipartFile image,
+            Authentication connectedUser) throws JsonProcessingException {
+
+        SponsorAdRequest sponsorAdRequest = objectMapper.readValue(sponsorAdRequestJson, SponsorAdRequest.class);
+
+        return ResponseEntity.ok(sponsorOfferService.chooseSponsorOffer(offerId, image, sponsorAdRequest, connectedUser));
+    }
+   /* @PostMapping("/chooseSponsorOffer/{offerId}")
     @PreAuthorize("hasRole('Advertiser')")
     public ResponseEntity<Integer> chooseSponsorOffer(
             @PathVariable Integer offerId,
@@ -81,7 +134,7 @@ public class SponsorOfferController {
 
 
         return ResponseEntity.ok(sponsorOfferService.chooseSponsorOffer(offerId,image, sponsorAdRequest , connectedUser));
-    }
+    }*/
     @PutMapping("/updateSponsorOfferChoice")
     @PreAuthorize("hasRole('Advertiser')")
     public ResponseEntity<String> updateChosenSponsorOffer(
@@ -95,15 +148,36 @@ public class SponsorOfferController {
                 + " | Old Offer ID: " + oldOfferId + " | New Offer ID: " + newOfferId);
     }
 
-    @PutMapping("/{offerId}/updateSponsorOffer")
+    /*@PatchMapping("/{offerId}/updateSponsorOffer")
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<SponsorOfferResponse> updateSponsorOffer(
-            @RequestPart("offerId") Integer offerId,
-            @RequestPart("sponsorOfferRequest") SponsorOfferRequest request ,
+            @PathVariable("offerId") Integer offerId,
+            @RequestPart("SponsorOfferRequest") SponsorOfferRequest request ,
             @RequestPart("explainImages") List<MultipartFile> images
             ) {
 
         SponsorOfferResponse response = sponsorOfferService.updateSponsorOffer(offerId, request, images);
+        return ResponseEntity.ok(response);
+    }*/
+    @Operation(
+            summary = "Update Sponsor Offer",
+            requestBody = @RequestBody(
+                    content = @Content(
+                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                            schema = @Schema(implementation = SponsorOfferMultipartRequest.class)
+                    )
+            )
+    )
+    @PatchMapping(value = "/{offerId}/updateSponsorOffer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('Admin')")
+    public ResponseEntity<SponsorOfferResponse> updateSponsorOffer(
+            @PathVariable("offerId") Integer offerId,
+            @RequestPart("request") String sponsorOfferRequestStr,
+            @RequestPart(value = "explainImages", required = false) List<MultipartFile> images
+    ) throws JsonProcessingException {
+
+        SponsorOfferRequest sponsorOfferRequest = objectMapper.readValue(sponsorOfferRequestStr, SponsorOfferRequest.class);
+        SponsorOfferResponse response = sponsorOfferService.updateSponsorOffer(offerId, sponsorOfferRequest, images);
         return ResponseEntity.ok(response);
     }
 

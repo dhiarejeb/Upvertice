@@ -8,20 +8,17 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { ProvidershipRequest } from '../../models/providership-request';
+import { ProvidershipMultipartRequest } from '../../models/providership-multipart-request';
 import { ProvidershipResponse } from '../../models/providership-response';
 
 export interface CreateProvidership$Params {
-      body?: {
-'request': ProvidershipRequest;
-'images'?: Array<Blob>;
-}
+      body?: ProvidershipMultipartRequest
 }
 
 export function createProvidership(http: HttpClient, rootUrl: string, params?: CreateProvidership$Params, context?: HttpContext): Observable<StrictHttpResponse<ProvidershipResponse>> {
   const rb = new RequestBuilder(rootUrl, createProvidership.PATH, 'post');
   if (params) {
-    rb.body(params.body, 'application/json');
+    rb.body(params.body, 'multipart/form-data');
   }
 
   return http.request(

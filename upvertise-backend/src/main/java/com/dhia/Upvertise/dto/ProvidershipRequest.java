@@ -6,39 +6,48 @@ import com.dhia.Upvertise.models.provider.ProvidershipStatus;
 import jakarta.validation.constraints.*;
 
 import java.util.Set;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-
+@Schema(description = "Request object for creating or updating a providership")
 public record ProvidershipRequest(
 
-        Integer sponsorshipId, // Optional, only needed for update (Admin)
+        @Schema(description = "ID of the related sponsorship (required for update)", example = "123")
+        Integer sponsorshipId,
 
-        String userId, // Optional, will be taken from auth for create
+        @Schema(description = "User ID (taken from authentication)", example = "user-abc-123")
+        String userId,
 
-        ProvidershipStatus status, // Optional, default to PENDING if not provided
+        @Schema(description = "Status of the providership", example = "PENDING")
+        ProvidershipStatus status,
 
-        @PositiveOrZero(message = "Produced product count must be zero or positive")
-        Integer producedProduct, // Default to 0 if not provided
 
-        @Positive(message = "Total product must be positive")
-        Integer totalProduct, // Optional, default to 0 or can be provided by the user
+        @Schema(description = "Number of products already produced", example = "100")
+        Integer producedProduct,
 
-        @PositiveOrZero(message = "Bonus earned must be zero or positive")
-        Double bonusEarned, // Default to 0.0 if not provided
 
-        ProvidershipApprovalStatus providershipApprovalStatus, // Optional, default to PENDING if not provided
+        @Schema(description = "Total number of products to produce", example = "500")
+        Integer totalProduct,
 
-        @NotBlank(message = "Location cannot be blank")
-        String location, // Required
 
-        @NotNull(message = "Has print machine field is required")
-        Boolean hasPrintMachine, // Required
+        @Schema(description = "Bonus earned from providership", example = "150.0")
+        Double bonusEarned,
 
-        @NotEmpty(message = "At least one provided product type must be specified")
-        Set<ProvidedProductType> providedProductTypes // Required
+        @Schema(description = "Approval status by the admin", example = "PENDING")
+        ProvidershipApprovalStatus providershipApprovalStatus,
+
+
+        @Schema(description = "Location of the provider", example = "Tunis, Tunisia")
+        String location,
+
+
+        @Schema(description = "Whether the provider has a print machine", example = "true")
+        Boolean hasPrintMachine,
+
+
+        @Schema(description = "Set of provided product types")
+        Set<ProvidedProductType> providedProductTypes
 ) {
-        // Constructor to provide default values for some fields if not provided
-        public ProvidershipRequest {
-                // Default values for optional fields if not set
+        /*public ProvidershipRequest {
                 if (producedProduct == null) producedProduct = 0;
                 if (totalProduct == null) totalProduct = 0;
                 if (bonusEarned == null) bonusEarned = 0.0;
@@ -46,5 +55,6 @@ public record ProvidershipRequest(
                 if (providershipApprovalStatus == null) providershipApprovalStatus = ProvidershipApprovalStatus.PENDING;
                 if (location == null) location = "";
                 if (hasPrintMachine == null) hasPrintMachine = false;
-        }
+        }*/
 }
+

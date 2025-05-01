@@ -1,0 +1,64 @@
+/* sponsorship-table.component.scss */
+.table-container {
+  overflow-x: auto;
+  border: 1px solid #d0b89a;
+  border-radius: 4px;
+}
+
+.sponsorship-table {
+  width: 100%;
+  background-color: #f5e8d3;
+
+  .mat-header-row {
+    background-color: #e0cdb1;
+  }
+
+  .mat-header-cell {
+    color: #6b4c28;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+  }
+
+  .sponsorship-row {
+    &:hover {
+      background-color: #e9dcc5;
+    }
+  }
+
+  .status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .status-approved {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #badbcc;
+  }
+
+  .status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+  }
+
+  .status-rejected {
+    background-color: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+  }
+
+  .status-finished {
+    background-color: #cfe2ff;
+    color: #084298;
+    border: 1px solid #b6d4fe;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+}

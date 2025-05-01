@@ -2,6 +2,8 @@ package com.dhia.Upvertise.services;
 
 import com.dhia.Upvertise.dto.SupplierTransactionResponse;
 import com.dhia.Upvertise.dto.SupplierTransactionUpdateRequest;
+
+
 import com.dhia.Upvertise.handler.OperationNotPermittedException;
 import com.dhia.Upvertise.mapper.SupplierTransactionMapper;
 import com.dhia.Upvertise.models.common.PageResponse;
@@ -36,11 +38,16 @@ public class SupplierTransactionService {
     public PageResponse<SupplierTransactionResponse> getSupplierTransactions(Authentication connectedUser, Pageable pageable) {
         // Check if the user is Admin or Supplier
         Page<SupplierTransaction> transactionsPage;
-
+        boolean isProvider = connectedUser.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_Provider"));
+        boolean isSupplier = connectedUser.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_Supplier"));
         if (connectedUser.getAuthorities().stream().anyMatch(role -> role.getAuthority().equals("ROLE_Admin"))) {
             // Admin: Get all SupplierTransactions
             transactionsPage = transactionRepository.findAll(pageable);
-        } else {
+        }else if (isProvider) {
+                transactionsPage = transactionRepository.findBySupplierOffer_CreatedBy(connectedUser.getName(), pageable);
+            } else {
             // Supplier: Get only their SupplierTransactions
             transactionsPage = transactionRepository.findByUserId(connectedUser.getName(), pageable);
         }
@@ -61,6 +68,32 @@ public class SupplierTransactionService {
                 .last(transactionsPage.isLast())
                 .build();
     }
+
+    public SupplierTransactionResponse getSupplierTransactionById(Integer id, Authentication connectedUser) {
+        SupplierTransaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("SupplierTransaction not found with id: " + id));
+
+        String currentUserId = connectedUser.getName();
+
+        boolean isAdmin = connectedUser.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_Admin"));
+
+        boolean isSupplier = connectedUser.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_Supplier"));
+
+        boolean isProvider = connectedUser.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_Provider"));
+
+        if (isAdmin
+                || (isSupplier && transaction.getUserId().equals(currentUserId))
+                || (isProvider && transaction.getSupplierOffer().getCreatedBy().equals(currentUserId))) {
+
+            return SupplierTransactionMapper.toSupplierTransactionResponse(transaction);
+        } else {
+            throw new AccessDeniedException("You are not authorized to view this transaction");
+        }
+    }
+
 
     public SupplierTransactionResponse updateSupplierTransaction(
             Authentication connectedUser,
@@ -86,12 +119,18 @@ public class SupplierTransactionService {
                 transaction.setDiscount(request.discount());
             }
         }
-
+        if (proofsFiles != null) { // Only validate if files are provided
+            proofsFiles.forEach(file -> {
+                if (file.isEmpty()) {
+                    throw new OperationNotPermittedException("Empty file detected in uploaded images");
+                }
+            });
+        }
         if (isSupplier) {
             if (transaction.getSupplierTransactionStatus() != SupplierTransactionStatus.APPROVED) {
                 throw new OperationNotPermittedException("Suppliers can only update 'APPROVED' transactions.");
             }
-        }
+
             updateSupplierTransactionFields(transaction, request);
             // ✅ Handle proof image uploads to Cloudinary
             // ✅ Always store uploaded images into `proofs` field
@@ -104,6 +143,8 @@ public class SupplierTransactionService {
                 existingProofs.addAll(uploadedProofs);
                 transaction.setProofs(existingProofs);
             }
+
+        }
 
 
         // Save updated transaction

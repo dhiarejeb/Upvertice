@@ -52,3 +52,12 @@ button {
   background-color: #2196F3 !important;
   color: white !important;
 }
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.file-upload {
+  margin-top: 12px;
+}

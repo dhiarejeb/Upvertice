@@ -8,16 +8,14 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { SponsorOfferRequest } from '../../models/sponsor-offer-request';
+import { SponsorOfferMultipartRequest } from '../../models/sponsor-offer-multipart-request';
+import { SponsorOfferResponse } from '../../models/sponsor-offer-response';
 
 export interface CreateSponsorOffer$Params {
-      body?: {
-'request': SponsorOfferRequest;
-'explainImages'?: Array<Blob>;
-}
+      body?: SponsorOfferMultipartRequest
 }
 
-export function createSponsorOffer(http: HttpClient, rootUrl: string, params?: CreateSponsorOffer$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+export function createSponsorOffer(http: HttpClient, rootUrl: string, params?: CreateSponsorOffer$Params, context?: HttpContext): Observable<StrictHttpResponse<SponsorOfferResponse>> {
   const rb = new RequestBuilder(rootUrl, createSponsorOffer.PATH, 'post');
   if (params) {
     rb.body(params.body, 'multipart/form-data');
@@ -28,7 +26,7 @@ export function createSponsorOffer(http: HttpClient, rootUrl: string, params?: C
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<string>;
+      return r as StrictHttpResponse<SponsorOfferResponse>;
     })
   );
 }

@@ -7,13 +7,13 @@ import java.util.List;
 import java.util.Set;
 
 public record SponsorshipLightResponse(
-        //dto having no providership data
+        //dto having no providership data and with supplier transactiond data
         Integer id,
         SponsorshipStatus status,
         String userId,
         SponsorOfferResponse sponsorOffer,
         Set<SponsorAdResponse> sponsorAds,
         LocalDateTime createdDate,
-        List<SupplierTransactionResponse> supplierTransactions
+        List<SupplierTransactionLightResponse> supplierTransactions
 ) {
 }

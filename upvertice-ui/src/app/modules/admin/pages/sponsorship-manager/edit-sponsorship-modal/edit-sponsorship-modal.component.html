@@ -1,0 +1,63 @@
+<!-- Edit Sponsorship Modal -->
+<form [formGroup]="adForm" (ngSubmit)="onAdSubmit()">
+  <!-- Title input -->
+  <mat-form-field>
+    <input matInput placeholder="Title" formControlName="title" />
+  </mat-form-field>
+
+  <!-- Content textarea -->
+  <mat-form-field>
+    <textarea matInput placeholder="Content" formControlName="content"></textarea>
+  </mat-form-field>
+
+  <!-- Dynamic Design Colors Picker Section -->
+  <div class="color-section">
+    <mat-label>Design Colors</mat-label>
+
+    <!-- Loop through selected colors -->
+    <div *ngFor="let color of selectedColors; let i = index" class="color-picker-wrapper">
+      <color-chrome
+        [color]="color"
+        (onChangeComplete)="onColorChange($event.color.hex, i)"
+      ></color-chrome>
+
+      <!-- Remove color button -->
+      <button mat-icon-button color="warn" (click)="removeColor(i)">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+
+    <!-- Add new color -->
+    <button mat-raised-button type="button" (click)="addColor()">Add Color</button>
+  </div>
+
+  <!-- Upload Image -->
+  <input type="file" (change)="onImageSelected($event)" />
+
+  <!-- Preview selected image -->
+  <img *ngIf="previewUrl" [src]="previewUrl" alt="Design preview" width="100" />
+
+  <!-- Submit / Cancel buttons -->
+  <div class="actions">
+    <button mat-button type="button" (click)="onCancel()">Cancel</button>
+    <button mat-raised-button color="primary" type="submit">Save</button>
+  </div>
+</form>
+
+<!-- Status Form (only shown if Admin changes tab to "status") -->
+<form *ngIf="activeTab === 'status'" [formGroup]="statusForm" (ngSubmit)="onStatusSubmit()">
+  <mat-form-field>
+    <mat-label>Status</mat-label>
+    <mat-select formControlName="status">
+      <mat-option value="PENDING">Pending</mat-option>
+      <mat-option value="APPROVED">Approved</mat-option>
+      <mat-option value="REJECTED">Rejected</mat-option>
+      <mat-option value="FINISHED">Finished</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div class="actions">
+    <button mat-button type="button" (click)="onCancel()">Cancel</button>
+    <button mat-raised-button color="primary" type="submit">Update Status</button>
+  </div>
+</form>

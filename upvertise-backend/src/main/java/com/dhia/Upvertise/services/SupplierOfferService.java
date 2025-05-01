@@ -21,11 +21,13 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -42,12 +44,15 @@ public class SupplierOfferService {
     private final CloudinaryService  cloudinaryService;
     private final SupplierTransactionMapper supplierTransactionMapper;
 
+
+    @Transactional
     @Cacheable(value = "supplierOffers", key = "'all:' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public PageResponse<SupplierOfferResponse> getAllSupplierOffers(Pageable pageable) {
+
         Page<SupplierOffer> page = supplierOfferRepository.findAll(pageable);
         List<SupplierOfferResponse> content = page.getContent().stream()
                 .map(SupplierOfferMapper::toResponseWithImageUrl)
-                .collect(Collectors.toList());
+                .toList(); // Java 17
         return new PageResponse<>(
                 content,
                 page.getNumber(),
@@ -63,7 +68,7 @@ public class SupplierOfferService {
         Page<SupplierOffer> page = supplierOfferRepository.findByStatus(status, pageable);
         List<SupplierOfferResponse> content = page.getContent().stream()
                 .map(SupplierOfferMapper::toResponseWithImageUrl)
-                .collect(Collectors.toList());
+                .toList(); // Java 17
         return new PageResponse<>(
                 content,
                 page.getNumber(),
@@ -124,7 +129,7 @@ public class SupplierOfferService {
                 .orElseThrow(() -> new EntityNotFoundException("SupplierOffer not found"));
 
         // Get all SponsorAds associated with the SupplierOffer
-        List<SponsorAd> sponsorAds = supplierOffer.getSponsorAds();
+        Set<SponsorAd> sponsorAds = supplierOffer.getSponsorAds();
         if (sponsorAds == null || sponsorAds.isEmpty()) {
             throw new EntityNotFoundException("No SponsorAds found for SupplierOffer");
         }

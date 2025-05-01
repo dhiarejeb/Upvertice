@@ -3,40 +3,22 @@ package com.dhia.Upvertise.dto;
 import com.dhia.Upvertise.models.sponsorship.SponsorOfferStatus;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 
+@Schema(description = "SponsorOfferRequest")
 @Builder
 public record SponsorOfferRequest(
-        @JsonProperty("title")
-        @NotBlank(message = "Title cannot be blank") String title,
-
-        @JsonProperty("description")
-        @NotBlank(message = "Description cannot be blank") String description,
-
-        @JsonProperty("price")
-        @NotNull(message = "Price is required")
-        @Positive(message = "Price must be positive") Double price,
-
-        @JsonProperty("category")
-        @NotBlank(message = "Category cannot be blank") String category,
-
-        @JsonProperty("productQuantity")
-        @NotNull(message = "Product quantity is required")
-        @PositiveOrZero(message = "Product quantity must be zero or positive") Integer productQuantity,
-
-        @JsonProperty("productType")
-        @NotBlank(message = "Product type cannot be blank") String productType,
-
-        @JsonProperty("numberAds")
-        @NotNull(message = "Number of ads is required")
-        @Positive(message = "Number of ads must be positive") Integer numberAds,
-
-        @JsonProperty("status")
-        @NotNull(message = "Status is required") SponsorOfferStatus status,
-
-        @JsonProperty("salesArea")
-        @NotBlank(message = "Sales area cannot be blank") String salesArea
+        @Schema(description = "Title") @JsonProperty("title") String title,
+        @Schema(description = "Description") @JsonProperty("description") String description,
+        @Schema(description = "Price") @JsonProperty("price") Double price,
+        @Schema(description = "Category") @JsonProperty("category") String category,
+        @Schema(description = "Product Quantity") @JsonProperty("productQuantity") Integer productQuantity,
+        @Schema(description = "Product Type") @JsonProperty("productType") String productType,
+        @Schema(description = "Number of Ads") @JsonProperty("numberAds") Integer numberAds,
+        @Schema(description = "Status") @JsonProperty("status") SponsorOfferStatus status,
+        @Schema(description = "Sales Area") @JsonProperty("salesArea") String salesArea
 ) {
     @JsonCreator
     public SponsorOfferRequest {

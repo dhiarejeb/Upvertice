@@ -2,37 +2,55 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { KeycloakService } from '../keycloak/keycloak.service';
 
-export const authGuard: CanActivateFn = () => {
+export const authGuard: CanActivateFn = (): boolean => {
   const keycloakService = inject(KeycloakService);
-
   const router = inject(Router);
 
-
   if (typeof window === 'undefined') {
-    // We are not in the browser (SSR), skip any redirects or login
     console.warn('Auth guard triggered during SSR. Skipping login.');
     return false;
   }
-  // Check if token is expired using the service method
+
   if (keycloakService.isTokenExpired()) {
-     keycloakService.login();
+    keycloakService.login(); // triggers login flow
     return false;
   }
 
+  return true;
+};
 
-  const roles = keycloakService.getUserRoles();
 
 
- // Redirect to the appropriate route based on roles
+
+  /*const roles = keycloakService.getUserRoles();
+
+  if (roles.includes('Admin')) {
+    router.navigate(['/admin']);
+    return false; // We redirect manually
+  }
+
   if (roles.includes('Advertiser')) {
-    //router.navigate(['advertiser']);
+    router.navigate(['/advertiser']);
+    return false;
+  }
+
+  // fallback if no known role
+  return false;
+*/
+
+
+
+
+ /*// Redirect to the appropriate route based on roles
+  if (roles.includes('Advertiser')) {
+    router.navigate(['advertiser']);
     //return false;  // Allow access
     return true;
   }
 
   // 🔒 Future roles (once routes/pages exist)
   if (roles.includes('Admin')) {
-    //router.navigate(['/admin/dashboard']);
+    router.navigate(['/admin']);
     return true;
 
   }
@@ -52,5 +70,5 @@ export const authGuard: CanActivateFn = () => {
   // 🚫 Unknown role or unhandled
   router.navigate(['/unauthorized']);
   return true
+*/
 
-};

@@ -1,0 +1,71 @@
+/* edit-sponsorship-modal.component.scss */
+:host {
+  display: block;
+  max-width: 600px;
+}
+
+h2 {
+  color: #6b4c28;
+  font-weight: 600;
+}
+
+.tab-content {
+  padding: 1.5rem 0;
+}
+
+.form-field {
+  margin-bottom: 1rem;
+  width: 100%;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.image-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.image-preview-container {
+  width: 100%;
+  height: 200px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.image-preview {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.no-image {
+  color: #999;
+  font-size: 0.875rem;
+}
+
+.file-upload {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  .file-name {
+    font-size: 0.875rem;
+    color: #666;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}

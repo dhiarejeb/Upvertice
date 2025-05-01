@@ -1,0 +1,16 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <input formControlName="title" placeholder="Title" />
+  <textarea formControlName="content" placeholder="Content"></textarea>
+
+  <div formArrayName="designColors">
+    <div *ngFor="let color of designColors.controls; let i=index">
+      <input [formControlName]="i" placeholder="Color" />
+      <button type="button" (click)="removeColor(i)">Remove</button>
+    </div>
+    <button type="button" (click)="addColor()">Add Color</button>
+  </div>
+
+  <input type="file" (change)="onFileSelected($event)" />
+
+  <button type="submit">Save</button>
+</form>

@@ -8,22 +8,19 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { ProvidershipRequest } from '../../models/providership-request';
+import { ProvidershipMultipartRequest } from '../../models/providership-multipart-request';
 import { ProvidershipResponse } from '../../models/providership-response';
 
 export interface UpdateProvidership$Params {
   id: number;
-      body?: {
-'request'?: ProvidershipRequest;
-'images'?: Array<Blob>;
-}
+      body?: ProvidershipMultipartRequest
 }
 
 export function updateProvidership(http: HttpClient, rootUrl: string, params: UpdateProvidership$Params, context?: HttpContext): Observable<StrictHttpResponse<ProvidershipResponse>> {
   const rb = new RequestBuilder(rootUrl, updateProvidership.PATH, 'patch');
   if (params) {
     rb.path('id', params.id, {});
-    rb.body(params.body, 'application/json');
+    rb.body(params.body, 'multipart/form-data');
   }
 
   return http.request(

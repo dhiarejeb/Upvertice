@@ -1,0 +1,331 @@
+<!-- providership-manager.component.html -->
+<div class="providership-manager-container container py-4">
+  <h1 class="mb-4 text-primary">
+    <i class="fas fa-cubes me-2"></i>
+    Providership Management
+  </h1>
+
+  <div class="providerships-list bg-white p-4 rounded shadow-sm">
+    <!-- Loading Spinner -->
+    <div *ngIf="loading" class="text-center my-5">
+      <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <!-- Providerships Table -->
+    <table *ngIf="!loading && providerships.length" class="table table-hover table-striped align-middle mb-0">
+      <thead class="table-light">
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Status</th>
+        <th scope="col">Approval</th>
+        <th scope="col">Has Machine</th>
+        <th scope="col">Location</th>
+        <th scope="col">Created</th>
+        <th scope="col" class="text-end">Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let p of providerships">
+        <td>{{ p.id }}</td>
+        <td>
+            <span class="badge text-capitalize" [ngClass]="getStatusClass(p.status)">
+              {{ p.status }}
+            </span>
+        </td>
+        <td>
+            <span class="badge text-capitalize" [ngClass]="getStatusClass(p.providershipApprovalStatus)">
+              {{ p.providershipApprovalStatus }}
+            </span>
+        </td>
+        <td class="text-center">
+          <i class="fas" [ngClass]="
+              p.hasPrintMachine
+                ? 'fa-check-circle text-success'
+                : 'fa-times-circle text-danger'
+            "></i>
+        </td>
+        <td>{{ p.location || 'N/A' }}</td>
+        <td>{{ p.createdDate | date:'short' }}</td>
+        <td class="text-end">
+          <button
+            class="btn btn-sm btn-outline-primary me-2"
+            (click)="goToDetails(p.id)"
+          >
+            <i class="fas fa-info-circle me-1"></i> Details
+          </button>
+          <button
+            class="btn btn-sm btn-outline-warning me-2"
+            (click)="selectProvidership(p)"
+          >
+            <i class="fas fa-edit me-1"></i> Edit
+          </button>
+          <button
+            class="btn btn-sm btn-outline-danger"
+            (click)="confirmDelete(p)"
+          >
+            <i class="fas fa-trash me-1"></i> Delete
+          </button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && providerships.length === 0" class="text-center text-muted py-5">
+      <i class="fas fa-info-circle fa-3x mb-3"></i>
+      <p class="mb-0">No providerships found.</p>
+    </div>
+
+    <!-- Pagination -->
+    <nav *ngIf="!loading && totalPages > 1" class="mt-3">
+      <ul class="pagination justify-content-center mb-0">
+        <li class="page-item" [class.disabled]="currentPage === 0">
+          <button class="page-link" (click)="prevPage()">
+            <i class="fas fa-chevron-left me-1"></i> Previous
+          </button>
+        </li>
+        <li class="page-item disabled">
+          <span class="page-link">{{ currentPage + 1 }} / {{ totalPages }}</span>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage + 1 >= totalPages">
+          <button class="page-link" (click)="nextPage()">
+            Next <i class="fas fa-chevron-right ms-1"></i>
+          </button>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- ■■■ Edit Form ■■■ -->
+    <div *ngIf="selectedProvidership" class="edit-form bg-light p-4 rounded mt-4">
+      <h2>Edit Providership #{{ selectedProvidership.id }}</h2>
+      <form [formGroup]="updateForm" (ngSubmit)="updateProvidership()">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Sponsorship ID</label>
+            <input type="number" class="form-control"
+                   formControlName="sponsorshipId" placeholder="Sponsorship ID">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Approval Status</label>
+            <select class="form-select" formControlName="providershipApprovalStatus">
+              <option [ngValue]="null">— none —</option>
+              <option *ngFor="let s of approvalStatusOptions" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Bonus Earned</label>
+            <input type="number" class="form-control"
+                   formControlName="bonusEarned" placeholder="Bonus Earned">
+          </div>
+        </div>
+        <div class="mt-3 text-end">
+          <button type="button" class="btn btn-secondary me-2"
+                  (click)="cancelEdit()">Cancel</button>
+          <button type="submit" class="btn btn-primary"
+                  [disabled]="updateForm.pristine || updating">
+            <span *ngIf="!updating">Save Changes</span>
+            <span *ngIf="updating" class="spinner-border spinner-border-sm"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+<!--
+<div class="providership-manager-container">
+  <h1>Providership Management</h1>
+
+  <div class="content-container">
+    &lt;!&ndash; Providerships List &ndash;&gt;
+    <div class="providerships-list mat-elevation-z2">
+      <h2>Providerships</h2>
+
+      <div *ngIf="loading" class="loading-spinner">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+
+      <table mat-table [dataSource]="providerships" *ngIf="!loading && providerships.length > 0">
+        &lt;!&ndash; ID Column &ndash;&gt;
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef>ID</th>
+          <td mat-cell *matCellDef="let item">{{ item.id }}</td>
+        </ng-container>
+
+        &lt;!&ndash; Provider ID Column &ndash;&gt;
+        <ng-container matColumnDef="userId">
+          <th mat-header-cell *matHeaderCellDef>Provider ID</th>
+          <td mat-cell *matCellDef="let item">{{ item.userId }}</td>
+        </ng-container>
+
+        &lt;!&ndash; Status Column &ndash;&gt;
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let item">
+            <span class="status-badge" [ngClass]="'status-' + item.status?.toLowerCase()">{{ item.status }}</span>
+          </td>
+        </ng-container>
+
+        &lt;!&ndash; Approval Column &ndash;&gt;
+        <ng-container matColumnDef="approvalStatus">
+          <th mat-header-cell *matHeaderCellDef>Approval</th>
+          <td mat-cell *matCellDef="let item">
+            <span class="status-badge" [ngClass]="'approval-' + item.providershipApprovalStatus?.toLowerCase()">
+              {{ item.providershipApprovalStatus }}
+            </span>
+          </td>
+        </ng-container>
+
+        &lt;!&ndash; Bonus Earned Column &ndash;&gt;
+        <ng-container matColumnDef="bonusEarned">
+          <th mat-header-cell *matHeaderCellDef>Bonus Earned</th>
+          <td mat-cell *matCellDef="let item">{{ item.bonusEarned }}</td>
+        </ng-container>
+
+        &lt;!&ndash; Has Print Machine Column &ndash;&gt;
+        <ng-container matColumnDef="hasPrintMachine">
+          <th mat-header-cell *matHeaderCellDef>Has Machine</th>
+          <td mat-cell *matCellDef="let item">{{ item.hasPrintMachine ? 'Yes' : 'No' }}</td>
+        </ng-container>
+
+        &lt;!&ndash; Produced Products Column &ndash;&gt;
+        <ng-container matColumnDef="producedProduct">
+          <th mat-header-cell *matHeaderCellDef>Produced</th>
+          <td mat-cell *matCellDef="let item">{{ item.producedProduct }}</td>
+        </ng-container>
+
+        &lt;!&ndash; Total Products Column &ndash;&gt;
+        <ng-container matColumnDef="totalProduct">
+          <th mat-header-cell *matHeaderCellDef>Total</th>
+          <td mat-cell *matCellDef="let item">{{ item.totalProduct }}</td>
+        </ng-container>
+
+        &lt;!&ndash; Progress Column &ndash;&gt;
+        <ng-container matColumnDef="progress">
+          <th mat-header-cell *matHeaderCellDef>Progress</th>
+          <td mat-cell *matCellDef="let item">
+            <div class="progress-container">
+              <mat-progress-bar mode="determinate"
+                                [value]="item.totalProduct ? (item.producedProduct! / item.totalProduct! * 100) : 0">
+              </mat-progress-bar>
+              <span class="progress-text">{{ item.producedProduct || 0 }}/{{ item.totalProduct || 0 }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        &lt;!&ndash; Location Column &ndash;&gt;
+        <ng-container matColumnDef="location">
+          <th mat-header-cell *matHeaderCellDef>Location</th>
+          <td mat-cell *matCellDef="let item">{{ item.location || 'N/A' }}</td>
+        </ng-container>
+
+        &lt;!&ndash; Created Date Column &ndash;&gt;
+        <ng-container matColumnDef="createdDate">
+          <th mat-header-cell *matHeaderCellDef>Created</th>
+          <td mat-cell *matCellDef="let item">{{ item.createdDate | date:'short' }}</td>
+        </ng-container>
+
+        &lt;!&ndash; Actions Column &ndash;&gt;
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let item">
+            <button
+              class="btn btn-sm btn-primary me-2"
+              (click)="goToDetails(item.id)"
+            >
+              <i class="fas fa-info-circle"></i>
+              Details
+            </button>
+            <button mat-icon-button color="primary" (click)="selectProvidership(item)" matTooltip="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="confirmDelete(item)" matTooltip="Delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        &lt;!&ndash; Header and Row Declarations &ndash;&gt;
+        <tr mat-header-row *matHeaderRowDef="['id','userId','status','approvalStatus','bonusEarned','hasPrintMachine','producedProduct','totalProduct','progress','location','createdDate','actions']"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['id','userId','status','approvalStatus','bonusEarned','hasPrintMachine','producedProduct','totalProduct','progress','location','createdDate','actions']"
+            [ngClass]="{'selected-row': selectedProvidership?.id === row.id}"></tr>
+      </table>
+
+      <div *ngIf="!loading && providerships.length === 0" class="no-data">
+        <mat-icon>info</mat-icon>
+        <p>No providerships found</p>
+      </div>
+
+      <mat-paginator
+        [length]="totalElements"
+        [pageSize]="pageSize"
+        [pageIndex]="currentPage"
+        [pageSizeOptions]="[5, 10, 25, 50]"
+        (page)="onPageChange($event.pageIndex)"
+        *ngIf="totalElements > 0">
+      </mat-paginator>
+    </div>
+
+    &lt;!&ndash; Edit Form &ndash;&gt;
+    <div class="edit-form mat-elevation-z2" *ngIf="selectedProvidership">
+      <h2>Edit Providership #{{ selectedProvidership.id }}</h2>
+
+      &lt;!&ndash; Providership Details &ndash;&gt;
+      <div class="providership-details mat-elevation-z1 p-4 mb-4">
+        <h3>Details</h3>
+        <div class="detail-row"><strong>Bonus Earned:</strong> {{ selectedProvidership.bonusEarned }}</div>
+        <div class="detail-row"><strong>Has Print Machine:</strong> {{ selectedProvidership.hasPrintMachine ? 'Yes' : 'No' }}</div>
+        <div class="detail-row"><strong>Produced Products:</strong> {{ selectedProvidership.producedProduct }}</div>
+        <div class="detail-row"><strong>Total Products:</strong> {{ selectedProvidership.totalProduct }}</div>
+        <div class="detail-row"><strong>Location:</strong> {{ selectedProvidership.location || 'N/A' }}</div>
+        <div class="detail-row"><strong>Status:</strong> {{ selectedProvidership.status }}</div>
+        <div class="detail-row"><strong>Created Date:</strong> {{ selectedProvidership.createdDate | date:'medium' }}</div>
+        <div class="detail-row"><strong>Last Modified:</strong> {{ selectedProvidership.lastModifiedDate | date:'medium' }}</div>
+      </div>
+
+      <form [formGroup]="updateForm" (ngSubmit)="updateProvidership()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Sponsorship ID</mat-label>
+          <input matInput type="number" formControlName="sponsorshipId" placeholder="Enter Sponsorship ID">
+          <mat-error *ngIf="isFieldInvalid('sponsorshipId')">Sponsorship ID is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Approval Status</mat-label>
+          <mat-select formControlName="providershipApprovalStatus">
+            <mat-option *ngFor="let status of approvalStatusOptions" [value]="status">{{ status }}</mat-option>
+          </mat-select>
+          <mat-error *ngIf="isFieldInvalid('providershipApprovalStatus')">Approval status is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Bonus Earned</mat-label>
+          <input matInput type="number" formControlName="bonusEarned" placeholder="Enter Bonus Earned">
+          <mat-error *ngIf="isFieldInvalid('bonusEarned')">Bonus earned must be a non-negative number</mat-error>
+        </mat-form-field>
+
+        <div class="form-actions">
+          <button mat-button type="button" (click)="cancelEdit()">Cancel</button>
+          &lt;!&ndash;<button mat-raised-button color="primary" type="submit" [disabled]="updateForm.invalid || updating">&ndash;&gt;
+          <button mat-raised-button color="primary" type="submit"
+                  [disabled]="updateForm.pristine || updating || !atLeastOneFieldFilled()">
+            <mat-spinner diameter="20" *ngIf="updating"></mat-spinner>
+            <span *ngIf="!updating">Update Providership</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+
+-->

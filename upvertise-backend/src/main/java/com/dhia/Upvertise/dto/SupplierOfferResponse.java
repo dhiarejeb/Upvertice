@@ -2,6 +2,8 @@ package com.dhia.Upvertise.dto;
 
 import com.dhia.Upvertise.models.sponsorship.SponsorAd;
 import com.dhia.Upvertise.models.supplier.SupplierOfferStatus;
+
+
 import lombok.Builder;
 
 import java.time.LocalDate;
@@ -13,11 +15,10 @@ public record SupplierOfferResponse(
         String description,
         Integer quantityAvailable,
         Double price,
-        LocalDate startDate,
-        LocalDate endDate,
+        String startDate,  // Changed to String
+        String endDate,    // Changed to String
         SupplierOfferStatus status,
         String imageUrl,
         List<SponsorAdResponse> sponsorAds
-
 ) {
 }

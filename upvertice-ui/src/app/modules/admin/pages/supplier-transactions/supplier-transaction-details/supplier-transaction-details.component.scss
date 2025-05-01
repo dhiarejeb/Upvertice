@@ -1,0 +1,38 @@
+.transaction-details {
+  .nav-tabs {
+    .nav-link {
+      cursor: pointer;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+    }
+  }
+
+  .color-swatch {
+    display: inline-block;
+    border: 1px solid #dee2e6;
+  }
+
+  .card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  }
+
+  .progress {
+    height: 20px;
+
+    .progress-bar {
+      font-weight: bold;
+      background-color: #28a745;
+    }
+  }
+
+  .tab-content {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}

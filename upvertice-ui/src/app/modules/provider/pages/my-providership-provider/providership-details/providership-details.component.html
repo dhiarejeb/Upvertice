@@ -1,0 +1,537 @@
+<div class="container-fluid my-4">
+  <!-- Header with back button -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <button class="btn btn-outline-secondary" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i> Back to Providerships
+    </button>
+    <h2 class="mb-0">
+      <i class="fas fa-cube"></i> Providership Details
+      <span *ngIf="providership" class="text-muted">#{{providership.id}}</span>
+    </h2>
+    <div></div> <!-- Empty div for flex spacing -->
+  </div>
+
+  <!-- Loading and error states -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Loading providership details...</p>
+  </div>
+
+  <div *ngIf="error && !loading" class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle"></i> Failed to load providership details. Please try again.
+  </div>
+
+  <!-- Main content when data is loaded -->
+  <div *ngIf="providership && !loading" class="providership-details">
+    <!-- Status banner -->
+    <div class="alert" [ngClass]="'alert-' + getStatusClass(providership.status).replace('bg-', '')">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <strong>Status:</strong> {{providership.status}}
+          <span class="ms-3 badge" [ngClass]="getStatusClass(providership.providershipApprovalStatus)">
+            Admin: {{providership.providershipApprovalStatus}}
+          </span>
+        </div>
+        <div>
+          <strong>Created:</strong> {{providership.createdDate | date:'medium'}}
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation tabs -->
+    <ul class="nav nav-tabs mb-4">
+      <li class="nav-item">
+        <a class="nav-link" [ngClass]="{'active': activeTab === 'overview'}" (click)="setActiveTab('overview')">
+          <i class="fas fa-home"></i> Overview
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [ngClass]="{'active': activeTab === 'sponsorship'}" (click)="setActiveTab('sponsorship')">
+          <i class="fas fa-handshake"></i> Sponsorship
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [ngClass]="{'active': activeTab === 'ads'}" (click)="setActiveTab('ads')">
+          <i class="fas fa-ad"></i> Sponsor Ads
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [ngClass]="{'active': activeTab === 'transactions'}" (click)="setActiveTab('transactions')">
+          <i class="fas fa-exchange-alt"></i> Transactions
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [ngClass]="{'active': activeTab === 'analytics'}" (click)="setActiveTab('analytics')">
+          <i class="fas fa-chart-line"></i> Analytics
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [ngClass]="{'active': activeTab === 'documents'}" (click)="setActiveTab('documents')">
+          <i class="fas fa-file-alt"></i> Documents
+        </a>
+      </li>
+    </ul>
+
+    <!-- Tab content -->
+    <!-- Overview Tab -->
+    <div *ngIf="activeTab === 'overview'" class="tab-content">
+      <div class="row">
+        <!-- Basic Info Card -->
+        <div class="col-md-6 mb-4">
+          <div class="card h-100">
+            <div class="card-header bg-light">
+              <h5 class="mb-0"><i class="fas fa-info-circle"></i> Basic Information</h5>
+            </div>
+            <div class="card-body">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <strong>Location:</strong> {{providership.location}}
+                </div>
+                <div class="col-md-6">
+                  <strong>Has Print Machine:</strong> {{providership.hasPrintMachine ? 'Yes' : 'No'}}
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <strong>User ID:</strong> {{providership.userId}}
+                </div>
+                <div class="col-md-6">
+                  <strong>Last Modified:</strong> {{providership.lastModifiedDate | date:'short'}}
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-12">
+                  <strong>Bonus Earned:</strong> {{providership.bonusEarned || 0 | currency}}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Production Progress Card -->
+        <div class="col-md-6 mb-4">
+          <div class="card h-100">
+            <div class="card-header bg-light">
+              <h5 class="mb-0"><i class="fas fa-tasks"></i> Production Progress</h5>
+            </div>
+            <div class="card-body">
+              <div class="row align-items-center">
+                <div class="col-md-6">
+                  <div class="text-center mb-3">
+                    <h6>Progress</h6>
+                    <div class="progress" style="height: 25px;">
+                      <div class="progress-bar" role="progressbar"
+                           [style.width.%]="calculateCompletionPercentage()"
+                           [attr.aria-valuenow]="calculateCompletionPercentage()"
+                           aria-valuemin="0" aria-valuemax="100">
+                        {{calculateCompletionPercentage() | number:'1.0-0'}}%
+                      </div>
+                    </div>
+                  </div>
+                  <div class="text-center">
+                    <p class="mb-1"><strong>Produced:</strong> {{providership.producedProduct || 0}}</p>
+                    <p class="mb-1"><strong>Total:</strong> {{providership.totalProduct || 0}}</p>
+                    <p class="mb-0"><strong>Remaining:</strong> {{(providership.totalProduct || 0) - (providership.producedProduct || 0)}}</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <canvas id="productionChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sponsorship Summary Card -->
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="fas fa-handshake"></i> Sponsorship Summary</h5>
+        </div>
+        <div class="card-body">
+          <div *ngIf="providership.sponsorship; else noSponsorship">
+            <div class="row">
+              <div class="col-md-6">
+                <p><strong>Sponsorship ID:</strong> {{providership.sponsorship.id}}</p>
+                <p><strong>Status:</strong>
+                  <span class="badge" [ngClass]="getStatusClass(providership.sponsorship.status)">
+                    {{providership.sponsorship.status}}
+                  </span>
+                </p>
+                <p><strong>Created:</strong> {{providership.sponsorship.createdDate | date:'medium'}}</p>
+              </div>
+              <div class="col-md-6">
+                <p><strong>User ID:</strong> {{providership.sponsorship.userId}}</p>
+                <p><strong>Number of Ads:</strong> {{providership.sponsorship.sponsorAds?.length || 0}}</p>
+                <p><strong>Number of Transactions:</strong> {{providership.sponsorship.supplierTransactions?.length || 0}}</p>
+              </div>
+            </div>
+          </div>
+          <ng-template #noSponsorship>
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i> No sponsorship information available.
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sponsorship Tab -->
+    <div *ngIf="activeTab === 'sponsorship'" class="tab-content">
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="fas fa-handshake"></i> Sponsorship Details</h5>
+        </div>
+        <div class="card-body">
+          <div *ngIf="providership.sponsorship; else noSponsorship">
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <p><strong>Sponsorship ID:</strong> {{providership.sponsorship.id}}</p>
+                <p><strong>Status:</strong>
+                  <span class="badge" [ngClass]="getStatusClass(providership.sponsorship.status)">
+                    {{providership.sponsorship.status}}
+                  </span>
+                </p>
+                <p><strong>Created:</strong> {{providership.sponsorship.createdDate | date:'medium'}}</p>
+                <p><strong>User ID:</strong> {{providership.sponsorship.userId}}</p>
+              </div>
+              <div class="col-md-6">
+                <div *ngIf="providership.sponsorship.sponsorOffer" class="card border-light">
+                  <div class="card-header bg-light">
+                    <h6 class="mb-0">Sponsor Offer</h6>
+                  </div>
+                  <div class="card-body">
+                    <p><strong>Title:</strong> {{providership.sponsorship.sponsorOffer.title}}</p>
+                    <p><strong>Category:</strong> {{providership.sponsorship.sponsorOffer.category}}</p>
+                    <p><strong>Price:</strong> {{providership.sponsorship.sponsorOffer.price | currency}}</p>
+                    <p><strong>Product Quantity:</strong> {{providership.sponsorship.sponsorOffer.productQuantity}}</p>
+                    <p><strong>Product Type:</strong> {{providership.sponsorship.sponsorOffer.productType}}</p>
+                    <p><strong>Sales Area:</strong> {{providership.sponsorship.sponsorOffer.salesArea}}</p>
+                    <p><strong>Number of Ads:</strong> {{providership.sponsorship.sponsorOffer.numberAds}}</p>
+                    <p><strong>Status:</strong> {{providership.sponsorship.sponsorOffer.status}}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="providership.sponsorship.sponsorOffer?.description" class="mb-4">
+              <h6>Description</h6>
+              <div class="card">
+                <div class="card-body">
+                  <p>{{providership?.sponsorship?.sponsorOffer?.description}}</p>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="providership.sponsorship.sponsorOffer?.explainImages?.length" class="mb-4">
+              <h6>Explanation Images</h6>
+              <div class="row">
+                <div *ngFor="let img of providership?.sponsorship?.sponsorOffer?.explainImages" class="col-md-3 mb-3">
+                  <img [src]="img" class="img-fluid img-thumbnail" alt="Explanation image">
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noSponsorship>
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i> No sponsorship information available.
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ads Tab -->
+    <div *ngIf="activeTab === 'ads'" class="tab-content">
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="fas fa-ad"></i> Sponsor Advertisements</h5>
+        </div>
+        <div class="card-body">
+          <div *ngIf="providership.sponsorship?.sponsorAds?.length; else noAds">
+            <div class="row">
+              <div *ngFor="let ad of providership?.sponsorship?.sponsorAds" class="col-md-6 mb-4">
+                <div class="card h-100">
+                  <div class="card-header bg-light">
+                    <h6 class="mb-0">{{ad.title}}</h6>
+                  </div>
+                  <div class="card-body">
+                    <div *ngIf="ad.design" class="mb-3">
+                      <img [src]="ad.design" class="img-fluid rounded" alt="Ad design">
+                    </div>
+                    <p *ngIf="ad.content"><strong>Content:</strong> {{ad.content}}</p>
+                    <div *ngIf="ad.designColors?.length" class="mb-3">
+                      <p class="mb-2"><strong>Design Colors:</strong></p>
+                      <div class="d-flex flex-wrap gap-2">
+                        <div *ngFor="let color of ad.designColors" class="color-swatch"
+                             [style.background-color]="color"
+                             [style.width.px]="30"
+                             [style.height.px]="30"
+                             [style.border-radius.px]="4">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noAds>
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i> No advertisements available.
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transactions Tab -->
+    <div *ngIf="activeTab === 'transactions'" class="tab-content">
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="fas fa-exchange-alt"></i> Supplier Transactions</h5>
+        </div>
+        <div class="card-body">
+          <div *ngIf="providership.sponsorship?.supplierTransactions?.length; else noTransactions">
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Supplier Offer</th>
+                  <th>Quantity Sold</th>
+                  <th>Price</th>
+                  <th>Discount</th>
+                  <th>Percentage</th>
+                  <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let transaction of providership?.sponsorship?.supplierTransactions">
+                  <td>{{transaction.id}}</td>
+                  <td>{{transaction.supplierOffer?.title || 'N/A'}}</td>
+                  <td>{{transaction.quantitySold || 0}}</td>
+                  <td>{{transaction.relativePrice | currency}}</td>
+                  <td>{{transaction.discount | percent:'1.0-2'}}</td>
+                  <td>{{transaction.percentage | percent:'1.0-2'}}</td>
+                  <td>
+                      <span class="badge" [ngClass]="getStatusClass(transaction.supplierTransactionStatus)">
+                        {{transaction.supplierTransactionStatus}}
+                      </span>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Supplier Offers Details -->
+            <h6 class="mt-4 mb-3">Supplier Offers Details</h6>
+            <div class="row">
+              <div *ngFor="let transaction of providership?.sponsorship?.supplierTransactions" class="col-md-6 mb-4">
+                <div *ngIf="transaction.supplierOffer" class="card h-100">
+                  <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">{{transaction.supplierOffer.title}}</h6>
+                    <span class="badge" [ngClass]="getStatusClass(transaction.supplierOffer.status)">
+                      {{transaction.supplierOffer.status}}
+                    </span>
+                  </div>
+                  <div class="card-body">
+                    <div *ngIf="transaction.supplierOffer.imageUrl" class="mb-3">
+                      <img [src]="transaction.supplierOffer.imageUrl" class="img-fluid rounded" alt="Offer image">
+                    </div>
+                    <p><strong>Price:</strong> {{transaction.supplierOffer.price | currency}}</p>
+                    <p><strong>Quantity Available:</strong> {{transaction.supplierOffer.quantityAvailable}}</p>
+                    <p><strong>Period:</strong> {{transaction.supplierOffer.startDate | date}} - {{transaction.supplierOffer.endDate | date}}</p>
+                    <p *ngIf="transaction.supplierOffer.description"><strong>Description:</strong> {{transaction.supplierOffer.description}}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noTransactions>
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i> No supplier transactions available.
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Tab -->
+    <div *ngIf="activeTab === 'analytics'" class="tab-content">
+      <div class="row">
+        <!-- Production Analytics -->
+        <div class="col-md-6 mb-4">
+          <div class="card h-100">
+            <div class="card-header bg-light">
+              <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Production Analytics</h5>
+            </div>
+            <div class="card-body">
+              <canvas id="productionChart"></canvas>
+              <div class="mt-3">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <strong>Completion Rate:</strong> {{calculateCompletionPercentage() | number:'1.0-0'}}%
+                  </div>
+                  <div>
+                    <strong>Remaining:</strong> {{(providership.totalProduct || 0) - (providership.producedProduct || 0)}} units
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transactions Analytics -->
+        <div class="col-md-6 mb-4">
+          <div class="card h-100">
+            <div class="card-header bg-light">
+              <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Transactions Analytics</h5>
+            </div>
+            <div class="card-body">
+              <div *ngIf="providership.sponsorship?.supplierTransactions?.length; else noTransactionsChart">
+                <canvas id="transactionsChart"></canvas>
+              </div>
+              <ng-template #noTransactionsChart>
+                <div class="alert alert-warning">
+                  <i class="fas fa-exclamation-triangle"></i> No transaction data available for analysis.
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Metrics -->
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="fas fa-tachometer-alt"></i> Key Metrics</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-3 mb-3">
+              <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                  <h6>Total Products</h6>
+                  <h3>{{providership.totalProduct || 0}}</h3>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 mb-3">
+              <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                  <h6>Produced</h6>
+                  <h3>{{providership.producedProduct || 0}}</h3>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 mb-3">
+              <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                  <h6>Bonus Earned</h6>
+                  <h3>{{providership.bonusEarned || 0 | currency}}</h3>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 mb-3">
+              <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                  <h6>Transactions</h6>
+                  <h3>{{providership.sponsorship?.supplierTransactions?.length || 0}}</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Documents Tab -->
+    <div *ngIf="activeTab === 'documents'" class="tab-content">
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="fas fa-file-alt"></i> Proof Documents</h5>
+        </div>
+        <div class="card-body">
+          <div *ngIf="providership.proofDocs?.length; else noDocuments">
+            <div class="row">
+              <div *ngFor="let doc of providership.proofDocs; let i = index" class="col-md-3 mb-4">
+                <div class="card h-100">
+                  <img [src]="doc" class="card-img-top" alt="Proof document">
+                  <div class="card-body text-center">
+                    <h6 class="card-title">Document {{i + 1}}</h6>
+                    <a [href]="doc" target="_blank" class="btn btn-sm btn-primary">
+                      <i class="fas fa-eye"></i> View
+                    </a>
+                    <a [href]="doc" download class="btn btn-sm btn-secondary ms-2">
+                      <i class="fas fa-download"></i> Download
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noDocuments>
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i> No proof documents available.
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- Transaction Proofs -->
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="fas fa-receipt"></i> Transaction Proofs</h5>
+        </div>
+        <div class="card-body">
+          <ng-container *ngIf="hasTransactionProofs; else noTransactionProofs">
+            <div class="accordion" id="transactionProofsAccordion">
+              <div *ngFor="let transaction of providership.sponsorship?.supplierTransactions; let i = index" class="accordion-item">
+                <h2 class="accordion-header" [id]="'heading' + i">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                          [attr.data-bs-target]="'#collapse' + i" aria-expanded="false" [attr.aria-controls]="'collapse' + i">
+                    Transaction #{{transaction.id}} - {{transaction.supplierOffer?.title || 'Unknown'}}
+                  </button>
+                </h2>
+                <div [id]="'collapse' + i" class="accordion-collapse collapse" [attr.aria-labelledby]="'heading' + i" data-bs-parent="#transactionProofsAccordion">
+                  <div class="accordion-body">
+                    <div *ngIf="transaction.proofs?.length; else noProofsForTransaction">
+                      <div class="row">
+                        <div *ngFor="let proof of transaction.proofs; let j = index" class="col-md-3 mb-3">
+                          <div class="card">
+                            <img [src]="proof" class="card-img-top" alt="Transaction proof">
+                            <div class="card-body text-center">
+                              <h6 class="card-title">Proof {{j + 1}}</h6>
+                              <a [href]="proof" target="_blank" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye"></i> View
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <ng-template #noProofsForTransaction>
+                      <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No proofs available for this transaction.
+                      </div>
+                    </ng-template>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+          </div>
+
+          <ng-template #noTransactionProofs>
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i> No transaction proofs available.
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+

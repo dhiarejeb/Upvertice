@@ -1,0 +1,22 @@
+/* user-management.component.css */
+
+table {
+  width: 100%;
+  margin-top: 20px;
+}
+
+table th, table td {
+  text-align: center;
+}
+
+button {
+  margin-right: 5px;
+}
+.profile-photo {
+  transition: transform 0.3s ease;
+}
+
+.profile-photo:hover {
+  transform: scale(1.1);
+}
+

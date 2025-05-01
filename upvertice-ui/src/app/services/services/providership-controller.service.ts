@@ -17,6 +17,8 @@ import { deleteProvidership } from '../fn/providership-controller/delete-provide
 import { DeleteProvidership$Params } from '../fn/providership-controller/delete-providership';
 import { getAllProviderships } from '../fn/providership-controller/get-all-providerships';
 import { GetAllProviderships$Params } from '../fn/providership-controller/get-all-providerships';
+import { getProvidershipById } from '../fn/providership-controller/get-providership-by-id';
+import { GetProvidershipById$Params } from '../fn/providership-controller/get-providership-by-id';
 import { PageResponseProvidershipResponse } from '../models/page-response-providership-response';
 import { ProvidershipResponse } from '../models/providership-response';
 import { updateProvidership } from '../fn/providership-controller/update-providership';
@@ -32,20 +34,28 @@ export class ProvidershipControllerService extends BaseService {
   static readonly CreateProvidershipPath = '/providership/create';
 
   /**
+   * Create a new Providership.
+   *
+   * Allows a provider to create a providership with optional proof images
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `createProvidership()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
   createProvidership$Response(params?: CreateProvidership$Params, context?: HttpContext): Observable<StrictHttpResponse<ProvidershipResponse>> {
     return createProvidership(this.http, this.rootUrl, params, context);
   }
 
   /**
+   * Create a new Providership.
+   *
+   * Allows a provider to create a providership with optional proof images
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `createProvidership$Response()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
   createProvidership(params?: CreateProvidership$Params, context?: HttpContext): Observable<ProvidershipResponse> {
     return this.createProvidership$Response(params, context).pipe(
@@ -57,20 +67,28 @@ export class ProvidershipControllerService extends BaseService {
   static readonly UpdateProvidershipPath = '/providership/update/{id}';
 
   /**
+   * Update an existing Providership.
+   *
+   * Allows a provider or admin to update providership info and upload new proof images
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `updateProvidership()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
   updateProvidership$Response(params: UpdateProvidership$Params, context?: HttpContext): Observable<StrictHttpResponse<ProvidershipResponse>> {
     return updateProvidership(this.http, this.rootUrl, params, context);
   }
 
   /**
+   * Update an existing Providership.
+   *
+   * Allows a provider or admin to update providership info and upload new proof images
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `updateProvidership$Response()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
   updateProvidership(params: UpdateProvidership$Params, context?: HttpContext): Observable<ProvidershipResponse> {
     return this.updateProvidership$Response(params, context).pipe(
@@ -100,6 +118,31 @@ export class ProvidershipControllerService extends BaseService {
   getAllProviderships(params: GetAllProviderships$Params, context?: HttpContext): Observable<PageResponseProvidershipResponse> {
     return this.getAllProviderships$Response(params, context).pipe(
       map((r: StrictHttpResponse<PageResponseProvidershipResponse>): PageResponseProvidershipResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `getProvidershipById()` */
+  static readonly GetProvidershipByIdPath = '/providership/{providershipId}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getProvidershipById()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getProvidershipById$Response(params: GetProvidershipById$Params, context?: HttpContext): Observable<StrictHttpResponse<ProvidershipResponse>> {
+    return getProvidershipById(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getProvidershipById$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getProvidershipById(params: GetProvidershipById$Params, context?: HttpContext): Observable<ProvidershipResponse> {
+    return this.getProvidershipById$Response(params, context).pipe(
+      map((r: StrictHttpResponse<ProvidershipResponse>): ProvidershipResponse => r.body)
     );
   }
 

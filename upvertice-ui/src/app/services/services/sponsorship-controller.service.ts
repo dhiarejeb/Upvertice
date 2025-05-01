@@ -20,9 +20,9 @@ import { GetSponsorshipById$Params } from '../fn/sponsorship-controller/get-spon
 import { getSponsorshipsByStatus } from '../fn/sponsorship-controller/get-sponsorships-by-status';
 import { GetSponsorshipsByStatus$Params } from '../fn/sponsorship-controller/get-sponsorships-by-status';
 import { PageResponseSponsorshipResponse } from '../models/page-response-sponsorship-response';
+import { patchSponsorship } from '../fn/sponsorship-controller/patch-sponsorship';
+import { PatchSponsorship$Params } from '../fn/sponsorship-controller/patch-sponsorship';
 import { SponsorshipResponse } from '../models/sponsorship-response';
-import { updateSponsorshipStatus } from '../fn/sponsorship-controller/update-sponsorship-status';
-import { UpdateSponsorshipStatus$Params } from '../fn/sponsorship-controller/update-sponsorship-status';
 
 @Injectable({ providedIn: 'root' })
 export class SponsorshipControllerService extends BaseService {
@@ -30,32 +30,36 @@ export class SponsorshipControllerService extends BaseService {
     super(config, http);
   }
 
-  /** Path part for operation `updateSponsorshipStatus()` */
-  static readonly UpdateSponsorshipStatusPath = '/sponsorships/{sponsorshipId}/status';
+  /** Path part for operation `patchSponsorship()` */
+  static readonly PatchSponsorshipPath = '/sponsorships/{sponsorshipId}/status';
 
   /**
-   * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `updateSponsorshipStatus()` instead.
+   * Patch Sponsorship Status and SponsorAd.
    *
-   * This method doesn't expect any request body.
+   * Allows admin to patch the status of a sponsorship and optionally upload an image and sponsorAd data
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `patchSponsorship()` instead.
+   *
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
-  updateSponsorshipStatus$Response(params: UpdateSponsorshipStatus$Params, context?: HttpContext): Observable<StrictHttpResponse<{
-}>> {
-    return updateSponsorshipStatus(this.http, this.rootUrl, params, context);
+  patchSponsorship$Response(params: PatchSponsorship$Params, context?: HttpContext): Observable<StrictHttpResponse<SponsorshipResponse>> {
+    return patchSponsorship(this.http, this.rootUrl, params, context);
   }
 
   /**
-   * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `updateSponsorshipStatus$Response()` instead.
+   * Patch Sponsorship Status and SponsorAd.
    *
-   * This method doesn't expect any request body.
+   * Allows admin to patch the status of a sponsorship and optionally upload an image and sponsorAd data
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `patchSponsorship$Response()` instead.
+   *
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
-  updateSponsorshipStatus(params: UpdateSponsorshipStatus$Params, context?: HttpContext): Observable<{
-}> {
-    return this.updateSponsorshipStatus$Response(params, context).pipe(
-      map((r: StrictHttpResponse<{
-}>): {
-} => r.body)
+  patchSponsorship(params: PatchSponsorship$Params, context?: HttpContext): Observable<SponsorshipResponse> {
+    return this.patchSponsorship$Response(params, context).pipe(
+      map((r: StrictHttpResponse<SponsorshipResponse>): SponsorshipResponse => r.body)
     );
   }
 

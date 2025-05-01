@@ -1,22 +1,37 @@
 package com.dhia.Upvertise.controllers;
 
+import com.dhia.Upvertise.dto.UserResponse;
 import com.dhia.Upvertise.dto.UserUpdateRequest;
+import com.dhia.Upvertise.models.common.PageResponse;
 import com.dhia.Upvertise.models.user.User;
 import com.dhia.Upvertise.repositories.UserRepository;
 import com.dhia.Upvertise.services.CloudinaryService;
 import com.dhia.Upvertise.services.KeycloakService;
 import com.dhia.Upvertise.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+
 import java.io.IOException;
 import java.util.List;
+
+import static org.keycloak.models.utils.RoleUtils.hasRole;
 
 @RestController
 @RequestMapping("/users")
@@ -27,6 +42,50 @@ public class UserController {
     private final UserRepository userRepository;
     private final KeycloakService keycloakService;
     private final UserService userService;
+
+
+    @GetMapping
+    public ResponseEntity<PageResponse<UserResponse>> getUsers(
+            Authentication connectedUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        String userId = connectedUser.getName();
+        boolean isAdmin = connectedUser.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_Admin"));
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        PageResponse<UserResponse> response = isAdmin
+                ? userService.getAllUsers(pageable)
+                : userService.getUserById(userId);
+
+        return ResponseEntity.ok(response);
+    }
+    /*public ResponseEntity<PageResponse<UserResponse>> getUsers(
+            Authentication connectedUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        String userId = connectedUser.getName();
+        boolean isAdmin = connectedUser.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_Admin"));
+
+
+        Pageable pageable = PageRequest.of(page, size);
+
+
+
+        if (isAdmin) {
+            // Admin sees all users
+            PageResponse<UserResponse> userResponses = userService.getAllUsers(pageable);
+        } else {
+            // If the user is a Provider, Supplier, or Advertiser, return only their info
+            PageResponse<UserResponse> userResponses = userService.getUserById(userId);
+        }
+
+        return ResponseEntity.ok(userResponses);
+    }*/
 
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody User userRequest) {
@@ -52,6 +111,11 @@ public class UserController {
                     .body("Error updating user: " + e.getMessage());
         }
     }
+    @Operation(summary = "Update a user's information in Keycloak")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully updated user in Keycloak"),
+            @ApiResponse(responseCode = "500", description = "Error updating user")
+    })
 
 @PutMapping(value = "/update-in-keycloak", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 public ResponseEntity<?> updateUserInKeycloak(
@@ -71,7 +135,11 @@ public ResponseEntity<?> updateUserInKeycloak(
         userService.deleteUserEverywhere(keycloakId);
         return ResponseEntity.noContent().build();
     }
-
+    @Operation(summary = "Delete a user from Keycloak")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully deleted user from Keycloak"),
+            @ApiResponse(responseCode = "500", description = "Error deleting user")
+    })
     @DeleteMapping("/delete-from-keycloak/{userId}")
     public ResponseEntity<?> deleteUserFromKeycloak(@PathVariable String userId) {
         try {

@@ -30,20 +30,28 @@ export class SponsorAdControllerService extends BaseService {
   static readonly UpdateSponsorAdPath = '/sponsorAd/updateAd/{adId}';
 
   /**
+   * Update Sponsor Ad.
+   *
+   *
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `updateSponsorAd()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
   updateSponsorAd$Response(params: UpdateSponsorAd$Params, context?: HttpContext): Observable<StrictHttpResponse<SponsorAdResponse>> {
     return updateSponsorAd(this.http, this.rootUrl, params, context);
   }
 
   /**
+   * Update Sponsor Ad.
+   *
+   *
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `updateSponsorAd$Response()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
   updateSponsorAd(params: UpdateSponsorAd$Params, context?: HttpContext): Observable<SponsorAdResponse> {
     return this.updateSponsorAd$Response(params, context).pipe(

@@ -13,7 +13,5 @@ public record SupplierTransactionUpdateRequest(
 
         Double discount
 ) {
-    public SupplierTransactionUpdateRequest {
-        if (discount == null) discount = 0.0; // Default discount if not provided
-    }
+
 }

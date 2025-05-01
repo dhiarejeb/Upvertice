@@ -27,7 +27,7 @@ public class SponsorAd extends BaseEntity {
     //private String placement;// Where the ad is placed on the goblet
     private String design;
     @ElementCollection
-    private List<String> design_colors;
+    private Set<String> designColors;
 
     //@ManyToOne
     //@JoinColumn(name = "sponsor_id")
@@ -39,7 +39,7 @@ public class SponsorAd extends BaseEntity {
     private Set<Sponsorship> sponsorships = new HashSet<>();
 
     @ManyToMany(mappedBy = "sponsorAds")
-    private List<SupplierOffer> supplierOffers;
+    private Set<SupplierOffer> supplierOffers;
 
 
 }

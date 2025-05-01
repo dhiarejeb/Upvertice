@@ -80,9 +80,9 @@ public class SponsorshipMapper {
 
 
         // Map supplier transactions associated with this sponsorship
-        List<SupplierTransactionResponse> supplierTransactionResponses = (sponsorship.getSupplierTransactions() != null)
+        List<SupplierTransactionLightResponse> supplierTransactionLightResponses = (sponsorship.getSupplierTransactions() != null)
                 ? sponsorship.getSupplierTransactions().stream()
-                .map(SupplierTransactionMapper::toSupplierTransactionResponse)
+                .map(SupplierTransactionMapper::toSupplierTransactionLightResponse)
                 .collect(Collectors.toList())
                 : new ArrayList<>();
 
@@ -93,7 +93,7 @@ public class SponsorshipMapper {
                 sponsorOfferResponse,
                 sponsorAdResponses,
                 sponsorship.getCreatedDate(),
-                supplierTransactionResponses
+                supplierTransactionLightResponses
         );
 
     }

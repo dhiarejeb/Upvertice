@@ -1,0 +1,26 @@
+/* delete-confirmation-modal.component.scss */
+.delete-title {
+  display: flex;
+  align-items: center;
+  color: #d32f2f;
+
+  .warning-icon {
+    margin-right: 0.5rem;
+  }
+}
+
+.confirmation-message {
+  font-size: 1rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.warning-message {
+  font-size: 0.875rem;
+  color: #666;
+  text-align: center;
+}
+
+mat-dialog-actions {
+  padding: 1rem 0;
+}

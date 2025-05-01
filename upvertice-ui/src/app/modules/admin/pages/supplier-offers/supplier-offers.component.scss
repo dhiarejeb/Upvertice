@@ -1,0 +1,12 @@
+.modal-backdrop {
+  display: none;
+}
+
+.modal {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.img-thumbnail {
+  max-height: 60px;
+  object-fit: cover;
+}

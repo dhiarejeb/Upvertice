@@ -1,0 +1,59 @@
+
+<div class="container mt-4">
+  <h2><i class="fas fa-exchange-alt"></i> Supplier Transactions</h2>
+  <table class="table table-striped mt-3">
+    <thead class="thead-dark">
+    <tr>
+      <th>ID</th>
+      <th>User ID</th>
+      <th>Status</th>
+      <th>Discount</th>
+      <th>Quantity Sold</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let tx of transactions">
+      <td>{{ tx.id }}</td>
+      <td>{{ tx.userId }}</td>
+      <td>
+        <select class="form-control" [(ngModel)]="tx.supplierTransactionStatus" name="status{{tx.id}}">
+          <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+        </select>
+      </td>
+      <td>
+        <input type="number" class="form-control" [(ngModel)]="tx.discount" name="discount{{tx.id}}">
+      </td>
+      <td>{{ tx.quantitySold }}</td>
+      <td>
+        <button
+          class="btn btn-sm btn-primary me-2"
+          (click)="goToDetails(tx.id)"
+        >
+          <i class="fas fa-info-circle"></i>
+          Details
+        </button>
+        <button class="btn btn-sm btn-primary mr-2" (click)="update(tx)">
+          <i class="fas fa-save"></i> Update
+        </button>
+        <button class="btn btn-sm btn-danger" (click)="delete(tx)">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" [class.disabled]="page === 0">
+        <a class="page-link" (click)="prevPage()">Previous</a>
+      </li>
+      <li class="page-item disabled">
+        <span class="page-link">Page {{ page + 1 }} of {{ totalPages }}</span>
+      </li>
+      <li class="page-item" [class.disabled]="page >= totalPages - 1">
+        <a class="page-link" (click)="nextPage()">Next</a>
+      </li>
+    </ul>
+  </nav>
+</div>

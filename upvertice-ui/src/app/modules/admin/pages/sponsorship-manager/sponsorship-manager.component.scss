@@ -1,0 +1,85 @@
+/* sponsorship-manager.component.scss */
+.sponsorship-manager-container {
+  min-height: 100vh;
+  background-color: #f5e8d3;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #6b4c28;
+  color: white;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 1rem;
+
+    a {
+      color: white;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .logout-btn {
+    background-color: transparent;
+    border: 1px solid white;
+    color: white;
+
+    &:hover {
+      background-color: #8b6d48;
+    }
+  }
+}
+
+.main-content {
+  padding: 1.5rem;
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #6b4c28;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 16rem;
+}
+
+::ng-deep {
+  .mat-tab-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .mat-tab-label {
+    background-color: #e0cdb1;
+    color: #6b4c28;
+  }
+
+  .mat-tab-label-active {
+    background-color: #d0b89a;
+    color: #6b4c28;
+    font-weight: bold;
+  }
+}

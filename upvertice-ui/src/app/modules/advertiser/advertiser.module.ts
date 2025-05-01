@@ -6,7 +6,7 @@ import {AdvertiserRoutingModule} from './advertiser-routing.module';
 
 import {WelcomeComponent} from './pages/welcome/welcome.component';
 import {OffersComponent} from './pages/offers/offers.component';
-//import {DashboardComponent} from './pages/dashboard/dashboard.component';
+
 import {AdvertiserMenuComponent} from './components/advertiser-menu/advertiser-menu.component';
 import {AdvertiserComponent} from './advertiser/advertiser.component';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
@@ -18,7 +18,7 @@ import {MatCardModule} from '@angular/material/card';
 import {MatButtonModule} from '@angular/material/button';
 import {MatDialogModule} from '@angular/material/dialog';
 
-import {SharedModule} from '../shared/shared.module';
+
 import { SponsorshipsListComponent } from './pages/sponsorships/sponsorships-list/sponsorships-list.component';
 import {SponsorshipDetailsComponent} from './pages/sponsorships/sponsorship-details/sponsorship-details.component';
 
@@ -50,7 +50,7 @@ import {SponsorshipDetailsComponent} from './pages/sponsorships/sponsorship-deta
     MatDialogModule,
     BaseChartDirective,
     MatProgressBarModule,
-    SharedModule
+
 
   ],
   providers: [

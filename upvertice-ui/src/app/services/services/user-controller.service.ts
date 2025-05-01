@@ -19,6 +19,9 @@ import { deleteUserFromKeycloak } from '../fn/user-controller/delete-user-from-k
 import { DeleteUserFromKeycloak$Params } from '../fn/user-controller/delete-user-from-keycloak';
 import { getAdvertiserEmails } from '../fn/user-controller/get-advertiser-emails';
 import { GetAdvertiserEmails$Params } from '../fn/user-controller/get-advertiser-emails';
+import { getUsers } from '../fn/user-controller/get-users';
+import { GetUsers$Params } from '../fn/user-controller/get-users';
+import { PageResponseUserResponse } from '../models/page-response-user-response';
 import { updateUserFromKeycloak } from '../fn/user-controller/update-user-from-keycloak';
 import { UpdateUserFromKeycloak$Params } from '../fn/user-controller/update-user-from-keycloak';
 import { updateUserInKeycloak } from '../fn/user-controller/update-user-in-keycloak';
@@ -36,6 +39,10 @@ export class UserControllerService extends BaseService {
   static readonly UpdateUserInKeycloakPath = '/users/update-in-keycloak';
 
   /**
+   * Update a user's information in Keycloak.
+   *
+   *
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `updateUserInKeycloak()` instead.
    *
@@ -47,6 +54,10 @@ export class UserControllerService extends BaseService {
   }
 
   /**
+   * Update a user's information in Keycloak.
+   *
+   *
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `updateUserInKeycloak$Response()` instead.
    *
@@ -87,6 +98,31 @@ export class UserControllerService extends BaseService {
       map((r: StrictHttpResponse<{
 }>): {
 } => r.body)
+    );
+  }
+
+  /** Path part for operation `getUsers()` */
+  static readonly GetUsersPath = '/users';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getUsers()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getUsers$Response(params?: GetUsers$Params, context?: HttpContext): Observable<StrictHttpResponse<PageResponseUserResponse>> {
+    return getUsers(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getUsers$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getUsers(params?: GetUsers$Params, context?: HttpContext): Observable<PageResponseUserResponse> {
+    return this.getUsers$Response(params, context).pipe(
+      map((r: StrictHttpResponse<PageResponseUserResponse>): PageResponseUserResponse => r.body)
     );
   }
 
@@ -202,6 +238,10 @@ export class UserControllerService extends BaseService {
   static readonly DeleteUserFromKeycloakPath = '/users/delete-from-keycloak/{userId}';
 
   /**
+   * Delete a user from Keycloak.
+   *
+   *
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `deleteUserFromKeycloak()` instead.
    *
@@ -213,6 +253,10 @@ export class UserControllerService extends BaseService {
   }
 
   /**
+   * Delete a user from Keycloak.
+   *
+   *
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `deleteUserFromKeycloak$Response()` instead.
    *

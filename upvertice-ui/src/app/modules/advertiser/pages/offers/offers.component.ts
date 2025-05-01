@@ -9,6 +9,7 @@ import {PageResponseSponsorOfferResponse} from '../../../../services/models/page
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import {PageResponseSponsorshipResponse} from '../../../../services/models/page-response-sponsorship-response';
+import {SponsorOfferMultipartRequest} from '../../../../services/models/sponsor-offer-multipart-request';
 
 
 
@@ -123,10 +124,53 @@ export class OffersComponent implements OnInit {
       this.selectedImageFile = null;
     }
   }
+  onSubmitAd(offerId: number): void {
+    if (this.adForm.invalid) {
+      return;
+    }
+
+    const sponsorAdRequest = {
+      title: this.adForm.value.title,
+      content: this.adForm.value.content,
+      designColors: this.adForm.value.designColors || [] // Include if needed
+    };
+
+    const requestBlob = new Blob([JSON.stringify(sponsorAdRequest)], { type: 'application/json' });
+
+    const multipartRequest: SponsorOfferMultipartRequest = {
+      request: requestBlob as any,  // TS type workaround (Blob not string)
+      explainImages: this.selectedImageFile ? [this.selectedImageFile] : []
+    };
+
+    const params = {
+      offerId,
+      body: multipartRequest
+    };
+
+    this.isSubmitting = true;
+
+    this.offerService.chooseSponsorOffer(params).subscribe({
+      next: (sponsorshipId: number) => {
+        console.log('Sponsorship created with id', sponsorshipId);
+        this.userSponsorships.set(offerId, sponsorshipId);
+        this.createdSponsorshipId = sponsorshipId;
+        this.currentSponsorshipOfferId = offerId;
+        this.selectedOfferId = null;
+        this.showToastMessage('Success', 'Sponsorship created successfully!', 'success');
+        this.loadOffers();
+        this.isSubmitting = false;
+      },
+      error: (err) => {
+        console.error('Error creating sponsorship:', err);
+        this.showToastMessage('Error', 'Failed to create sponsorship.', 'error');
+        this.isSubmitting = false;
+      }
+    });
+  }
 
   // Update the onSubmitAd method to handle the optional image properly
   // Update the onSubmitAd method to add to the map
-  onSubmitAd(offerId: number): void {
+  /*onSubmitAd(offerId: number): void {
     // Existing code...
     if (this.adForm.invalid) {
       return;
@@ -188,61 +232,8 @@ export class OffersComponent implements OnInit {
       }
     });
 
-  }
-  /*onSubmitAd(offerId: number): void {
-    if (this.adForm.invalid) {
-      return;
-    }
-
-    const sponsorAdRequest = {
-      title: this.adForm.value.title,
-      content: this.adForm.value.content
-    };
-
-    const formData = new FormData();
-
-    // Append sponsor ad request as JSON blob
-    formData.append('request', new Blob([JSON.stringify(sponsorAdRequest)], { type: 'application/json' }));
-
-    // Only append image if one is selected
-    if (this.selectedImageFile) {
-      formData.append('images', this.selectedImageFile);
-    } else {
-      // Add a dummy empty blob if no image is provided
-      // This ensures the multipart form data is properly formatted
-      formData.append('images', new Blob([], { type: 'application/octet-stream' }));
-    }
-
-    const url = `${this.apiUrl}/sponsor-offers/chooseSponsorOffer/${offerId}`;
-
-    // Show loading state
-    this.isSubmitting = true;
-
-    this.http.post<number>(url, formData).subscribe({
-      next: (sponsorshipId: number) => {
-        console.log('Sponsorship created with id', sponsorshipId);
-        this.createdSponsorshipId = sponsorshipId;
-        this.currentSponsorshipOfferId = offerId;
-        this.selectedOfferId = null;
-        this.showToastMessage('Success', 'Sponsorship created successfully!', 'success');
-        // Reload offers to reflect any changes
-        this.loadOffers();
-        this.isSubmitting = false;
-      },
-      error: (err) => {
-        console.error('Error creating sponsorship:', err);
-
-        // Try an alternative approach if the first one fails
-        if (!this.selectedImageFile) {
-          // If no image was provided, and we got an error, try without the empty blob
-          this.trySubmitWithoutImage(offerId, sponsorAdRequest);
-        } else {
-          this.showToastMessage('Error', 'Failed to create sponsorship.', 'error');
-          this.isSubmitting = false;
-        }
-      }
-    });
   }*/
+
 
 // Add a fallback method to try submission without any image field
   trySubmitWithoutImage(offerId: number, sponsorAdRequest: any): void {

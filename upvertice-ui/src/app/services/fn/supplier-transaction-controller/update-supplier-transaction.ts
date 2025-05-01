@@ -8,21 +8,23 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
+import { SupplierTransactionMultipartRequest } from '../../models/supplier-transaction-multipart-request';
 import { SupplierTransactionResponse } from '../../models/supplier-transaction-response';
 
 export interface UpdateSupplierTransaction$Params {
+
+/**
+ * ID of the Supplier Transaction to update
+ */
   transactionId: number;
-      body?: {
-'request': string;
-'images': Array<Blob>;
-}
+      body?: SupplierTransactionMultipartRequest
 }
 
 export function updateSupplierTransaction(http: HttpClient, rootUrl: string, params: UpdateSupplierTransaction$Params, context?: HttpContext): Observable<StrictHttpResponse<SupplierTransactionResponse>> {
-  const rb = new RequestBuilder(rootUrl, updateSupplierTransaction.PATH, 'put');
+  const rb = new RequestBuilder(rootUrl, updateSupplierTransaction.PATH, 'patch');
   if (params) {
     rb.path('transactionId', params.transactionId, {});
-    rb.body(params.body, 'application/json');
+    rb.body(params.body, 'multipart/form-data');
   }
 
   return http.request(

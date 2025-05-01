@@ -1,0 +1,56 @@
+// Scoped styles for the advertiser menu
+$primary-color: #6f4f28;   // Caramel Brown
+$secondary-color: #f5e0c3; // White-Cream
+$accent-color: #d4af37;    // Accent gold for highlighting
+
+nav.navbar {
+  background-color: $primary-color !important;
+
+  .navbar-brand {
+    color: white !important;
+    font-weight: bold;
+
+    &:hover {
+      color: $accent-color !important;
+    }
+  }
+
+  .navbar-toggler {
+    border: 1px solid $accent-color !important;
+    color: white !important;
+
+    &:focus {
+      box-shadow: none;
+    }
+  }
+
+  .navbar-collapse {
+    .navbar-nav {
+      .nav-item {
+        .nav-link {
+          color: white !important;
+
+          &:hover {
+            color: $accent-color !important;
+            background-color: $primary-color !important;
+          }
+
+          &.active {
+            color: $accent-color !important;
+            background-color: $primary-color !important;
+          }
+        }
+      }
+    }
+  }
+
+  .btn-outline-light {
+    border-color: $accent-color !important;
+    color: $accent-color !important;
+
+    &:hover {
+      background-color: $accent-color !important;
+      color: white !important;
+    }
+  }
+}

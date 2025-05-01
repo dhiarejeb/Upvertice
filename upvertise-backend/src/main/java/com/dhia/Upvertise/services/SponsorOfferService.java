@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -101,7 +102,7 @@ public class SponsorOfferService {
         sponsorAd.setTitle(sponsorAdRequest.title());
         sponsorAd.setDesign(imageUrl);
         sponsorAd.setContent(sponsorAdRequest.content());
-        sponsorAd.setDesign_colors(sponsorAdRequest.designColors());
+        sponsorAd.setDesignColors(new HashSet<>(sponsorAdRequest.designColors()));
         sponsorAd.setUserId(connectedUser.getName());  // Link ad to sponsor
         sponsorAd = sponsorAdRepository.saveAndFlush(sponsorAd);  // Ensure it's persisted
 
@@ -150,7 +151,7 @@ public class SponsorOfferService {
         return sponsorship.getId();
     }
     @CacheEvict(value = "sponsorOffers", allEntries = true)
-    public Integer createSponsorOffer(SponsorOfferRequest request, List<MultipartFile> images, Authentication connectedUser) {
+    public SponsorOfferResponse createSponsorOffer(SponsorOfferRequest request, List<MultipartFile> images, Authentication connectedUser) {
 
         List<String> imageUrls = new ArrayList<>();
 
@@ -174,58 +175,40 @@ public class SponsorOfferService {
         sponsorOffer.setUserId(connectedUser.getName());  // Link offer to admin who created it
 
 
-        Integer sponsorOfferId = sponsorOfferRepository.save(sponsorOffer).getId();
+        SponsorOffer savedOffer = sponsorOfferRepository.save(sponsorOffer);
         // Publish event to Kafka
-        kafkaProducerService.sendMessage("sponsorOfferTopic", "New sponsor offer created with ID: " + sponsorOfferId);
+        kafkaProducerService.sendMessage("sponsorOfferTopic", "New sponsor offer created with ID: " + savedOffer.getId());
 
-        return sponsorOfferId;
+        return sponsorOfferMapper.toResponseWithImagesUrls(savedOffer);
 
     }
 
     @CacheEvict(value = "sponsorOffers", allEntries = true)
     public SponsorOfferResponse updateSponsorOffer(Integer offerId, SponsorOfferRequest request, List<MultipartFile> images) {
-        // Retrieve the SponsorOffer
         SponsorOffer sponsorOffer = sponsorOfferRepository.findById(offerId)
                 .orElseThrow(() -> new EntityNotFoundException("Sponsor Offer not found"));
-        // Fetch associated Sponsorships, handling null or empty list
+
         List<Sponsorship> sponsorships = sponsorshipRepository.findBySponsorOffer(sponsorOffer);
 
-        // Check if the list is null or empty (no active sponsorships)
-        if (sponsorships == null || sponsorships.isEmpty()) {
-            // No sponsorships, so update is allowed
-            return updateSponsorOfferDetails(sponsorOffer, request);
-        }else {
-
-        // Check if any related Sponsorship has status other than FINISHED
-        boolean canUpdate = sponsorships.stream()
-                .anyMatch(sponsorship -> sponsorship.getStatus() == SponsorshipStatus.PENDING
+        boolean canUpdate = sponsorships == null || sponsorships.isEmpty()
+                || sponsorships.stream().anyMatch(sponsorship ->
+                sponsorship.getStatus() == SponsorshipStatus.PENDING
                         || sponsorship.getStatus() == SponsorshipStatus.REJECTED
                         || sponsorship.getStatus() == SponsorshipStatus.FINISHED);
 
         if (!canUpdate) {
             throw new OperationNotPermittedException("You cannot update an offer with an active or unfinished sponsorship");
         }
-            List<String> newImageUrls = new ArrayList<>();
-            if (images != null && !images.isEmpty()) {
-                // Upload new images to Cloudinary
-                for (MultipartFile image : images) {
-                    String imageUrl = cloudinaryService.uploadImage(image);
-                    newImageUrls.add(imageUrl);
-                }
-            }
 
-            // **Update SponsorOffer**
-            if (!newImageUrls.isEmpty()) {
-                sponsorOffer.setExplainImages(newImageUrls); // Replace old images
-            }
-
-        // Apply changes and save the updated SponsorOffer
-        return updateSponsorOfferDetails(sponsorOffer, request);
+        // Handle explainImages
+        if (images != null && !images.isEmpty()) {
+            List<String> newImageUrls = images.stream()
+                    .map(cloudinaryService::uploadImage)
+                    .collect(Collectors.toList());
+            sponsorOffer.setExplainImages(newImageUrls);
         }
-    }
 
-    private SponsorOfferResponse updateSponsorOfferDetails(SponsorOffer sponsorOffer, SponsorOfferRequest request) {
-        // Apply changes from the request
+        // Apply request changes
         if (request.title() != null) sponsorOffer.setTitle(request.title());
         if (request.description() != null) sponsorOffer.setDescription(request.description());
         if (request.price() != null) sponsorOffer.setPrice(request.price());
@@ -234,14 +217,8 @@ public class SponsorOfferService {
         if (request.productQuantity() != null) sponsorOffer.setProductQuantity(request.productQuantity());
         if (request.productType() != null) sponsorOffer.setProductType(request.productType());
         if (request.salesArea() != null) sponsorOffer.setSalesArea(request.salesArea());
-
-
-
-
-        // Update SponsorOffer status if provided
         if (request.status() != null) sponsorOffer.setStatus(request.status());
 
-        // Save the updated SponsorOffer
         sponsorOfferRepository.save(sponsorOffer);
 
         return sponsorOfferMapper.toResponseWithImagesUrls(sponsorOffer);

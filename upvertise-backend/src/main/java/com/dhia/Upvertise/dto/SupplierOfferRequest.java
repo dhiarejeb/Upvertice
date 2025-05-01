@@ -25,9 +25,5 @@ public record SupplierOfferRequest(
         @NotNull(message = "Status is required") SupplierOfferStatus status,
         List<@NotNull(message = "SponsorAd IDs cannot be null") Integer> sponsorAdIds
 
-
-
-
-
 ) {
 }

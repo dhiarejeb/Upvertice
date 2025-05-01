@@ -1,0 +1,26 @@
+<div class="p-4">
+  <h2 class="text-2xl font-bold mb-4">Sponsor Offers</h2>
+
+  <button (click)="openFormDialog()" class="bg-blue-600 text-white px-4 py-2 rounded mb-4">
+    + Create New Offer
+  </button>
+
+  <div *ngFor="let offer of offers" class="border rounded p-4 mb-4 shadow">
+    <h3 class="text-xl font-semibold">{{ offer.title }}</h3>
+    <p>{{ offer.description }}</p>
+    <p>Status: {{ offer.status }}</p>
+
+    <button (click)="openFormDialog(offer)" class="bg-yellow-500 text-white px-3 py-1 rounded">
+      Edit
+    </button>
+    <button *ngIf="offer.id" (click)="deleteOffer(offer.id)" class="bg-red-600 text-white px-3 py-1 rounded ml-2">
+      Delete
+    </button>
+  </div>
+
+  <div class="flex justify-between mt-4">
+    <button (click)="previousPage()">Previous</button>
+    <span>Page {{ page + 1 }} of {{ totalPages }}</span>
+    <button (click)="nextPage()">Next</button>
+  </div>
+</div>

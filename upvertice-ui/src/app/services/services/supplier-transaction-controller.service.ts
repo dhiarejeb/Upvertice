@@ -15,6 +15,8 @@ import { deleteSupplierTransaction } from '../fn/supplier-transaction-controller
 import { DeleteSupplierTransaction$Params } from '../fn/supplier-transaction-controller/delete-supplier-transaction';
 import { getSupplierTransactions } from '../fn/supplier-transaction-controller/get-supplier-transactions';
 import { GetSupplierTransactions$Params } from '../fn/supplier-transaction-controller/get-supplier-transactions';
+import { getTransactionById } from '../fn/supplier-transaction-controller/get-transaction-by-id';
+import { GetTransactionById$Params } from '../fn/supplier-transaction-controller/get-transaction-by-id';
 import { PageResponseSupplierTransactionResponse } from '../models/page-response-supplier-transaction-response';
 import { SupplierTransactionResponse } from '../models/supplier-transaction-response';
 import { updateSupplierTransaction } from '../fn/supplier-transaction-controller/update-supplier-transaction';
@@ -30,20 +32,28 @@ export class SupplierTransactionControllerService extends BaseService {
   static readonly UpdateSupplierTransactionPath = '/supplier-transactions/update/{transactionId}';
 
   /**
+   * Update Supplier Transaction.
+   *
+   * Update an existing Supplier Transaction with new data and images.
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `updateSupplierTransaction()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
   updateSupplierTransaction$Response(params: UpdateSupplierTransaction$Params, context?: HttpContext): Observable<StrictHttpResponse<SupplierTransactionResponse>> {
     return updateSupplierTransaction(this.http, this.rootUrl, params, context);
   }
 
   /**
+   * Update Supplier Transaction.
+   *
+   * Update an existing Supplier Transaction with new data and images.
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `updateSupplierTransaction$Response()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
   updateSupplierTransaction(params: UpdateSupplierTransaction$Params, context?: HttpContext): Observable<SupplierTransactionResponse> {
     return this.updateSupplierTransaction$Response(params, context).pipe(
@@ -73,6 +83,31 @@ export class SupplierTransactionControllerService extends BaseService {
   getSupplierTransactions(params?: GetSupplierTransactions$Params, context?: HttpContext): Observable<PageResponseSupplierTransactionResponse> {
     return this.getSupplierTransactions$Response(params, context).pipe(
       map((r: StrictHttpResponse<PageResponseSupplierTransactionResponse>): PageResponseSupplierTransactionResponse => r.body)
+    );
+  }
+
+  /** Path part for operation `getTransactionById()` */
+  static readonly GetTransactionByIdPath = '/supplier-transactions/{id}';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getTransactionById()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getTransactionById$Response(params: GetTransactionById$Params, context?: HttpContext): Observable<StrictHttpResponse<SupplierTransactionResponse>> {
+    return getTransactionById(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getTransactionById$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getTransactionById(params: GetTransactionById$Params, context?: HttpContext): Observable<SupplierTransactionResponse> {
+    return this.getTransactionById$Response(params, context).pipe(
+      map((r: StrictHttpResponse<SupplierTransactionResponse>): SupplierTransactionResponse => r.body)
     );
   }
 

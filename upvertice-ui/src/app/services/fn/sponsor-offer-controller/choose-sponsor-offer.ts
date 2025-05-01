@@ -8,21 +8,18 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { SponsorAdRequest } from '../../models/sponsor-ad-request';
+import { SponsorOfferMultipartRequest } from '../../models/sponsor-offer-multipart-request';
 
 export interface ChooseSponsorOffer$Params {
   offerId: number;
-      body?: {
-'request': SponsorAdRequest;
-'images': Blob;
-}
+      body?: SponsorOfferMultipartRequest
 }
 
 export function chooseSponsorOffer(http: HttpClient, rootUrl: string, params: ChooseSponsorOffer$Params, context?: HttpContext): Observable<StrictHttpResponse<number>> {
   const rb = new RequestBuilder(rootUrl, chooseSponsorOffer.PATH, 'post');
   if (params) {
     rb.path('offerId', params.offerId, {});
-    rb.body(params.body, 'application/json');
+    rb.body(params.body, 'multipart/form-data');
   }
 
   return http.request(

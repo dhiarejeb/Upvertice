@@ -11,50 +11,103 @@ import {
 import {
   SponsorshipDetailsComponent
 } from './modules/advertiser/pages/sponsorships/sponsorship-details/sponsorship-details.component';
+import {AdminComponent} from './modules/admin/admin/admin.component';
+import {HomeComponent} from './modules/admin/pages/home/home.component';
+import {DashboardComponent} from './modules/admin/pages/dashboard/dashboard.component';
+import {ManagerComponent} from './modules/admin/pages/manager/manager.component';
+import {RoleRedirectComponent} from './modules/role-redirect/role-redirect.component';
+import {SponsorOffersComponent} from './modules/admin/pages/sponsor-offers/sponsor-offers.component';
+import {SponsorAdsComponent} from './modules/admin/pages/sponsor-ads/sponsor-ads.component';
+import {SponsorshipManagerComponent} from './modules/admin/pages/sponsorship-manager/sponsorship-manager.component';
+import {ProvidershipManagerComponent} from './modules/admin/pages/providership-manager/providership-manager.component';
+import {SupplierOffersComponent} from './modules/admin/pages/supplier-offers/supplier-offers.component';
+import {
+  SupplierTransactionsComponent
+} from './modules/admin/pages/supplier-transactions/supplier-transactions.component';
+import {UserManagementComponent} from './modules/shared/user-management/user-management.component';
+import {ProviderComponent} from './modules/provider/provider.component';
+import {HomeProviderComponent} from './modules/provider/pages/home-provider/home-provider.component';
+
+import {
+  SupplierTransactionDetailsAdminComponent,
+
+} from './modules/admin/pages/supplier-transactions/supplier-transaction-details/supplier-transaction-details.component';
+import {
+  MyProvidershipProviderComponent
+} from './modules/provider/pages/my-providership-provider/my-providership.component';
+import {
+  ProvidershipDetailsProviderComponent
+} from './modules/provider/pages/my-providership-provider/providership-details/providership-details.component';
+import {
+  SupplierTransactionsProviderComponent
+} from './modules/provider/pages/supplier-transactions-provider/supplier-transactions.component';
+import {
+  SupplierTransactionDetailsProviderComponent
+} from './modules/provider/pages/supplier-transactions-provider/supplier-transaction-details/supplier-transaction-details.component';
+import {
+  ProvidershipDetailsAdminComponent
+} from './modules/admin/pages/providership-manager/providership-details/providership-details.component';
+
+
 
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'advertiser',  // Default route that redirects to the Advertiser module
-    pathMatch: 'full',
+    pathMatch: 'full', // Ensure this route only matches the exact empty path
+    canActivate: [authGuard],
+    component: RoleRedirectComponent // this will redirect based on role
   },
   {
     path: 'advertiser',
-    component: AdvertiserComponent , //AdvertiserComponent, // 👈 layout with <router-outlet>
     canActivate: [authGuard],
+    component: AdvertiserComponent,
     children: [
-      { path: '', component: WelcomeComponent , canActivate: [authGuard]},           // /advertiser
-      //{ path: 'dashboard', component: DashboardComponent ,canActivate: [authGuard]},
-      { path: 'offers', component: OffersComponent ,canActivate: [authGuard] },
-      {
-        path: 'dashboard',
-        component: SponsorshipsListComponent
-      },
-      {
-        path: 'sponsorships/:id',
-        component: SponsorshipDetailsComponent
-      }
+      { path: '', component: WelcomeComponent },
+      { path: 'offers', component: OffersComponent },
+      { path: 'dashboard', component: SponsorshipsListComponent },
+      { path: 'sponsorships/:id', component: SponsorshipDetailsComponent },
+      { path: 'userManager', component: UserManagementComponent}
+    ]
+  },
+
+  {
+    path: 'admin', // Full path: /admin
+    canActivate: [authGuard],
+    component: AdminComponent,
+    children: [
+      { path: '', component: HomeComponent }, // /admin
+      { path: 'dashboard', component: DashboardComponent }, // /admin/dashboard
+      { path: 'sponsorOfferManager', component: SponsorOffersComponent} ,
+      { path: 'sponsorAdsManager', component: SponsorAdsComponent} ,
+      { path: 'sponsorshipManager', component: SponsorshipManagerComponent} ,
+      { path: 'providershipManager', component:ProvidershipManagerComponent} ,
+      { path: "providership-details/:id", component: ProvidershipDetailsAdminComponent },
+      { path: 'supplierOfferManager', component: SupplierOffersComponent} ,
+      { path: 'supplierTransactionManager', component: SupplierTransactionsComponent},
+      { path: "supplier-transaction-details/:id", component: SupplierTransactionDetailsAdminComponent },
+      { path: 'userManager', component: UserManagementComponent}
+
     ]
   }
-  //  {
-  //   path: 'advertiser',
-  //    component: AdvertiserComponent,  // Eagerly load AdvertiserComponent
-  // },
-   //{
-    // path: 'advertiser/welcome',
-    // component: WelcomeComponent,  // Eagerly load AdvertiserComponent
-   //},
-  /*{
-    path: 'advertiser',
-    loadChildren: () =>
-      import('./modules/advertiser/advertiser.module').then(m => m.AdvertiserModule),
-    canActivate: [authGuard],  // Optionally protect the entire Advertiser module
-  },*/
-  // {
-  //   path: '**',  // Catch-all route for invalid paths
-  //   redirectTo: 'advertiser',  // You can also redirect to a 404 page
-  // }
+,
+  {
+    path: 'provider', // Full path: /admin
+    canActivate: [authGuard],
+    component: ProviderComponent,
+    children: [
+      { path: '', component: HomeProviderComponent },
+      { path: 'providerships', component: MyProvidershipProviderComponent},
+      { path: "providership-details/:id", component: ProvidershipDetailsProviderComponent },
+      { path: 'supplierOfferManager', component: SupplierOffersComponent},
+      { path: 'supplierTransactionManager', component: SupplierTransactionsProviderComponent},
+      { path: "supplier-transaction-details/:id", component: SupplierTransactionDetailsProviderComponent },
+      { path: 'userManager', component: UserManagementComponent}
+    ]
+  },
+  { path: '**', redirectTo: '' } // wildcard to catch unknown routes
 ];
+
+
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],

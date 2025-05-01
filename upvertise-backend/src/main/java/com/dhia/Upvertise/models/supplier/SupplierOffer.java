@@ -8,6 +8,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "supplier_offer")
@@ -37,7 +38,7 @@ public class SupplierOffer extends BaseEntity {
             joinColumns = @JoinColumn(name = "supplier_offer_id"),
             inverseJoinColumns = @JoinColumn(name = "sponsor_ad_id")
     )
-    private List<SponsorAd> sponsorAds;
+    private Set<SponsorAd> sponsorAds;
 
 
 }

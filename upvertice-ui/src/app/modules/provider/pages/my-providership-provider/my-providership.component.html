@@ -1,0 +1,147 @@
+<div class="container my-4">
+  <h2><i class="fas fa-cubes"></i> My Providerships</h2>
+  <button class="btn btn-primary my-3" (click)="openCreate()">
+    <i class="fas fa-plus-circle"></i> Create Providership
+  </button>
+
+  <table class="table table-striped">
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>Status</th>
+      <th>Produced/Total</th>
+      <th>Location</th>
+      <th>Machine</th>
+      <th>Admin Approval</th>
+      <th>Actions</th>
+
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let p of providerships">
+      <td>{{p.id}}</td>
+      <td>{{p.status}}</td>
+      <td>
+        <div class="progress">
+          <div class="progress-bar" role="progressbar"
+               [style.width.%]="(p.producedProduct!/p.totalProduct!)*100"
+               aria-valuemin="0" aria-valuemax="100">
+            {{((p.producedProduct!/p.totalProduct!)*100) | number:'1.0-0'}}%
+          </div>
+        </div>
+      </td>
+      <td>{{p.location}}</td>
+      <td>{{p.hasPrintMachine ? 'Yes' : 'No'}}</td>
+      <td>
+  <span [ngClass]="{
+    'badge bg-secondary': p.providershipApprovalStatus === 'PENDING',
+    'badge bg-success': p.providershipApprovalStatus === 'APPROVED',
+    'badge bg-danger': p.providershipApprovalStatus === 'REJECTED'
+  }">
+    {{ p.providershipApprovalStatus }}
+  </span>
+      </td>
+      <td>
+        <button
+          class="btn btn-sm btn-primary me-2"
+          (click)="goToDetails(p.id)"
+        >
+          <i class="fas fa-info-circle"></i>
+          Details
+        </button>
+        <button class="btn btn-sm btn-info me-2" (click)="openUpdate(p)">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn btn-sm btn-danger" (click)="delete(p.id!)">
+          <i class="fas fa-trash"></i>
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- Pagination controls could go here -->
+
+  <!-- Create/Edit Modal -->
+  <div class="modal" tabindex="-1" [ngClass]="{'show d-block': showModal}" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{isEdit ? 'Update' : 'Create'}} Providership</h5>
+            <button type="button" class="btn-close" (click)="closeModal()"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="sponsorshipId" class="form-label">Sponsorship ID</label>
+                <input type="number" id="sponsorshipId" class="form-control"
+                       formControlName="sponsorshipId">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="status" class="form-label">Status</label>
+                <select id="status" class="form-select" formControlName="status">
+                  <option value="PENDING">PENDING</option>
+                  <option value="DESIGNING">DESIGNING</option>
+                  <option value="PRODUCING">PRODUCING</option>
+                  <option value="PRODUCING_AND_SELLING">PRODUCING & SELLING</option>
+                  <option value="SELLING">SELLING</option>
+                  <option value="COMPLETED">COMPLETED</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="producedProduct" class="form-label">Produced Products</label>
+                <input type="number" id="producedProduct" class="form-control"
+                       formControlName="producedProduct">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="totalProduct" class="form-label">Total Products</label>
+                <input type="number" id="totalProduct" class="form-control"
+                       formControlName="totalProduct">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="location" class="form-label">Location</label>
+              <input type="text" id="location" class="form-control"
+                     formControlName="location">
+            </div>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="hasPrintMachine"
+                     formControlName="hasPrintMachine">
+              <label class="form-check-label" for="hasPrintMachine">
+                Has Print Machine
+              </label>
+            </div>
+
+            <div class="mb-3">
+              <label for="providedProductTypes" class="form-label">Product Types (comma-separated)</label>
+              <input type="text" id="providedProductTypes" class="form-control"
+                     (change)="onProvidedProductTypesChange($event)">
+            </div>
+
+            <div class="mb-3">
+              <label for="images" class="form-label">Proof Images</label>
+              <input type="file" id="images" class="form-control" multiple
+                     (change)="onFileChange($event)">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+              {{isEdit ? 'Save Changes' : 'Create'}}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Progress Chart -->
+  <div class="my-4">
+    <canvas id="progressChart"></canvas>
+  </div>
+</div>

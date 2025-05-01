@@ -12,4 +12,7 @@ public interface SupplierTransactionRepository extends JpaRepository<SupplierTra
     Page<SupplierTransaction> findByUserId(String name, Pageable pageable);
 
     Integer countByUserIdAndSupplierTransactionStatus(String userId, SupplierTransactionStatus supplierTransactionStatus);
+
+
+    Page<SupplierTransaction> findBySupplierOffer_CreatedBy(String providerId, Pageable pageable);
 }

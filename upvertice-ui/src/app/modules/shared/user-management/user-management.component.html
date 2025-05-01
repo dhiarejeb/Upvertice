@@ -1,0 +1,102 @@
+<div class="container mt-4">
+  <h1>User Management</h1>
+
+  <table class="table table-bordered">
+    <thead>
+    <tr>
+      <th>#</th>
+      <th>Photo</th> <!-- NEW COLUMN for Profile Photo -->
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Email</th>
+      <th>Role</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let user of users">
+      <td>{{ user.id }}</td>
+
+      <!-- Profile Photo -->
+      <td>
+        <img *ngIf="user.profilePhotoUrl"
+             [src]="user.profilePhotoUrl"
+             alt="Profile Photo"
+             class="rounded-circle profile-photo"
+             style="width: 50px; height: 50px; object-fit: cover;" />
+      </td>
+
+      <td>{{ user.firstName }}</td>
+      <td>{{ user.lastName }}</td>
+      <td>{{ user.email }}</td>
+      <td>
+        <span class="badge bg-primary">{{ user.role }}</span>
+      </td>
+      <td>
+        <button class="btn btn-warning" (click)="selectedUser = user">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+        <button class="btn btn-danger" (click)="deleteUserFromKeycloak(user.keycloakId!)">
+          <i class="fas fa-trash-alt"></i> Delete
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="selectedUser" class="mt-4">
+    <h3>Edit User</h3>
+
+    <form (ngSubmit)="updateUserInKeycloak(selectedUser, selectedUser.role!)">
+      <div class="mb-3">
+        <label for="firstName" class="form-label">First Name</label>
+        <input type="text" class="form-control" [(ngModel)]="selectedUser.firstName" name="firstName" required />
+      </div>
+
+      <div class="mb-3">
+        <label for="lastName" class="form-label">Last Name</label>
+        <input type="text" class="form-control" [(ngModel)]="selectedUser.lastName" name="lastName" required />
+      </div>
+
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" [(ngModel)]="selectedUser.email" name="email" required />
+      </div>
+
+      <div class="mb-3">
+        <label for="role" class="form-label">Role</label>
+        <select class="form-control" [(ngModel)]="selectedUser.role" name="role">
+          <option value="ADMIN">Admin</option>
+          <option value="ADVERTISER">Advertiser</option>
+          <option value="SUPPLIER">Supplier</option>
+          <option value="PROVIDER">Provider</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="profilePhoto" class="form-label">Profile Photo</label>
+
+        <!-- Show current profile photo -->
+        <div *ngIf="selectedUser.profilePhotoUrl" class="mb-3 text-center">
+          <img [src]="selectedUser.profilePhotoUrl"
+               alt="Profile Photo"
+               class="rounded-circle profile-photo"
+               style="width: 150px; height: 150px; object-fit: cover; transition: transform 0.3s ease;" />
+        </div>
+
+        <!-- Upload new profile photo -->
+        <input type="file" class="form-control" (change)="onFileChange($event)" />
+      </div>
+
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+  </div>
+</div>
+
+
+
+
+
+
+
+

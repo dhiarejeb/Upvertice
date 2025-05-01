@@ -34,31 +34,6 @@ export class SponsorOfferControllerService extends BaseService {
     super(config, http);
   }
 
-  /** Path part for operation `updateSponsorOffer()` */
-  static readonly UpdateSponsorOfferPath = '/sponsor-offers/{offerId}/updateSponsorOffer';
-
-  /**
-   * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `updateSponsorOffer()` instead.
-   *
-   * This method sends `application/json` and handles request body of type `application/json`.
-   */
-  updateSponsorOffer$Response(params?: UpdateSponsorOffer$Params, context?: HttpContext): Observable<StrictHttpResponse<SponsorOfferResponse>> {
-    return updateSponsorOffer(this.http, this.rootUrl, params, context);
-  }
-
-  /**
-   * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `updateSponsorOffer$Response()` instead.
-   *
-   * This method sends `application/json` and handles request body of type `application/json`.
-   */
-  updateSponsorOffer(params?: UpdateSponsorOffer$Params, context?: HttpContext): Observable<SponsorOfferResponse> {
-    return this.updateSponsorOffer$Response(params, context).pipe(
-      map((r: StrictHttpResponse<SponsorOfferResponse>): SponsorOfferResponse => r.body)
-    );
-  }
-
   /** Path part for operation `updateChosenSponsorOffer()` */
   static readonly UpdateChosenSponsorOfferPath = '/sponsor-offers/updateSponsorOfferChoice';
 
@@ -88,24 +63,32 @@ export class SponsorOfferControllerService extends BaseService {
   static readonly CreateSponsorOfferPath = '/sponsor-offers/createSponsorOffer';
 
   /**
+   * Create Sponsor Offer.
+   *
+   *
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `createSponsorOffer()` instead.
    *
    * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
-  createSponsorOffer$Response(params?: CreateSponsorOffer$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+  createSponsorOffer$Response(params?: CreateSponsorOffer$Params, context?: HttpContext): Observable<StrictHttpResponse<SponsorOfferResponse>> {
     return createSponsorOffer(this.http, this.rootUrl, params, context);
   }
 
   /**
+   * Create Sponsor Offer.
+   *
+   *
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `createSponsorOffer$Response()` instead.
    *
    * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
-  createSponsorOffer(params?: CreateSponsorOffer$Params, context?: HttpContext): Observable<string> {
+  createSponsorOffer(params?: CreateSponsorOffer$Params, context?: HttpContext): Observable<SponsorOfferResponse> {
     return this.createSponsorOffer$Response(params, context).pipe(
-      map((r: StrictHttpResponse<string>): string => r.body)
+      map((r: StrictHttpResponse<SponsorOfferResponse>): SponsorOfferResponse => r.body)
     );
   }
 
@@ -113,24 +96,65 @@ export class SponsorOfferControllerService extends BaseService {
   static readonly ChooseSponsorOfferPath = '/sponsor-offers/chooseSponsorOffer/{offerId}';
 
   /**
+   * choose Sponsor Offer.
+   *
+   *
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `chooseSponsorOffer()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
   chooseSponsorOffer$Response(params: ChooseSponsorOffer$Params, context?: HttpContext): Observable<StrictHttpResponse<number>> {
     return chooseSponsorOffer(this.http, this.rootUrl, params, context);
   }
 
   /**
+   * choose Sponsor Offer.
+   *
+   *
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `chooseSponsorOffer$Response()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
   chooseSponsorOffer(params: ChooseSponsorOffer$Params, context?: HttpContext): Observable<number> {
     return this.chooseSponsorOffer$Response(params, context).pipe(
       map((r: StrictHttpResponse<number>): number => r.body)
+    );
+  }
+
+  /** Path part for operation `updateSponsorOffer()` */
+  static readonly UpdateSponsorOfferPath = '/sponsor-offers/{offerId}/updateSponsorOffer';
+
+  /**
+   * Update Sponsor Offer.
+   *
+   *
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `updateSponsorOffer()` instead.
+   *
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
+   */
+  updateSponsorOffer$Response(params: UpdateSponsorOffer$Params, context?: HttpContext): Observable<StrictHttpResponse<SponsorOfferResponse>> {
+    return updateSponsorOffer(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Update Sponsor Offer.
+   *
+   *
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `updateSponsorOffer$Response()` instead.
+   *
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
+   */
+  updateSponsorOffer(params: UpdateSponsorOffer$Params, context?: HttpContext): Observable<SponsorOfferResponse> {
+    return this.updateSponsorOffer$Response(params, context).pipe(
+      map((r: StrictHttpResponse<SponsorOfferResponse>): SponsorOfferResponse => r.body)
     );
   }
 
