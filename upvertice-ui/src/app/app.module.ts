@@ -27,6 +27,7 @@ import {AdminModule} from './modules/admin/admin.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {SharedModule} from './modules/shared/shared.module';
 import {ProviderModule} from './modules/provider/provider.module';
+import {SupplierModule} from './modules/supplier/supplier.module';
 
 export function kcFactory(kcService: KeycloakService) {
   return () => kcService.init();
@@ -55,6 +56,7 @@ export function kcFactory(kcService: KeycloakService) {
       timeOut: 3000,
       progressBar: true,
     }),
+    SupplierModule
 
 
   ],

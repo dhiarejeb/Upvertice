@@ -47,6 +47,17 @@ import {
 import {
   ProvidershipDetailsAdminComponent
 } from './modules/admin/pages/providership-manager/providership-details/providership-details.component';
+import {SupplierComponent} from './modules/supplier/supplier/supplier.component';
+import {WelcomeSupplierComponent} from './modules/supplier/pages/welcome-supplier/welcome-supplier.component';
+import {
+  SupplierSupplierOffersComponent
+} from './modules/supplier/pages/supplier-supplier-offers/supplier-supplier-offers.component';
+import {
+  SupplierTransactionsSupplierComponent
+} from './modules/supplier/pages/supplier-transactions-supplier/supplier-transactions.component';
+import {
+  SupplierTransactionDetailsSupplierComponent
+} from './modules/supplier/pages/supplier-transactions-supplier/supplier-transaction-details/supplier-transaction-details.component';
 
 
 
@@ -103,6 +114,19 @@ const routes: Routes = [
       { path: "supplier-transaction-details/:id", component: SupplierTransactionDetailsProviderComponent },
       { path: 'userManager', component: UserManagementComponent}
     ]
+  },
+  {
+    path: 'supplier', // Full path: /admin
+    canActivate: [authGuard],
+    component: SupplierComponent,
+    children: [
+      { path: '', component: WelcomeSupplierComponent},
+      { path: 'supplierOffers', component: SupplierSupplierOffersComponent},
+      { path: 'supplierTransactionManagerSupplier', component: SupplierTransactionsSupplierComponent},
+      { path: "supplier-transaction-details/:id", component: SupplierTransactionDetailsSupplierComponent },
+      { path: 'userManager', component: UserManagementComponent}
+
+      ]
   },
   { path: '**', redirectTo: '' } // wildcard to catch unknown routes
 ];

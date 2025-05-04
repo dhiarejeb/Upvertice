@@ -1,28 +1,37 @@
-/* sponsorship-table.component.scss */
 .table-container {
   overflow-x: auto;
   border: 1px solid #d0b89a;
-  border-radius: 4px;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
 .sponsorship-table {
   width: 100%;
-  background-color: #f5e8d3;
+  background-color: #f5e8d3; // Light beige background color
 
   .mat-header-row {
-    background-color: #e0cdb1;
+    background-color: #e0cdb1; // Slightly darker beige for header
   }
 
   .mat-header-cell {
-    color: #6b4c28;
-    font-weight: bold;
+    color: #6b4c28; // Dark brown text for headers
+    font-weight: 600;
     text-transform: uppercase;
     font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 0.75rem;
+  }
+
+  .mat-cell {
+    padding: 0.75rem;
+    vertical-align: middle;
+    color: #5a4428; // Dark brown text for cells
   }
 
   .sponsorship-row {
     &:hover {
-      background-color: #e9dcc5;
+      background-color: #e9dcc5; // Slightly darker on hover
     }
   }
 
@@ -31,6 +40,7 @@
     border-radius: 4px;
     font-size: 0.75rem;
     font-weight: 500;
+    display: inline-block;
   }
 
   .status-approved {
@@ -60,5 +70,42 @@
   .action-buttons {
     display: flex;
     gap: 0.5rem;
+    justify-content: center;
+  }
+
+  .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+  }
+
+  .btn-primary {
+    background-color: #6b4c28;
+    border-color: #5a4428;
+
+    &:hover {
+      background-color: #5a4428;
+      border-color: #493820;
+    }
+  }
+
+  .btn-danger {
+    background-color: #b33c3c;
+    border-color: #a33535;
+
+    &:hover {
+      background-color: #a33535;
+      border-color: #932e2e;
+    }
+  }
+
+  .img-thumbnail {
+    padding: 0.25rem;
+    background-color: #fff;
+    border: 1px solid #d0b89a;
+    border-radius: 0.25rem;
+    max-width: 100%;
+    height: auto;
   }
 }

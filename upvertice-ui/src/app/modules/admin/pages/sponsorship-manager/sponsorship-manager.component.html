@@ -1,34 +1,35 @@
+
 <!-- sponsorship-manager.component.html -->
 <div class="sponsorship-manager-container">
 
-    <h1 class="page-title">Sponsorship Manager</h1>
+  <h1 class="page-title">Sponsorship Manager</h1>
 
-    <mat-tab-group (selectedTabChange)="onTabChange($event.tab.textLabel.toLowerCase())">
-      <mat-tab label="All"></mat-tab>
-      <mat-tab label="Pending"></mat-tab>
-      <mat-tab label="Approved"></mat-tab>
-      <mat-tab label="Rejected"></mat-tab>
-      <mat-tab label="Finished"></mat-tab>
-    </mat-tab-group>
+  <mat-tab-group (selectedTabChange)="onTabChange($event.tab.textLabel.toLowerCase())">
+    <mat-tab label="All"></mat-tab>
+    <mat-tab label="Pending"></mat-tab>
+    <mat-tab label="Approved"></mat-tab>
+    <mat-tab label="Rejected"></mat-tab>
+    <mat-tab label="Finished"></mat-tab>
+  </mat-tab-group>
 
-    <div *ngIf="loading" class="loading-container">
-      <mat-spinner diameter="50"></mat-spinner>
-    </div>
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
 
-    <ng-container *ngIf="!loading">
-      <app-sponsorship-table
-        [sponsorships]="sponsorships"
-        (edit)="openEditModal($event)"
-        (delete)="openDeleteModal($event)">
-      </app-sponsorship-table>
+  <ng-container *ngIf="!loading">
+    <app-sponsorship-table
+      [sponsorships]="sponsorships"
+      (edit)="openEditModal($event)"
+      (delete)="openDeleteModal($event)">
+    </app-sponsorship-table>
 
-      <mat-paginator
-        *ngIf="totalPages > 1"
-        [length]="totalPages * pageSize"
-        [pageSize]="pageSize"
-        [pageIndex]="currentPage"
-        (page)="onPageChange($event.pageIndex)">
-      </mat-paginator>
-    </ng-container>
+    <mat-paginator
+      *ngIf="totalPages > 1"
+      [length]="totalPages * pageSize"
+      [pageSize]="pageSize"
+      [pageIndex]="currentPage"
+      (page)="onPageChange($event.pageIndex)">
+    </mat-paginator>
+  </ng-container>
 
 </div>

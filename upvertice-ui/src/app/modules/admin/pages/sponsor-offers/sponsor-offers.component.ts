@@ -8,7 +8,7 @@ import { ToastrService } from 'ngx-toastr';
   selector: 'app-sponsor-offers',
   standalone: false,
   templateUrl: './sponsor-offers.component.html',
-  styleUrl: './sponsor-offers.component.scss'
+  styleUrls: ['./sponsor-offers.component.scss']
 })
 export class SponsorOffersComponent implements OnInit{
   offers: SponsorOfferResponse[] = [];
@@ -78,6 +78,12 @@ export class SponsorOffersComponent implements OnInit{
   nextPage() {
     if (this.page + 1 < this.totalPages) {
       this.page++;
+      this.fetchOffers();
+    }
+  }
+  goToPage(pageNumber: number): void {
+    if (pageNumber >= 0 && pageNumber < this.totalPages) {
+      this.page = pageNumber;
       this.fetchOffers();
     }
   }

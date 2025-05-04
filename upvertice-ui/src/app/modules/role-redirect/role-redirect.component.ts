@@ -22,6 +22,8 @@ export class RoleRedirectComponent {
       this.router.navigate(['/advertiser']);
     }else if (roles.includes('Provider')) {
       this.router.navigate(['/provider']);
+    }else if (roles.includes('Supplier')) {
+      this.router.navigate(['/supplier']);
     }else {
       // fallback if role doesn't match
       this.router.navigate(['/unauthorized']);

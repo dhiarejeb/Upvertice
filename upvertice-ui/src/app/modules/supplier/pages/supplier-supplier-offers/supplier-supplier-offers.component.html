@@ -1,0 +1,71 @@
+<div class="container my-4">
+  <!-- Loader -->
+  <div *ngIf="loading" class="text-center my-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Cards Grid -->
+  <div class="row" *ngIf="!loading && supplierOffers.length">
+    <div *ngFor="let offer of supplierOffers" class="col-md-4 mb-4">
+      <div class="card h-100 shadow-sm">
+        <img [src]="offer.imageUrl" class="card-img-top" alt="Offer Image" *ngIf="offer.imageUrl">
+        <div class="card-body">
+          <h5 class="card-title">{{ offer.title }}</h5>
+          <p class="card-text">{{ offer.description }}</p>
+          <p class="card-text"><strong>Price:</strong> {{ offer.price }} DT</p>
+          <p class="card-text"><strong>Available:</strong> {{ offer.quantityAvailable }}</p>
+          <p class="card-text"><strong>Status:</strong> {{ offer.status }}</p>
+          <p class="card-text"><strong>Start Date:</strong> {{ offer.startDate | date:'mediumDate' }}</p>
+          <p class="card-text"><strong>End Date:</strong> {{ offer.endDate | date:'mediumDate' }}</p>
+
+          <!-- Sponsor Ads -->
+          <div *ngIf="offer.sponsorAds?.length">
+            <p class="fw-bold mt-3 mb-1">Sponsor Ads:</p>
+            <ul class="list-group">
+              <li *ngFor="let ad of offer.sponsorAds" class="list-group-item">
+                <strong>{{ ad.title }}</strong><br />
+                <span>{{ ad.content }}</span><br />
+                <small><strong>Colors:</strong> {{ ad.designColors?.join(', ') }}</small>
+                <img *ngIf="ad.design" [src]="ad.design" alt="Ad Design" class="img-fluid mt-2 rounded shadow-sm" style="max-height: 150px;" />
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="card-footer text-center">
+          <ng-container *ngIf="!isOfferChosen(offer.id!); else chosenTemplate">
+            <button class="btn btn-success" (click)="onChoose(offer)">
+              <i class="fa fa-check"></i> Choose
+            </button>
+          </ng-container>
+          <ng-template #chosenTemplate>
+            <button class="btn btn-danger" (click)="onUndo(offer.id!)">
+              <i class="fa fa-undo"></i> Undo
+            </button>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Offers -->
+  <div *ngIf="!loading && supplierOffers.length === 0" class="text-center my-5">
+    <p class="text-muted">No supplier offers available.</p>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div class="row" *ngIf="!loading && totalPages > 1">
+    <div class="col text-center mt-4">
+      <button class="btn btn-outline-secondary me-2" [disabled]="page === 0" (click)="prevPage()">
+        <i class="fa fa-arrow-left"></i> Prev
+      </button>
+      Page {{ page + 1 }} / {{ totalPages }}
+      <button class="btn btn-outline-secondary ms-2" [disabled]="page >= totalPages - 1" (click)="nextPage()">
+        Next <i class="fa fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+</div>

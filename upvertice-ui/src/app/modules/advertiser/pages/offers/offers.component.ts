@@ -37,7 +37,7 @@ export class OffersComponent implements OnInit {
 
   // Loading state
   loading: boolean = true;
-  isSubmitting : boolean = false;
+  isSubmitting: boolean = false;
 
   // Pagination variables
   page: number = 0;
@@ -83,7 +83,7 @@ export class OffersComponent implements OnInit {
   // Load offers from the backend
   loadOffers(): void {
     this.loading = true;
-    this.offerService.getAllSponsorOffers({ page: this.page, size: this.size }).subscribe({
+    this.offerService.getAllSponsorOffers({page: this.page, size: this.size}).subscribe({
       next: (res: PageResponseSponsorOfferResponse) => {
         // Provide default values (e.g., 0) if undefined
         this.sponsorOffers = res.content || [];
@@ -124,6 +124,7 @@ export class OffersComponent implements OnInit {
       this.selectedImageFile = null;
     }
   }
+
   onSubmitAd(offerId: number): void {
     if (this.adForm.invalid) {
       return;
@@ -135,7 +136,7 @@ export class OffersComponent implements OnInit {
       designColors: this.adForm.value.designColors || [] // Include if needed
     };
 
-    const requestBlob = new Blob([JSON.stringify(sponsorAdRequest)], { type: 'application/json' });
+    const requestBlob = new Blob([JSON.stringify(sponsorAdRequest)], {type: 'application/json'});
 
     const multipartRequest: SponsorOfferMultipartRequest = {
       request: requestBlob as any,  // TS type workaround (Blob not string)
@@ -239,7 +240,7 @@ export class OffersComponent implements OnInit {
   trySubmitWithoutImage(offerId: number, sponsorAdRequest: any): void {
     // Create a new FormData without any image field
     const formData = new FormData();
-    formData.append('request', new Blob([JSON.stringify(sponsorAdRequest)], { type: 'application/json' }));
+    formData.append('request', new Blob([JSON.stringify(sponsorAdRequest)], {type: 'application/json'}));
 
     const url = `${this.apiUrl}/sponsor-offers/chooseSponsorOffer/${offerId}`;
 
@@ -302,7 +303,7 @@ export class OffersComponent implements OnInit {
   // Undo the sponsorship on the current card
   // Update the onUndo method to remove from the map
   onUndo(offerId: number, sponsorshipId: number): void {
-    this.sponsorshipService.deleteSponsorship({ sponsorshipId: sponsorshipId })
+    this.sponsorshipService.deleteSponsorship({sponsorshipId: sponsorshipId})
       .pipe(finalize(() => {
         // Remove from the map
         this.userSponsorships.delete(offerId);
@@ -336,7 +337,8 @@ export class OffersComponent implements OnInit {
           }
         }
       });
-      }
+  }
+
   /*onUndo(): void {
     if (!this.createdSponsorshipId) return;
 
@@ -369,6 +371,7 @@ export class OffersComponent implements OnInit {
       });
   }
 */
+
   // Cancel the ad form on the active card
   onCancelForm(): void {
     this.selectedOfferId = null;
@@ -403,6 +406,7 @@ export class OffersComponent implements OnInit {
   hideToast(): void {
     this.showToast = false;
   }
+
   // Add this method to your component class
   getStatusClass(status: string): string {
     if (!status) return '';
@@ -421,6 +425,7 @@ export class OffersComponent implements OnInit {
 
     return '';
   }
+
 // Add these methods to your component class to handle carousel navigation
 // Store the current image index for each carousel
   carouselIndices: { [key: number]: number } = {};
@@ -478,7 +483,7 @@ export class OffersComponent implements OnInit {
 // Update the checkUserActiveSponsorship method to handle multiple sponsorships
   checkUserActiveSponsorship(): void {
     // Get all sponsorships for the current user
-    this.sponsorshipService.getAllSponsorships({ page: 0, size: 100 }).subscribe({
+    this.sponsorshipService.getAllSponsorships({page: 0, size: 100}).subscribe({
       next: (response: PageResponseSponsorshipResponse) => {
         // Clear existing sponsorships
         this.userSponsorships.clear();
@@ -521,221 +526,18 @@ export class OffersComponent implements OnInit {
       }
     });
   }
+
   // Add a helper method to check if an offer has an active sponsorship
   hasActiveSponsorship(offerId: number): boolean {
     return this.userSponsorships.has(offerId);
   }
+
   // Add a helper method to get the sponsorship ID for an offer
   getSponsorshipId(offerId: number): number {
     return this.userSponsorships.get(offerId) || 0;
   }
-
-  /*checkUserActiveSponsorship(): void {
-    // Get all sponsorships for the current user
-    this.sponsorshipService.getAllSponsorships({ page: 0, size: 100 }).subscribe({
-      next: (response: PageResponseSponsorshipResponse) => {
-        if (response.content && response.content.length > 0) {
-          // Find active sponsorships
-          const activeSponsorship = response.content.find(s =>
-            //s.status?.toUpperCase() === 'ACTIVE' ||
-            s.status?.toUpperCase() === 'PENDING' ||
-            s.status?.toUpperCase() === 'APPROVED'
-          );
-
-          if (activeSponsorship && activeSponsorship.sponsorOffer?.id) {
-            // Set the current sponsorship state
-            this.createdSponsorshipId = activeSponsorship.id || null;
-            this.currentSponsorshipOfferId = activeSponsorship.sponsorOffer.id;
-            console.log('Found active sponsorship:', this.createdSponsorshipId, 'for offer:', this.currentSponsorshipOfferId);
-          } else {
-            // No active sponsorships found, reset state
-            this.createdSponsorshipId = null;
-            this.currentSponsorshipOfferId = null;
-          }
-        } else {
-          // No sponsorships at all, reset state
-          this.createdSponsorshipId = null;
-          this.currentSponsorshipOfferId = null;
-        }
-      },
-      error: (err) => {
-        console.error('Failed to check user sponsorships:', err);
-        // On error, reset state to be safe
-        this.createdSponsorshipId = null;
-        this.currentSponsorshipOfferId = null;
-      }
-    });
-  }*/
-
-  // Check if the user has any active sponsorships
-  /*checkUserActiveSponsorship(): void {
-    // Get all sponsorships for the current user (assuming the API returns only the current user's sponsorships)
-    this.sponsorshipService.getAllSponsorships({ page: 0, size: 100 }).subscribe({
-      next: (response: PageResponseSponsorshipResponse) => {
-        if (response.content && response.content.length > 0) {
-          // Find active sponsorships (assuming 'ACTIVE' is the status for active sponsorships)
-          // Adjust the status check based on your actual status values
-          const activeSponsorship = response.content.find(s =>
-            s.status?.toUpperCase() === 'ACTIVE' ||
-            s.status?.toUpperCase() === 'PENDING' ||
-            s.status?.toUpperCase() === 'APPROVED'
-          );
-
-          if (activeSponsorship && activeSponsorship.sponsorOffer?.id) {
-            // Set the current sponsorship state
-            this.createdSponsorshipId = activeSponsorship.id || null;
-            this.currentSponsorshipOfferId = activeSponsorship.sponsorOffer.id;
-            console.log('Found active sponsorship:', this.createdSponsorshipId, 'for offer:', this.currentSponsorshipOfferId);
-          }
-        }
-      },
-      error: (err) => {
-        console.error('Failed to check user sponsorships:', err);
-      }
-    });
-  }*/
-
 }
-  /*
-  // List of sponsor offers
-  sponsorOffers: SponsorOfferResponse[] = [];
-  // Offer for which the ad form is open
-  selectedOfferId: number | null = null;
-  // Sponsorship id created from the backend (if any)
-  createdSponsorshipId: number | null = null;
-  // Offer id that has an active sponsorship (to show the Undo button only on that card)
-  currentSponsorshipOfferId: number | null = null;
-  // Reactive form for ad submission
-  adForm: FormGroup;
-  // File for ad image (optional)
-  selectedImageFile: File | null = null;
 
-  // Pagination variables
-  page: number = 0;
-  size: number = 5;
-  totalPages: number = 0;
-  totalElements: number = 0;
-
-  // Base API URL (adjust as necessary)
-  apiUrl = 'http://localhost:8088/api/v1';
-
-  constructor(
-    private fb: FormBuilder,
-    private offerService: SponsorOfferControllerService,
-    private sponsorshipService: SponsorshipControllerService,
-    private http: HttpClient
-  ) {
-    // Build the form with required fields
-    this.adForm = this.fb.group({
-      title: ['', Validators.required],
-      content: ['', Validators.required]
-    });
-  }
-
-  ngOnInit(): void {
-    this.loadOffers();
-  }
-
-  // Load offers from the backend
-  loadOffers(): void {
-    this.offerService.getAllSponsorOffers({ page: this.page, size: this.size }).subscribe({
-      next: (res: PageResponseSponsorOfferResponse) => {
-        // Provide default values (e.g., 0) if undefined
-        this.sponsorOffers = res.content || [];
-        this.totalPages = res.totalPages || 0;  // Default to 0 if undefined
-        this.totalElements = res.totalElements || 0;  // Default to 0 if undefined
-      },
-      error: (err) => {
-        console.error('Failed to load sponsor offers.', err);
-      }
-    });
-  }
-
-  // When a user clicks "Choose", open the form on that card
-  onChoose(offer: SponsorOfferResponse): void {
-    if (!offer.id) {
-      console.error('Offer ID is undefined.');
-      return;
-    }
-    this.selectedOfferId = offer.id;
-    this.adForm.reset();
-    this.selectedImageFile = null;
-    // Clear any previous sponsorship state
-    this.createdSponsorshipId = null;
-    this.currentSponsorshipOfferId = null;
-  }
-
-  // File input change handler for the ad form
-  onImageSelected(event: Event): void {
-    const inputEl = event.target as HTMLInputElement;
-    if (inputEl.files && inputEl.files.length > 0) {
-      this.selectedImageFile = inputEl.files[0];
-    }
-  }
-
-  // Submit ad form to create the sponsorship for the selected offer
-  onSubmitAd(offerId: number): void {
-    if (this.adForm.invalid) {
-      return;
-    }
-
-    const sponsorAdRequest = {
-      title: this.adForm.value.title,
-      content: this.adForm.value.content
-    };
-
-    const formData = new FormData();
-    // Append sponsor ad request as JSON blob
-    formData.append('request', new Blob([JSON.stringify(sponsorAdRequest)], { type: 'application/json' }));
-    if (this.selectedImageFile) {
-      formData.append('images', this.selectedImageFile);
-    }
-
-    const url = `${this.apiUrl}/sponsor-offers/chooseSponsorOffer/${offerId}`;
-    this.http.post<number>(url, formData).subscribe({
-      next: (sponsorshipId: number) => {
-        console.log('Sponsorship created with id', sponsorshipId);
-        this.createdSponsorshipId = sponsorshipId;
-        this.currentSponsorshipOfferId = offerId;
-        this.selectedOfferId = null;
-      },
-      error: (err) => {
-        console.error('Error creating sponsorship:', err);
-      }
-    });
-  }
-
-  // Undo the sponsorship on the current card
-  onUndo(): void {
-    if (!this.createdSponsorshipId) return;
-
-    this.sponsorshipService.deleteSponsorship({ sponsorshipId: this.createdSponsorshipId })
-      .pipe(finalize(() => {
-        this.createdSponsorshipId = null;
-        this.currentSponsorshipOfferId = null;
-      }))
-      .subscribe({
-        next: () => {
-          console.log('Sponsorship undone successfully.');
-        },
-        error: (err) => {
-          console.error('Failed to undo sponsorship:', err);
-        }
-      });
-  }
-
-  // Cancel the ad form on the active card
-  onCancelForm(): void {
-    this.selectedOfferId = null;
-    this.adForm.reset();
-    this.selectedImageFile = null;
-  }
-
-  // Handle page change
-  onPageChange(page: number): void {
-    this.page = page;
-    this.loadOffers();
-  }*/
 
 
 
