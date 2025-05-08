@@ -20,6 +20,7 @@ import {
 import {
   ProvidershipDetailsProviderComponent
 } from './pages/my-providership-provider/providership-details/providership-details.component';
+import {SponsorAdsProviderComponent} from './pages/sponsor-ads-provider/sponsor-ads.component';
 
 
 
@@ -31,7 +32,8 @@ import {
     ProviderMenuComponent,
     ProvidershipDetailsProviderComponent,
     SupplierTransactionsProviderComponent,
-    SupplierTransactionDetailsProviderComponent
+    SupplierTransactionDetailsProviderComponent,
+    SponsorAdsProviderComponent
   ],
   imports: [
     CommonModule,

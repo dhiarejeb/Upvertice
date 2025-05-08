@@ -69,7 +69,7 @@ export class SupplierOfferControllerService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  chooseSupplierOffer$Response(params: ChooseSupplierOffer$Params, context?: HttpContext): Observable<StrictHttpResponse<SupplierTransactionResponse>> {
+  chooseSupplierOffer$Response(params: ChooseSupplierOffer$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<SupplierTransactionResponse>>> {
     return chooseSupplierOffer(this.http, this.rootUrl, params, context);
   }
 
@@ -79,9 +79,9 @@ export class SupplierOfferControllerService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  chooseSupplierOffer(params: ChooseSupplierOffer$Params, context?: HttpContext): Observable<SupplierTransactionResponse> {
+  chooseSupplierOffer(params: ChooseSupplierOffer$Params, context?: HttpContext): Observable<Array<SupplierTransactionResponse>> {
     return this.chooseSupplierOffer$Response(params, context).pipe(
-      map((r: StrictHttpResponse<SupplierTransactionResponse>): SupplierTransactionResponse => r.body)
+      map((r: StrictHttpResponse<Array<SupplierTransactionResponse>>): Array<SupplierTransactionResponse> => r.body)
     );
   }
 

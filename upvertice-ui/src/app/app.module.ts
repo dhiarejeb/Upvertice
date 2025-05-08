@@ -52,8 +52,11 @@ export function kcFactory(kcService: KeycloakService) {
     SharedModule,
     ProviderModule,
     ToastrModule.forRoot({
+      closeButton: true,
+      newestOnTop: true,
+      tapToDismiss: true ,
       positionClass: 'toast-bottom-right',
-      timeOut: 3000,
+      timeOut: 8000,
       progressBar: true,
     }),
     SupplierModule

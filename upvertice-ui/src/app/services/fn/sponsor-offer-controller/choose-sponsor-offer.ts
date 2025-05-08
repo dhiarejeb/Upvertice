@@ -8,11 +8,11 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { SponsorOfferMultipartRequest } from '../../models/sponsor-offer-multipart-request';
+import { SponsorOfferMultipartChooseRequest } from '../../models/sponsor-offer-multipart-choose-request';
 
 export interface ChooseSponsorOffer$Params {
   offerId: number;
-      body?: SponsorOfferMultipartRequest
+      body?: SponsorOfferMultipartChooseRequest
 }
 
 export function chooseSponsorOffer(http: HttpClient, rootUrl: string, params: ChooseSponsorOffer$Params, context?: HttpContext): Observable<StrictHttpResponse<number>> {

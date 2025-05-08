@@ -1,16 +1,17 @@
-import { Component } from '@angular/core';
-import { ProvidershipControllerService } from '../../../../services/services';
+import {Component} from '@angular/core';
+import {ProvidershipControllerService} from '../../../../services/services';
 import {
   PageResponseProvidershipResponse,
   ProvidershipMultipartRequest,
   ProvidershipResponse
 } from '../../../../services/models';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {MatDialog} from '@angular/material/dialog';
 import {finalize} from 'rxjs';
 import {ConfirmDialogComponent} from './confirm-dialog/confirm-dialog.component';
-import { Router } from '@angular/router';
+import {Router} from '@angular/router';
+import {ToastrService} from 'ngx-toastr';
+
 @Component({
   selector: 'app-providership-manager',
   standalone: false,
@@ -32,7 +33,6 @@ export class ProvidershipManagerComponent {
   loading = false;
   updating = false;
 
-
   // Approval status options for admin update
   approvalStatusOptions: Array<'PENDING' | 'APPROVED' | 'REJECTED'> = ['PENDING', 'APPROVED', 'REJECTED'];
 
@@ -41,19 +41,13 @@ export class ProvidershipManagerComponent {
     private fb: FormBuilder,
     private dialog: MatDialog,
     private router: Router,
-    private snackBar: MatSnackBar
+    private toastService: ToastrService
   ) {
-    // Only admin-editable fields
     this.updateForm = this.fb.group({
-      sponsorshipId: [null], // optional
-      providershipApprovalStatus: [null], // optional
-      bonusEarned: [0, [Validators.min(0)]], // optional
+      sponsorshipId: [null],
+      providershipApprovalStatus: [null],
+      bonusEarned: [0, [Validators.min(0)]],
     });
-    /*this.updateForm = this.fb.group({
-      sponsorshipId: [null, Validators.required],
-      providershipApprovalStatus: [null, Validators.required],
-      bonusEarned: [0, [Validators.required, Validators.min(0)]]
-    });*/
   }
 
   ngOnInit(): void {
@@ -71,14 +65,29 @@ export class ProvidershipManagerComponent {
           this.providerships = resp.content || [];
           this.totalElements = resp.totalElements || 0;
           this.totalPages = resp.totalPages || 0;
+          this.toastService.success('Providerships loaded successfully');
         },
-        error: () => this.snackBar.open('Failed to load providerships', 'Close', { duration: 3000 })
+        error: () => this.toastService.error('Failed to load providerships')
       });
   }
 
   onPageChange(page: number): void {
     this.currentPage = page;
     this.loadProviderships();
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.loadProviderships();
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage + 1 < this.totalPages) {
+      this.currentPage++;
+      this.loadProviderships();
+    }
   }
 
   selectProvidership(item: ProvidershipResponse): void {
@@ -98,7 +107,6 @@ export class ProvidershipManagerComponent {
 
     this.updating = true;
 
-    // Build payload with only admin-editable fields
     const payload: ProvidershipMultipartRequest = {
       request: JSON.stringify({
         sponsorshipId: this.updateForm.value.sponsorshipId,
@@ -115,30 +123,37 @@ export class ProvidershipManagerComponent {
         next: (resp: ProvidershipResponse) => {
           const idx = this.providerships.findIndex(p => p.id === resp.id);
           if (idx > -1) this.providerships[idx] = resp;
-          this.snackBar.open('Providership updated successfully', 'Close', { duration: 3000 });
+          this.toastService.success('Providership updated successfully');
           this.cancelEdit();
         },
-        error: () => this.snackBar.open('Failed to update providership', 'Close', { duration: 3000 })
+        error: () => this.toastService.error('Failed to update providership')
       });
   }
 
   confirmDelete(item: ProvidershipResponse): void {
     const ref = this.dialog.open(ConfirmDialogComponent, {
       width: '350px',
-      data: { title: 'Confirm Deletion', message: `Delete providership #${item.id}?`, confirmText: 'Delete', cancelText: 'Cancel' }
+      data: {
+        title: 'Confirm Deletion',
+        message: `Delete providership #${item.id}?`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      }
     });
+
     ref.afterClosed().subscribe(ok => ok && this.deleteProvidership(item));
   }
 
   deleteProvidership(item: ProvidershipResponse): void {
     if (!item.id) return;
+
     this.providershipService.deleteProvidership({ id: item.id }).subscribe({
       next: () => {
         this.providerships = this.providerships.filter(p => p.id !== item.id);
-        this.snackBar.open('Providership deleted', 'Close', { duration: 3000 });
+        this.toastService.success('Providership deleted');
         if (this.selectedProvidership?.id === item.id) this.cancelEdit();
       },
-      error: () => this.snackBar.open('Delete failed', 'Close', { duration: 3000 })
+      error: () => this.toastService.error('Delete failed')
     });
   }
 
@@ -159,7 +174,6 @@ export class ProvidershipManagerComponent {
       (value.bonusEarned !== null && value.bonusEarned !== 0);
   }
 
-
   goToDetails(id: number | undefined): void {
     if (id != null) {
       this.router.navigate(['/admin/providership-details', id]);
@@ -176,22 +190,6 @@ export class ProvidershipManagerComponent {
         return 'bg-danger';
       default:
         return 'bg-secondary';
-    }
-  }
-
-
-
-  prevPage(): void {
-    if (this.currentPage > 0) {
-      this.currentPage--;
-      this.loadProviderships();
-    }
-  }
-
-  nextPage(): void {
-    if (this.currentPage + 1 < this.totalPages) {
-      this.currentPage++;
-      this.loadProviderships();
     }
   }
 

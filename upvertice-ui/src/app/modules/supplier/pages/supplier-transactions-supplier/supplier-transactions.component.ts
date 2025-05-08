@@ -1,13 +1,10 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
 import {SupplierTransactionResponse} from '../../../../services/models/supplier-transaction-response';
 import {
   SupplierTransactionControllerService
 } from '../../../../services/services/supplier-transaction-controller.service';
-import {
-  PageResponseSupplierTransactionResponse
-} from '../../../../services/models/page-response-supplier-transaction-response';
-import {SupplierTransactionMultipartRequest} from '../../../../services/models/supplier-transaction-multipart-request';
 import {Router} from '@angular/router';
+import {ToastrService} from 'ngx-toastr';
 
 @Component({
   selector: 'app-supplier-transactions',
@@ -32,7 +29,8 @@ export class SupplierTransactionsSupplierComponent {
 
   constructor(
     private service: SupplierTransactionControllerService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastrService // Inject toastr service
   ) {}
 
   ngOnInit(): void {
@@ -40,10 +38,17 @@ export class SupplierTransactionsSupplierComponent {
   }
 
   loadTransactions(): void {
-    this.service.getSupplierTransactions({ page: this.page, size: this.size }).subscribe(resp => {
-      this.transactions = resp.content || [];
-      this.totalPages = resp.totalPages ?? 0;
-      this.totalElements = resp.totalElements ?? 0;
+    this.service.getSupplierTransactions({ page: this.page, size: this.size }).subscribe({
+      next: (resp) => {
+        this.transactions = resp.content || [];
+        this.totalPages = resp.totalPages ?? 0;
+        this.totalElements = resp.totalElements ?? 0;
+        this.toastService.success('Transactions loaded successfully'); // Success toast
+      },
+      error: (err) => {
+        console.error('Failed to load transactions', err);
+        this.toastService.error('Failed to load transactions. Please try again later.'); // Error toast
+      }
     });
   }
 
@@ -84,24 +89,35 @@ export class SupplierTransactionsSupplierComponent {
     this.service.updateSupplierTransaction({
       transactionId: tx.id,
       body: multipartRequest
-    }).subscribe(() => {
-      this.loadTransactions();
-      this.editingId = null;
-      this.updatedLocations = [];
-      this.updatedQuantitySold = null;
-      this.updatedProofs = [];
+    }).subscribe({
+      next: () => {
+        this.loadTransactions();
+        this.editingId = null;
+        this.updatedLocations = [];
+        this.updatedQuantitySold = null;
+        this.updatedProofs = [];
+        this.toastService.success('Transaction updated successfully'); // Success toast
+      },
+      error: (err) => {
+        console.error('Failed to update transaction', err);
+        this.toastService.error('Failed to update transaction. Please try again later.'); // Error toast
+      }
     });
   }
-
-
-
 
   delete(tx: SupplierTransactionResponse): void {
     if (!tx.id) return;
     if (!confirm('Are you sure you want to delete this transaction?')) return;
 
-    this.service.deleteSupplierTransaction({ transactionId: tx.id }).subscribe(() => {
-      this.loadTransactions();
+    this.service.deleteSupplierTransaction({ transactionId: tx.id }).subscribe({
+      next: () => {
+        this.loadTransactions();
+        this.toastService.success('Transaction deleted successfully'); // Success toast
+      },
+      error: (err) => {
+        console.error('Failed to delete transaction', err);
+        this.toastService.error('Failed to delete transaction. Please try again later.'); // Error toast
+      }
     });
   }
 

@@ -6,6 +6,7 @@ import {SponsorshipResponse} from '../../../../../services/models/sponsorship-re
 import {
   GetSponsorshipsByStatus$Params
 } from '../../../../../services/fn/sponsorship-controller/get-sponsorships-by-status';
+import {ToastrService} from 'ngx-toastr';
 
 @Component({
   selector: 'app-sponsorships-list',
@@ -19,24 +20,25 @@ export class SponsorshipsListComponent implements OnInit {
   page = 0;
   size = 5;
   totalPages = 0;
-
+  statusFilter: string = ''; // default is all
 
   constructor(
     private sponsorshipService: SponsorshipControllerService,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
     this.loadSponsorships();
   }
 
-  statusFilter: string = ''; // default is all
   onStatusChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
     this.statusFilter = value as GetSponsorshipsByStatus$Params['status'] | '';
     this.page = 0;
     this.loadSponsorships();
   }
+
   loadSponsorships(): void {
     const params = {
       page: this.page,
@@ -51,29 +53,37 @@ export class SponsorshipsListComponent implements OnInit {
       : this.sponsorshipService.getAllSponsorships(params);
 
     observable.subscribe({
-      next: res => {
+      next: (res) => {
         this.sponsorships = res.content ?? [];
         this.totalPages = res.totalPages ?? 0;
+        this.toastr.success('Sponsorships loaded successfully!', 'Success');
+      },
+      error: (err) => {
+        console.error('Failed to load sponsorships', err);
+        this.toastr.error('Failed to load sponsorships. Please try again.', 'Error');
       }
     });
   }
-  goToDetails(id: number | undefined) {
-    if (id) this.router.navigate(['/advertiser/sponsorships', id]);
+
+  goToDetails(id: number | undefined): void {
+    if (id) {
+      this.router.navigate(['/advertiser/sponsorships', id]);
+    }
   }
 
-  filterByStatus() {
+  filterByStatus(): void {
     this.page = 0;
     this.loadSponsorships();
   }
 
-  nextPage() {
+  nextPage(): void {
     if (this.page + 1 < this.totalPages) {
       this.page++;
       this.loadSponsorships();
     }
   }
 
-  prevPage() {
+  prevPage(): void {
     if (this.page > 0) {
       this.page--;
       this.loadSponsorships();

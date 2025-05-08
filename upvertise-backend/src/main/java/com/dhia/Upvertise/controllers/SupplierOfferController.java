@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/supplier-offers")
 @RequiredArgsConstructor
@@ -32,10 +34,11 @@ public class SupplierOfferController {
     @GetMapping("AllSupplierOffers")
     @PreAuthorize("hasAnyRole('Admin','Provider','Supplier')")
     public ResponseEntity<PageResponse<SupplierOfferResponse>> getAllSupplierOffers(
+            Authentication authentication,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(service.getAllSupplierOffers(pageable));
+        return ResponseEntity.ok(service.getAllSupplierOffers(pageable, authentication));
     }
 
     @GetMapping("/status")
@@ -143,13 +146,22 @@ public ResponseEntity<SupplierOfferResponse> createSupplierOffer(
     }
 
     @PostMapping("/{supplierOfferId}/choose")
+    @PreAuthorize("hasAnyRole('Supplier','Provider')")
+    public ResponseEntity<List<SupplierTransactionResponse>> chooseSupplierOffer(
+            @PathVariable Integer supplierOfferId,
+            Authentication connectedUser) {
+
+        List<SupplierTransactionResponse> txs = service.chooseSupplierOffer(connectedUser, supplierOfferId);
+        return ResponseEntity.ok(txs);
+    }
+    /*@PostMapping("/{supplierOfferId}/choose")
     @PreAuthorize("hasAnyRole('Supplier', 'Provider')")
     public ResponseEntity<SupplierTransactionResponse> chooseSupplierOffer(
             @PathVariable Integer supplierOfferId,
             Authentication connectedUser) {
 
         return ResponseEntity.ok(service.chooseSupplierOffer(connectedUser, supplierOfferId));
-    }
+    }*/
 
     @PutMapping("/{transactionId}/update-choice/{newSupplierOfferId}")
     @PreAuthorize("hasAnyRole('Supplier', 'Provider')")

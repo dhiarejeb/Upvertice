@@ -26,26 +26,7 @@
           <h5 class="card-title mb-0 fs-6">{{ offer.title }}</h5>
         </div>
 
-        <!--&lt;!&ndash; Images carousel if available &ndash;&gt;
-        <div *ngIf="offer.explainImages && offer.explainImages.length > 0" class="image-container">
-          <div id="carousel-{{offer.id}}" class="carousel slide" data-bs-ride="false">
-            <div class="carousel-inner">
-              <div *ngFor="let image of offer.explainImages; let i = index"
-                   [class.active]="i === 0"
-                   class="carousel-item">
-                <img [src]="image" class="d-block w-100 card-img-top" alt="Offer Image">
-              </div>
-            </div>
-            <button class="carousel-control-prev" type="button" (click)="prevImage(offer.id!)">
-              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" (click)="nextImage(offer.id!)">
-              <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Next</span>
-            </button>
-          </div>
-        </div>-->
+
         <!-- Update the image container in the card -->
         <div class="image-container">
           <div *ngIf="offer.explainImages && offer.explainImages.length > 0" class="carousel slide" [id]="'carousel-' + offer.id">
@@ -203,20 +184,6 @@
     </div>
   </div>
 
-  <!-- Toast notification for success/error messages -->
-  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-    <div id="successToast" class="toast" [class.show]="showToast" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="toast-header" [ngClass]="toastType === 'success' ? 'bg-success text-white' : 'bg-danger text-white'">
-        <i [class]="toastType === 'success' ? 'fas fa-check-circle me-2' : 'fas fa-exclamation-circle me-2'"></i>
-        <strong class="me-auto">{{ toastTitle }}</strong>
-        <button type="button" class="btn-close btn-close-white" (click)="hideToast()"></button>
-      </div>
-      <div class="toast-body">
-        {{ toastMessage }}
-      </div>
-    </div>
-  </div>
-
   <!-- Pagination Controls -->
   <nav aria-label="Page navigation" class="my-4">
     <ul class="pagination justify-content-center">
@@ -238,67 +205,3 @@
 </div>
 
 
-<!--
-<div class="offer-list">
-  <h2>Offers</h2>
-
-  &lt;!&ndash; Display a message if no offers are available &ndash;&gt;
-  <div *ngIf="sponsorOffers.length === 0">No offers available.</div>
-
-  &lt;!&ndash; Loop through the offers and display details &ndash;&gt;
-  <div *ngFor="let offer of sponsorOffers" class="offer-card">
-    <h3>{{ offer.title }}</h3>
-    <p><strong>Category:</strong> {{ offer.category }}</p>
-    <p><strong>Description:</strong> {{ offer.description }}</p>
-    <p><strong>Sales Area:</strong> {{ offer.salesArea }}</p>
-    <p><strong>Product Type:</strong> {{ offer.productType }}</p>
-    <p><strong>Product Quantity:</strong> {{ offer.productQuantity }}</p>
-    <p><strong>Status:</strong> {{ offer.status }}</p>
-    <p><strong>Price:</strong> {{ offer.price | currency }}</p>
-    <p><strong>Number of Ads:</strong> {{ offer.numberAds }}</p>
-
-    &lt;!&ndash; Show images if available &ndash;&gt;
-    <div *ngIf="offer.explainImages && offer.explainImages.length > 0">
-      <h4>Offer Images</h4>
-      <div class="offer-images">
-        <img *ngFor="let image of offer.explainImages" [src]="image" alt="Offer Image" class="offer-image" />
-      </div>
-    </div>
-
-    &lt;!&ndash; Display buttons if there's an active sponsorship for this offer &ndash;&gt;
-    <button *ngIf="offer.id !== currentSponsorshipOfferId && !createdSponsorshipId" (click)="onChoose(offer)">Choose</button>
-    <button *ngIf="offer.id === currentSponsorshipOfferId && createdSponsorshipId" (click)="onUndo()">Undo Sponsorship</button>
-
-    &lt;!&ndash; Ad form for the selected offer &ndash;&gt;
-    <div *ngIf="offer.id === selectedOfferId">
-      <h4>Create Sponsorship Ad</h4>
-      <form [formGroup]="adForm" (ngSubmit)="onSubmitAd(offer.id)">
-        <div>
-          <label for="title">Ad Title</label>
-          <input id="title" formControlName="title" type="text" />
-        </div>
-        <div>
-          <label for="content">Ad Content</label>
-          <textarea id="content" formControlName="content"></textarea>
-        </div>
-        <div>
-          <div>
-            <label for="adImage">Ad Image</label>
-            <input id="adImage" type="file" (change)="onImageSelected($event)" />
-          </div>
-        </div>
-        <button type="submit" [disabled]="adForm.invalid">Submit Ad</button>
-        <button type="button" (click)="onCancelForm()">Cancel</button>
-      </form>
-    </div>
-  </div>
-
-  &lt;!&ndash; Pagination Controls &ndash;&gt;
-  <div class="pagination">
-    <button [disabled]="page === 0" (click)="onPageChange(page - 1)">Previous</button>
-    <span>Page {{ page + 1 }} of {{ totalPages }}</span>
-    <button [disabled]="page + 1 >= totalPages" (click)="onPageChange(page + 1)">Next</button>
-  </div>
-</div>
-
--->

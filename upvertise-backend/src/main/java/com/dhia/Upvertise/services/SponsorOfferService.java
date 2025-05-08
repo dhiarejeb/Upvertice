@@ -7,6 +7,9 @@ import com.dhia.Upvertise.handler.OperationNotPermittedException;
 import com.dhia.Upvertise.mapper.SponsorOfferMapper;
 import com.dhia.Upvertise.models.common.PageResponse;
 import com.dhia.Upvertise.models.sponsorship.*;
+import com.dhia.Upvertise.notification.Notification;
+import com.dhia.Upvertise.notification.NotificationService;
+import com.dhia.Upvertise.notification.NotificationStatus;
 import com.dhia.Upvertise.repositories.SponsorAdRepository;
 import com.dhia.Upvertise.repositories.SponsorOfferRepository;
 import com.dhia.Upvertise.repositories.SponsorshipRepository;
@@ -35,6 +38,7 @@ public class SponsorOfferService {
     private final CloudinaryService cloudinaryService;
     private final KafkaProducerService kafkaProducerService;
     private final SponsorOfferMapper sponsorOfferMapper;
+    private final NotificationService notificationService;
 
     @Cacheable(value = "sponsorOffers", key = "'status:' + #status + '-' + #pageable.pageNumber")
     public PageResponse<SponsorOfferResponse> getSponsorOffersByStatus(Pageable pageable, SponsorOfferStatus status) {
@@ -82,8 +86,9 @@ public class SponsorOfferService {
         );
     }
 
-    // sponsor selects an offer
-    // sponsor selects an offer
+    // advertiser selects an offer
+    // advertiser selects an offer
+    // a sponsorship is created
     @CacheEvict(value = "sponsorAds", allEntries = true)  // Clear cache after creating a new ad
     public Integer chooseSponsorOffer(Integer offerId,MultipartFile image, SponsorAdRequest sponsorAdRequest, Authentication connectedUser) {
 
@@ -118,7 +123,12 @@ public class SponsorOfferService {
 
         // Save Sponsorship (this also updates SponsorAd due to cascading)
         sponsorship = sponsorshipRepository.save(sponsorship);
-
+        kafkaProducerService.sendMessage("adminNotificationTopic", "New sponsorship created with ID: " + sponsorship.getId());
+        Notification notification = Notification.builder()
+                .message("New Sponsorship Created for offer: " + sponsorOffer.getTitle())
+                .status(NotificationStatus.SPONSORSHIP_CREATED)
+                .build();
+        notificationService.sendNotification(sponsorOffer.getUserId(), notification); // Notify Admin who created the offer
         return sponsorship.getId();
     }
     public Integer updateChosenSponsorOffer(Integer oldOfferId, Integer newOfferId, Authentication connectedUser) {
@@ -178,8 +188,15 @@ public class SponsorOfferService {
         SponsorOffer savedOffer = sponsorOfferRepository.save(sponsorOffer);
         // Publish event to Kafka
         kafkaProducerService.sendMessage("sponsorOfferTopic", "New sponsor offer created with ID: " + savedOffer.getId());
+        // WebSocket Notification
+        Notification notification = Notification.builder()
+                .message("New Sponsor Offer Created: " + savedOffer.getTitle())
+                .status(NotificationStatus.SPONSOR_OFFER_CREATED)
+                .build();
+        notificationService.sendNotificationToRole("Advertiser", notification); // Notify all sponsors
 
         return sponsorOfferMapper.toResponseWithImagesUrls(savedOffer);
+
 
     }
 
@@ -220,7 +237,12 @@ public class SponsorOfferService {
         if (request.status() != null) sponsorOffer.setStatus(request.status());
 
         sponsorOfferRepository.save(sponsorOffer);
-
+        kafkaProducerService.sendMessage("advertiserNotificationTopic", "Sponsor Offer Updated: " + sponsorOffer.getTitle());
+        Notification notification = Notification.builder()
+                .message("Sponsor Offer Updated: " + sponsorOffer.getTitle())
+                .status(NotificationStatus.SPONSOR_OFFER_UPDATED)
+                .build();
+        notificationService.sendNotificationToRole("Advertiser", notification);
         return sponsorOfferMapper.toResponseWithImagesUrls(sponsorOffer);
     }
 
@@ -241,6 +263,7 @@ public class SponsorOfferService {
         if (sponsorships == null || sponsorships.isEmpty()) {
             cloudinaryService.deleteImagesFromCloudinary(imageUrls);
             sponsorOfferRepository.delete(sponsorOffer);
+
             return;
         }
 
@@ -262,6 +285,12 @@ public class SponsorOfferService {
 
         // Delete the SponsorOffer
         sponsorOfferRepository.delete(sponsorOffer);
+        kafkaProducerService.sendMessage("advertiserNotificationTopic", "Sponsor Offer Deleted: " + sponsorOffer.getTitle());
+        Notification notification = Notification.builder()
+                .message("Sponsor Offer Deleted: " + sponsorOffer.getTitle())
+                .status(NotificationStatus.SPONSOR_OFFER_DELETED)
+                .build();
+        notificationService.sendNotificationToRole("Advertiser", notification);
 
     }
 

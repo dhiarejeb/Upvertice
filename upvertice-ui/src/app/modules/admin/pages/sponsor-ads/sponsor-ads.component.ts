@@ -3,6 +3,7 @@ import {SponsorAdResponse} from '../../../../services/models/sponsor-ad-response
 import {SponsorAdControllerService} from '../../../../services/services/sponsor-ad-controller.service';
 import {MatDialog} from '@angular/material/dialog';
 import {SponsorAdDialogComponent} from './sponsor-ad-dialog.component';
+import {ToastrService} from 'ngx-toastr';
 
 @Component({
   selector: 'app-sponsor-ads',
@@ -14,10 +15,14 @@ export class SponsorAdsComponent {
   sponsorAds: SponsorAdResponse[] = [];
   page = 0;
   size = 10;
+  totalPages = 0;
+  pageInput = 1;
+  loading = false;
 
   constructor(
     private sponsorAdService: SponsorAdControllerService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private toastService: ToastrService
   ) {}
 
   ngOnInit(): void {
@@ -25,11 +30,19 @@ export class SponsorAdsComponent {
   }
 
   loadSponsorAds(): void {
+    this.loading = true;
     this.sponsorAdService.getAllSponsorAds({ page: this.page, size: this.size }).subscribe({
       next: (res) => {
         this.sponsorAds = res.content ?? [];
+        this.totalPages = res.totalPages ?? 0;
+        this.pageInput = this.page + 1;
+        this.toastService.success('Sponsor ads loaded successfully');
       },
-      error: (err) => console.error('Failed to load sponsor ads', err)
+      error: (err) => {
+        console.error('Failed to load sponsor ads', err);
+        this.toastService.error('Failed to load sponsor ads');
+      },
+      complete: () => this.loading = false
     });
   }
 
@@ -37,8 +50,12 @@ export class SponsorAdsComponent {
     this.sponsorAdService.deleteSponsorAd({ adId }).subscribe({
       next: () => {
         this.sponsorAds = this.sponsorAds.filter(ad => ad.id !== adId);
+        this.toastService.success('Sponsor ad deleted successfully');
       },
-      error: err => console.error('Delete failed', err)
+      error: err => {
+        console.error('Delete failed', err);
+        this.toastService.error('Failed to delete sponsor ad');
+      }
     });
   }
 
@@ -49,9 +66,35 @@ export class SponsorAdsComponent {
     });
 
     dialogRef.afterClosed().subscribe(updated => {
-      if (updated) this.loadSponsorAds();
+      if (updated) {
+        this.toastService.success('Sponsor ad updated successfully');
+        this.loadSponsorAds();
+      }
     });
   }
+
+  nextPage(): void {
+    if (this.page + 1 < this.totalPages) {
+      this.page++;
+      this.loadSponsorAds();
+    }
+  }
+
+  prevPage(): void {
+    if (this.page > 0) {
+      this.page--;
+      this.loadSponsorAds();
+    }
+  }
+
+  goToPage(page: number): void {
+    const newPage = page - 1;
+    if (newPage >= 0 && newPage < this.totalPages) {
+      this.page = newPage;
+      this.loadSponsorAds();
+    }
+  }
+
 }
 
 

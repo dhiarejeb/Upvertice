@@ -4,6 +4,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {ProvidershipControllerService} from '../../../../../services/services/providership-controller.service';
 import {catchError, of} from 'rxjs';
 import {Chart, ChartConfiguration} from 'chart.js';
+import {ToastrService} from 'ngx-toastr';
 
 @Component({
   selector: 'app-providership-details',
@@ -23,6 +24,7 @@ export class ProvidershipDetailsAdminComponent {
     private route: ActivatedRoute,
     private router: Router,
     private providershipService: ProvidershipControllerService,
+    private toastService: ToastrService
   ) {}
 
   ngOnInit(): void {

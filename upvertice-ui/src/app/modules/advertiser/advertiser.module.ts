@@ -19,8 +19,11 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatDialogModule} from '@angular/material/dialog';
 
 
+
 import { SponsorshipsListComponent } from './pages/sponsorships/sponsorships-list/sponsorships-list.component';
 import {SponsorshipDetailsComponent} from './pages/sponsorships/sponsorship-details/sponsorship-details.component';
+import {SponsorAdsAdvertiserComponent} from './pages/sponsor-ads-advertiser/sponsor-ads.component';
+import {SponsorAdDialogComponent} from './pages/sponsor-ads-advertiser/sponsor-ad-dialog.component';
 
 
 @NgModule({
@@ -32,6 +35,8 @@ import {SponsorshipDetailsComponent} from './pages/sponsorships/sponsorship-deta
     SponsorshipDetailsComponent,
     //DashboardComponent,
     SponsorshipsListComponent,
+    SponsorAdsAdvertiserComponent,
+    SponsorAdDialogComponent
 
 
   ],
@@ -50,6 +55,7 @@ import {SponsorshipDetailsComponent} from './pages/sponsorships/sponsorship-deta
     MatDialogModule,
     BaseChartDirective,
     MatProgressBarModule,
+
 
 
   ],

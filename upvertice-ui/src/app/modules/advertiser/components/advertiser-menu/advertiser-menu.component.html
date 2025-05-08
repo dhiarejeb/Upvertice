@@ -1,23 +1,62 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
-  <a class="navbar-brand" href="#">UpVertice</a>
+  <a class="navbar-brand" href="#">
+    <i class="fas fa-rocket me-2"></i>UpVertice
+  </a>
   <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
     <span class="navbar-toggler-icon"></span>
   </button>
+
   <div class="collapse navbar-collapse" id="navbarNav">
     <ul class="navbar-nav me-auto">
       <li class="nav-item">
-        <a class="nav-link" routerLink="/advertiser">Home</a>
+        <a class="nav-link" routerLink="/advertiser">
+          <i class="fas fa-home me-1"></i> Home
+        </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" routerLink="/advertiser/offers">Offers</a>
+        <a class="nav-link" routerLink="/advertiser/offers">
+          <i class="fas fa-bullseye me-1"></i> Offers
+        </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" routerLink="/advertiser/dashboard">Dashboard</a>
+        <a class="nav-link" routerLink="/advertiser/sponsorAdsManager">
+          <i class="fas fa-ad me-1"></i> Ads Manager
+        </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" routerLink="/advertiser/userManager">User Manager</a>
+        <a class="nav-link" routerLink="/advertiser/dashboard">
+          <i class="fas fa-chart-line me-1"></i> Dashboard
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/advertiser/userManager">
+          <i class="fas fa-users-cog me-1"></i> User Manager
+        </a>
       </li>
     </ul>
+    <div class="dropdown me-3" (click)="unreadNotificationsCount = 0">
+      <i
+        class="fas fa-bell text-light position-relative h4 cursor-pointer"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      >
+        <span
+          *ngIf="unreadNotificationsCount > 0"
+          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+        >
+          {{ unreadNotificationsCount }}
+        </span>
+      </i>
+      <ul class="dropdown-menu">
+        <li *ngFor="let notification of notifications">
+          <span class="dropdown-item border-bottom small text-wrap">
+            <i class="fas fa-bell text-warning me-1"></i>
+            {{ notification.status }}: {{ notification.message }}
+          </span>
+        </li>
+      </ul>
+    </div>
+
     <button class="btn btn-outline-light" (click)="logout()">
       <i class="fas fa-sign-out-alt me-1"></i> Logout
     </button>

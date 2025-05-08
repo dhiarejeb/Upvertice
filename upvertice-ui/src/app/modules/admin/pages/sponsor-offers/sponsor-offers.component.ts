@@ -19,7 +19,7 @@ export class SponsorOffersComponent implements OnInit{
   constructor(
     private sponsorOfferService: SponsorOfferControllerService,
     private dialog: MatDialog,
-  private toastr: ToastrService
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
@@ -30,11 +30,16 @@ export class SponsorOffersComponent implements OnInit{
     this.sponsorOfferService.getAllSponsorOffers({
       page: this.page,
       size: this.size
-    })
-      .subscribe((res) => {
+    }).subscribe({
+      next: (res) => {
         this.offers = res.content || [];
         this.totalPages = res.totalPages || 0;
-      });
+      },
+      error: (err) => {
+        this.toastr.error('Failed to load sponsor offers', 'Error');
+        console.error('Failed to load sponsor offers:', err);
+      }
+    });
   }
 
   openFormDialog(offer?: SponsorOfferResponse): void {
@@ -54,33 +59,33 @@ export class SponsorOffersComponent implements OnInit{
 
   deleteOffer(id: number): void {
     if (confirm('Are you sure you want to delete this offer?')) {
-      this.sponsorOfferService.deleteSponsorOffer({ offerId: id })
-        .subscribe({
-          next: () => {
-            this.toastr.success('Offer deleted successfully');
-            this.fetchOffers();
-          },
-          error: (err) => {
-            this.toastr.error('Failed to delete offer', 'Error');
-            console.error(err);
-          }
-        });
+      this.sponsorOfferService.deleteSponsorOffer({ offerId: id }).subscribe({
+        next: () => {
+          this.toastr.success('Offer deleted successfully');
+          this.fetchOffers();
+        },
+        error: (err) => {
+          this.toastr.error('Failed to delete offer', 'Error');
+          console.error('Delete failed:', err);
+        }
+      });
     }
   }
 
-  previousPage() {
+  previousPage(): void {
     if (this.page > 0) {
       this.page--;
       this.fetchOffers();
     }
   }
 
-  nextPage() {
+  nextPage(): void {
     if (this.page + 1 < this.totalPages) {
       this.page++;
       this.fetchOffers();
     }
   }
+
   goToPage(pageNumber: number): void {
     if (pageNumber >= 0 && pageNumber < this.totalPages) {
       this.page = pageNumber;

@@ -55,24 +55,7 @@ public class SponsorOfferController {
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(sponsorOfferService.getAllSponsorOffers(page, size));
     }
-    /*@PostMapping(value = "/createSponsorOffer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<String> createSponsorOffer(
-            @RequestPart(value = "request", required = true) SponsorOfferRequest sponsorOfferRequest,
-            @RequestPart(value = "explainImages", required = false) List<MultipartFile> images,
-            Authentication connectedUser) {
-        //try {
-            // Convert JSON String to SponsorOfferRequest object
-            //ObjectMapper objectMapper = new ObjectMapper();
-            //SponsorOfferRequest sponsorOfferRequest = objectMapper.readValue(sponsorOfferJson, SponsorOfferRequest.class);
 
-            Integer offerId = sponsorOfferService.createSponsorOffer(sponsorOfferRequest, images, connectedUser);
-            return ResponseEntity.ok("Sponsor Offer created successfully. Offer ID: " + offerId);
-        //} catch (Exception e) {
-            //e.printStackTrace();  // Log the full error
-            //return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        //}
-    }*/
     @Operation(
             summary = "Create Sponsor Offer",
             requestBody = @RequestBody(
@@ -107,7 +90,7 @@ public class SponsorOfferController {
             requestBody = @RequestBody(
                     content = @Content(
                             mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-                            schema = @Schema(implementation = SponsorOfferMultipartRequest.class)
+                            schema = @Schema(implementation = SponsorOfferMultipartChooseRequest.class)
                     )
             )
     )
@@ -123,18 +106,7 @@ public class SponsorOfferController {
 
         return ResponseEntity.ok(sponsorOfferService.chooseSponsorOffer(offerId, image, sponsorAdRequest, connectedUser));
     }
-   /* @PostMapping("/chooseSponsorOffer/{offerId}")
-    @PreAuthorize("hasRole('Advertiser')")
-    public ResponseEntity<Integer> chooseSponsorOffer(
-            @PathVariable Integer offerId,
-            @RequestPart("request") SponsorAdRequest sponsorAdRequest,
-            @RequestPart("images")MultipartFile image,
-            Authentication connectedUser) {
 
-
-
-        return ResponseEntity.ok(sponsorOfferService.chooseSponsorOffer(offerId,image, sponsorAdRequest , connectedUser));
-    }*/
     @PutMapping("/updateSponsorOfferChoice")
     @PreAuthorize("hasRole('Advertiser')")
     public ResponseEntity<String> updateChosenSponsorOffer(

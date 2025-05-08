@@ -15,6 +15,7 @@ export type { ProvidershipMultipartRequest } from './models/providership-multipa
 export type { ProvidershipResponse } from './models/providership-response';
 export type { SponsorAdMultipartRequest } from './models/sponsor-ad-multipart-request';
 export type { SponsorAdResponse } from './models/sponsor-ad-response';
+export type { SponsorOfferMultipartChooseRequest } from './models/sponsor-offer-multipart-choose-request';
 export type { SponsorOfferMultipartRequest } from './models/sponsor-offer-multipart-request';
 export type { SponsorOfferResponse } from './models/sponsor-offer-response';
 export type { SponsorshipLightResponse } from './models/sponsorship-light-response';

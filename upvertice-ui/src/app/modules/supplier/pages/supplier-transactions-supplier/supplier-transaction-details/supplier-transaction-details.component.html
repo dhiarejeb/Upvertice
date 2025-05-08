@@ -135,11 +135,15 @@
                   <div class="text-center mb-3">
                     <h6>Progress</h6>
                     <div class="progress" style="height: 25px;">
-                      <div class="progress-bar" role="progressbar"
-                           [style.width.%]="calculateSalesPercentage()"
-                           [attr.aria-valuenow]="calculateSalesPercentage()"
-                           aria-valuemin="0" aria-valuemax="100">
-                        {{calculateSalesPercentage() | number:'1.0-0'}}%
+                      <div
+                        class="progress-bar"
+                        role="progressbar"
+                        [style.width.%]="calculateSalesPercentage()"
+                        [attr.aria-valuenow]="calculateSalesPercentage()"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                      >
+                        {{ calculateSalesPercentage() | number:'1.0-0' }}%
                       </div>
                     </div>
                   </div>
@@ -551,7 +555,7 @@
               <div class="card bg-warning text-white">
                 <div class="card-body text-center">
                   <h6>Percentage</h6>
-                  <h3>{{transaction.percentage | percent:'1.0-2'}}</h3>
+                  <h3>{{ transaction.percentage | number:'1.0-2' }}%</h3>
                 </div>
               </div>
             </div>

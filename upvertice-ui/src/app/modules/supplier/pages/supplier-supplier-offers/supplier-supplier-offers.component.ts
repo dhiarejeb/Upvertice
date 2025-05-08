@@ -10,6 +10,7 @@ import {
 } from '../../../../services/models/page-response-supplier-transaction-response';
 import {PageResponseSupplierOfferResponse} from '../../../../services/models/page-response-supplier-offer-response';
 import {finalize} from 'rxjs';
+import {ToastrService} from 'ngx-toastr';
 
 @Component({
   selector: 'app-supplier-supplier-offers',
@@ -28,7 +29,8 @@ export class SupplierSupplierOffersComponent implements OnInit{
 
   constructor(
     private offerService: SupplierOfferControllerService,
-    private transactionService: SupplierTransactionControllerService
+    private transactionService: SupplierTransactionControllerService,
+    private toastService: ToastrService // Inject toastr service
   ) {}
 
   ngOnInit(): void {
@@ -44,11 +46,12 @@ export class SupplierSupplierOffersComponent implements OnInit{
         this.totalPages = res.totalPages || 0;
         this.totalElements = res.totalElements || 0;
         this.loading = false;
+        this.toastService.success('Supplier offers loaded successfully!'); // Success toast
       },
       error: (err) => {
         console.error('Failed to load supplier offers', err);
         this.loading = false;
-        this.showToastMessage('Error', 'Failed to load supplier offers.', 'error');
+        this.toastService.error('Failed to load supplier offers. Please try again later.'); // Error toast
       }
     });
   }
@@ -67,10 +70,12 @@ export class SupplierSupplierOffersComponent implements OnInit{
             this.chosenOffers.set(offerId, tx.id);
           }
         });
+        this.toastService.success('Chosen offers loaded successfully!'); // Success toast
       },
       error: (err) => {
         console.error('Failed to load supplier transactions', err);
         this.chosenOffers.clear();
+        this.toastService.error('Failed to load chosen offers. Please try again later.'); // Error toast
       }
     });
   }
@@ -79,15 +84,17 @@ export class SupplierSupplierOffersComponent implements OnInit{
     if (!offer.id) return;
 
     this.offerService.chooseSupplierOffer({ supplierOfferId: offer.id }).subscribe({
-      next: (tx: SupplierTransactionResponse) => {
-        if (tx.id && tx.supplierOffer?.id) {
-          this.chosenOffers.set(tx.supplierOffer.id, tx.id);
-          this.showToastMessage('Success', 'Offer chosen successfully.', 'success');
+      next: (transactions: SupplierTransactionResponse[]) => {
+        for (const tx of transactions) {
+          if (tx.id && tx.supplierOffer?.id) {
+            this.chosenOffers.set(tx.supplierOffer.id, tx.id);
+          }
         }
+        this.toastService.success('Offer chosen successfully.'); // Success toast
       },
       error: (err) => {
         console.error('Failed to choose supplier offer', err);
-        this.showToastMessage('Error', 'Failed to choose offer.', 'error');
+        this.toastService.error('Failed to choose offer. Please try again later.'); // Error toast
       }
     });
   }
@@ -100,22 +107,17 @@ export class SupplierSupplierOffersComponent implements OnInit{
       .pipe(finalize(() => this.chosenOffers.delete(offerId)))
       .subscribe({
         next: () => {
-          this.showToastMessage('Success', 'Offer undo successful.', 'success');
+          this.toastService.success('Offer undo successful.'); // Success toast
         },
         error: (err) => {
           console.error('Failed to undo offer', err);
           if (err.status === 404) {
-            this.showToastMessage('Success', 'Offer undo successful (already deleted).', 'success');
+            this.toastService.success('Offer undo successful (already deleted).'); // Success toast for already deleted offer
           } else {
-            this.showToastMessage('Warning', 'Offer may have been removed, but undo failed.', 'warning');
+            this.toastService.warning('Offer may have been removed, but undo failed.'); // Warning toast
           }
         }
       });
-  }
-
-  showToastMessage(title: string, message: string, type: 'success' | 'error' | 'warning'): void {
-    // Replace with actual toast library if needed
-    alert(`${title}: ${message}`);
   }
 
   isOfferChosen(offerId: number): boolean {

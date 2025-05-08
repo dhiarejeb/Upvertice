@@ -4,6 +4,9 @@ import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {SupplierOfferControllerService} from '../../../../services/services/supplier-offer-controller.service';
 import {PageResponseSupplierOfferResponse} from '../../../../services/models/page-response-supplier-offer-response';
 import {SupplierOfferMultipartRequest} from '../../../../services/models/supplier-offer-multipart-request';
+import {UpdateSupplierOffer$Params} from '../../../../services/fn/supplier-offer-controller/update-supplier-offer';
+import {CreateSupplierOffer$Params} from '../../../../services/fn/supplier-offer-controller/create-supplier-offer';
+import {ToastrService} from 'ngx-toastr';
 
 @Component({
   selector: 'app-supplier-offers',
@@ -13,17 +16,20 @@ import {SupplierOfferMultipartRequest} from '../../../../services/models/supplie
 })
 export class SupplierOffersComponent implements OnInit {
   supplierOffers: SupplierOfferResponse[] = [];
-  currentPage: number = 0;
-  totalPages: number = 0;
-  formVisible: boolean = false;
-  editing: boolean = false;
+  currentPage = 0;
+  totalPages = 0;
+
+  formVisible = false;
+  editing = false;
+  editingId: number | null = null;
+
   offerForm: FormGroup;
   selectedImage: File | null = null;
-  editingId: number | null = null;
 
   constructor(
     private supplierOfferService: SupplierOfferControllerService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private toastService: ToastrService
   ) {
     this.offerForm = this.fb.group({
       title: ['', Validators.required],
@@ -33,7 +39,7 @@ export class SupplierOffersComponent implements OnInit {
       startDate: ['', Validators.required],
       endDate: ['', Validators.required],
       status: ['AVAILABLE', Validators.required],
-      sponsorAdIds: [[]]
+      sponsorAdIds: ['', Validators.required]
     });
   }
 
@@ -43,23 +49,40 @@ export class SupplierOffersComponent implements OnInit {
 
   loadOffers(): void {
     this.supplierOfferService.getAllSupplierOffers({ page: this.currentPage, size: 10 })
-      .subscribe((response: PageResponseSupplierOfferResponse) => {
-        this.supplierOffers = response.content || [];
-        this.totalPages = response.totalPages || 0;
+      .subscribe({
+        next: (resp: PageResponseSupplierOfferResponse) => {
+          this.supplierOffers = resp.content || [];
+          this.totalPages = resp.totalPages || 0;
+        },
+        error: () => {
+          this.toastService.error('Failed to load supplier offers');
+        }
       });
-  }
-
-  loadPage(page: number): void {
-    if (page >= 0 && page < this.totalPages) {
-      this.currentPage = page;
-      this.loadOffers();
-    }
   }
 
   openCreateForm(): void {
     this.resetForm();
     this.editing = false;
+    this.editingId = null;
     this.formVisible = true;
+  }
+
+  editOffer(offer: SupplierOfferResponse): void {
+    this.editing = true;
+    this.editingId = offer.id!;
+    this.formVisible = true;
+
+    this.offerForm.patchValue({
+      title: offer.title,
+      description: offer.description,
+      quantityAvailable: offer.quantityAvailable,
+      price: offer.price,
+      startDate: offer.startDate,
+      endDate: offer.endDate,
+      status: offer.status,
+      sponsorAdIds: (offer.sponsorAds || []).map(ad => ad.id).join(',')
+    });
+    this.selectedImage = null;
   }
 
   closeForm(): void {
@@ -67,46 +90,69 @@ export class SupplierOffersComponent implements OnInit {
     this.resetForm();
   }
 
-  onImageSelected(event: any): void {
-    this.selectedImage = event.target.files[0];
+  onImageSelected(evt: Event): void {
+    const input = evt.target as HTMLInputElement;
+    if (input.files && input.files.length) {
+      this.selectedImage = input.files[0];
+    }
   }
 
   onSubmit(): void {
-    const formValue = this.offerForm.value;
+    if (this.offerForm.invalid) return;
+
+    const fv = this.offerForm.value;
+    const sponsorAdIds: string[] = fv.sponsorAdIds
+      .split(',')
+      .map((s: string) => s.trim())
+      .filter((s: string) => s.length > 0);
+
+    const startDate = this.formatDate(fv.startDate);
+    const endDate = this.formatDate(fv.endDate);
+
     const requestPayload = {
-      ...formValue,
-      sponsorAdIds: formValue.sponsorAdIds
+      title: fv.title,
+      description: fv.description,
+      quantityAvailable: fv.quantityAvailable,
+      price: fv.price,
+      startDate,
+      endDate,
+      status: fv.status,
+      sponsorAdIds
     };
 
-    const multipartRequest: SupplierOfferMultipartRequest = {
+    const multipart: SupplierOfferMultipartRequest = {
       request: JSON.stringify(requestPayload),
       image: this.selectedImage as Blob
     };
 
     if (this.editingId !== null) {
-      this.supplierOfferService.updateSupplierOffer({ id: this.editingId, body: multipartRequest })
-        .subscribe(() => {
+      const params: UpdateSupplierOffer$Params = {
+        id: this.editingId,
+        body: multipart
+      };
+      this.supplierOfferService.updateSupplierOffer(params).subscribe({
+        next: () => {
+          this.toastService.success('Supplier offer updated successfully');
           this.loadOffers();
           this.closeForm();
-        });
+        },
+        error: () => {
+          this.toastService.error('Failed to update supplier offer');
+        }
+      });
     } else {
-      this.supplierOfferService.createSupplierOffer({ body: multipartRequest })
-        .subscribe(() => {
+      const params: CreateSupplierOffer$Params = { body: multipart };
+      this.supplierOfferService.createSupplierOffer(params).subscribe({
+        next: () => {
+          this.toastService.success('Supplier offer created successfully');
           this.loadOffers();
           this.closeForm();
-        });
+        },
+        error: () => {
+          this.toastService.error('Failed to create supplier offer');
+        }
+      });
     }
-  }
-
-  editOffer(offer: SupplierOfferResponse): void {
-    this.editing = true;
-    this.editingId = offer.id!;
-    this.offerForm.patchValue({
-      ...offer,
-      sponsorAdIds: offer.sponsorAds?.map(ad => ad.id) || []
-    });
-    this.selectedImage = null;
-    this.formVisible = true;
   }
 
   confirmDelete(id: number): void {
@@ -116,11 +162,18 @@ export class SupplierOffersComponent implements OnInit {
   }
 
   delete(id: number): void {
-    this.supplierOfferService.deleteSupplierOffer({ id })
-      .subscribe(() => this.loadOffers());
+    this.supplierOfferService.deleteSupplierOffer({ id }).subscribe({
+      next: () => {
+        this.toastService.success('Supplier offer deleted successfully');
+        this.loadOffers();
+      },
+      error: () => {
+        this.toastService.error('Failed to delete supplier offer');
+      }
+    });
   }
 
-  resetForm(): void {
+  private resetForm(): void {
     this.offerForm.reset({
       title: '',
       description: '',
@@ -129,10 +182,18 @@ export class SupplierOffersComponent implements OnInit {
       startDate: '',
       endDate: '',
       status: 'AVAILABLE',
-      sponsorAdIds: []
+      sponsorAdIds: ''
     });
-    this.editingId = null;
     this.selectedImage = null;
+    this.editingId = null;
+  }
+
+  private formatDate(input: string): string {
+    const d = new Date(input);
+    const yy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yy}-${mm}-${dd}`;
   }
   changePage(offset: number): void {
     const newPage = this.currentPage + offset;

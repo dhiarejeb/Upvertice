@@ -62,30 +62,7 @@ public class UserController {
 
         return ResponseEntity.ok(response);
     }
-    /*public ResponseEntity<PageResponse<UserResponse>> getUsers(
-            Authentication connectedUser,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
 
-        String userId = connectedUser.getName();
-        boolean isAdmin = connectedUser.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_Admin"));
-
-
-        Pageable pageable = PageRequest.of(page, size);
-
-
-
-        if (isAdmin) {
-            // Admin sees all users
-            PageResponse<UserResponse> userResponses = userService.getAllUsers(pageable);
-        } else {
-            // If the user is a Provider, Supplier, or Advertiser, return only their info
-            PageResponse<UserResponse> userResponses = userService.getUserById(userId);
-        }
-
-        return ResponseEntity.ok(userResponses);
-    }*/
 
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody User userRequest) {
@@ -171,4 +148,17 @@ public ResponseEntity<?> updateUserInKeycloak(
     public List<String> getAdvertiserEmails() {
         return userRepository.findEmailsByRole("Advertiser");
     }
+    @GetMapping("/admin-emails")
+    public List<String> getAdminEmails() {
+        return userRepository.findEmailsByRole("Admin");
+    }
+    @GetMapping("/provider-emails")
+    public List<String> getProviderEmails() {
+        return userRepository.findEmailsByRole("Provider");
+    }
+    @GetMapping("/supplier-emails")
+    public List<String> getSupplierEmails() {
+        return userRepository.findEmailsByRole("Supplier");
+    }
+
 }

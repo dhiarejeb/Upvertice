@@ -10,6 +10,9 @@ import com.dhia.Upvertise.models.common.PageResponse;
 import com.dhia.Upvertise.models.supplier.SupplierOffer;
 import com.dhia.Upvertise.models.supplier.SupplierTransaction;
 import com.dhia.Upvertise.models.supplier.SupplierTransactionStatus;
+import com.dhia.Upvertise.notification.Notification;
+import com.dhia.Upvertise.notification.NotificationService;
+import com.dhia.Upvertise.notification.NotificationStatus;
 import com.dhia.Upvertise.repositories.SupplierOfferRepository;
 import com.dhia.Upvertise.repositories.SupplierTransactionRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -31,6 +34,8 @@ public class SupplierTransactionService {
 
     private final SupplierOfferRepository supplierOfferRepository;
     private final CloudinaryService cloudinaryService;
+    private final NotificationService notificationService;
+    private final KafkaProducerService kafkaProducerService;
     //private final SupplierTransactionMapper supplierTransactionMapper;
 
 
@@ -146,10 +151,25 @@ public class SupplierTransactionService {
 
         }
 
-
         // Save updated transaction
         SupplierTransaction updatedTransaction = transactionRepository.save(transaction);
 
+        // Publish event to Kafka
+        //kafkaProducerService.sendMessage("supplierNotificationTopic", "supplier transactions have been updated with ID" + updatedTransaction.getId());
+        //kafkaProducerService.sendMessage("providerNotificationTopic", "supplier transactions have been updated with ID" + updatedTransaction.getId());
+        //kafkaProducerService.sendMessage("adminNotificationTopic", "supplier transactions have been updated with ID" + updatedTransaction.getId());
+
+        // Create the notification
+        Notification notification = Notification.builder()
+                .status(NotificationStatus.SUPPLIER_TRANSACTION_UPDATED)
+                .message("supplier transactions have been updated with ID " + updatedTransaction.getId())
+                .build();
+
+        // Notify the supplier who created it and admin
+        //notificationService.sendNotification(transaction.getCreatedBy(), notification);
+        notificationService.sendNotification(updatedTransaction.getCreatedBy(), notification);
+        notificationService.sendNotificationToRole("Provider",notification);
+        notificationService.sendNotificationToRole("Admin",notification);
         // Return DTO response
         return SupplierTransactionMapper.toSupplierTransactionResponse(updatedTransaction);
     }

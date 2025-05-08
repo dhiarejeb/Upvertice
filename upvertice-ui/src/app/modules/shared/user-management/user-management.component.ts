@@ -4,6 +4,7 @@ import {UserControllerService} from '../../../services/services/user-controller.
 
 import {UserUpdateRequest} from '../../../services/models/user-update-request';
 import {PageResponseUserResponse} from '../../../services/models/page-response-user-response';
+import {ToastrService} from 'ngx-toastr';
 
 @Component({
   selector: 'app-user-management',
@@ -16,55 +17,27 @@ export class UserManagementComponent implements OnInit {
   selectedUser: UserResponse | null = null;
   profilePhoto: File | null = null;  // Variable to hold the selected image file
 
-  constructor(private userService: UserControllerService) {}
+  constructor(
+    private userService: UserControllerService,
+    private toastService: ToastrService // Inject toastr service
+  ) {}
 
   ngOnInit(): void {
     this.loadUsers();
   }
 
   loadUsers(page: number = 0, size: number = 10): void {
-    this.userService.getUsers({ page, size }).subscribe(
-      (response: PageResponseUserResponse) => {
+    this.userService.getUsers({ page, size }).subscribe({
+      next: (response: PageResponseUserResponse) => {
         this.users = response.content || [];
+        this.toastService.success('Users loaded successfully!'); // Success toast
       },
-      (error) => {
+      error: (error) => {
         console.error('Error loading users', error);
+        this.toastService.error('Failed to load users. Please try again later.'); // Error toast
       }
-    );
+    });
   }
-
-  /*updateUserInKeycloak(user: UserResponse, newRole: string): void {
-    if (this.selectedUser) {
-      const updatedUser = { ...this.selectedUser, role: newRole };
-      this.userService.updateUserInKeycloak({
-        body: {
-          userUpdateRequest: updatedUser,
-          profilePhoto: new Blob() // Replace with actual profile photo logic if needed
-        }
-      }).subscribe(
-        (response) => {
-          console.log('User updated successfully', response);
-          this.loadUsers();
-        },
-        (error) => {
-          console.error('Error updating user', error);
-        }
-      );
-    }
-  }
-
-  deleteUserFromKeycloak(userId: string): void {
-    this.userService.deleteUserFromKeycloak({ userId }).subscribe(
-      () => {
-        console.log('User deleted successfully');
-        this.loadUsers();
-      },
-      (error) => {
-        console.error('Error deleting user', error);
-      }
-    );
-  }*/
-
 
   updateUserInKeycloak(user: UserResponse, newRole: string): void {
     if (this.selectedUser) {
@@ -73,32 +46,35 @@ export class UserManagementComponent implements OnInit {
       this.userService.updateUserInKeycloak({
         body: {
           userUpdateRequest: updatedUser,
-          profilePhoto: this.profilePhoto ?? new Blob()
+          profilePhoto: this.profilePhoto ?? new Blob() // If no photo, send an empty blob
         }
-      }).subscribe(
-        (response) => {
+      }).subscribe({
+        next: (response) => {
           console.log('User updated successfully', response);
-          this.loadUsers();
+          this.toastService.success('User updated successfully!'); // Success toast
+          this.loadUsers(); // Reload users after update
         },
-        (error) => {
+        error: (error) => {
           console.error('Error updating user', error);
+          this.toastService.error('Failed to update user. Please try again later.'); // Error toast
         }
-      );
+      });
     }
   }
 
-
   deleteUserFromKeycloak(userId: string): void {
     if (confirm('Are you sure you want to delete this user?')) {
-      this.userService.deleteUserFromKeycloak({ userId }).subscribe(
-        () => {
+      this.userService.deleteUserFromKeycloak({ userId }).subscribe({
+        next: () => {
           console.log('User deleted successfully');
-          this.loadUsers();
+          this.toastService.success('User deleted successfully!'); // Success toast
+          this.loadUsers(); // Reload users after deletion
         },
-        (error) => {
+        error: (error) => {
           console.error('Error deleting user', error);
+          this.toastService.error('Failed to delete user. Please try again later.'); // Error toast
         }
-      );
+      });
     }
   }
 

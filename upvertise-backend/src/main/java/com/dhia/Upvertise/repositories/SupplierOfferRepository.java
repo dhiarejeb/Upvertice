@@ -14,4 +14,6 @@ public interface SupplierOfferRepository extends JpaRepository<SupplierOffer, In
     Page<SupplierOffer> findAll(Pageable pageable);
 
     Page<SupplierOffer> findByStatus(SupplierOfferStatus status, Pageable pageable);
+    Page<SupplierOffer> findByCreatedBy(String createdBy, Pageable pageable);
+
 }

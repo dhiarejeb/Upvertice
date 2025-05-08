@@ -1,4 +1,90 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+  <a class="navbar-brand" href="#">
+    <i class="fas fa-rocket me-2"></i>UpVertice
+  </a>
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav me-auto">
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/admin">
+          <i class="fas fa-home me-1"></i> Home
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/admin/sponsorOfferManager">
+          <i class="fas fa-bullseye me-1"></i> Advertiser Offer Manager
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/admin/sponsorAdsManager">
+          <i class="fas fa-ad me-1"></i> Ads Manager
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/admin/sponsorshipManager">
+          <i class="fas fa-handshake me-1"></i> Campaign Manager
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/admin/providershipManager">
+          <i class="fas fa-industry me-1"></i> Providership Manager
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/admin/supplierOfferManager">
+          <i class="fas fa-boxes me-1"></i> Supplier Offer Manager
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/admin/supplierTransactionManager">
+          <i class="fas fa-exchange-alt me-1"></i> Supplier Transaction Manager
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/admin/userManager">
+          <i class="fas fa-users-cog me-1"></i> User Manager
+        </a>
+      </li>
+    </ul>
+
+    <div class="dropdown me-3" (click)="unreadNotificationsCount = 0">
+      <i
+        class="fas fa-bell text-light position-relative h4 cursor-pointer"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      >
+        <span
+          *ngIf="unreadNotificationsCount > 0"
+          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+        >
+          {{ unreadNotificationsCount }}
+        </span>
+      </i>
+      <ul class="dropdown-menu">
+        <li *ngFor="let notification of notifications">
+          <span class="dropdown-item border-bottom small text-wrap">
+            <i class="fas fa-bell text-warning me-1"></i>
+            {{ notification.status }}: {{ notification.message }}
+          </span>
+        </li>
+      </ul>
+    </div>
+
+    <button class="btn btn-outline-light" (click)="logout()">
+      <i class="fas fa-sign-out-alt me-1"></i> Logout
+    </button>
+  </div>
+</nav>
+
+
+
+
+
+<!--
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
   <a class="navbar-brand" href="#">UpVertice</a>
   <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
     <span class="navbar-toggler-icon"></span>
@@ -11,12 +97,12 @@
       <li class="nav-item">
         <a class="nav-link" routerLink="/admin/sponsorOfferManager">Advertiser Offer Manager</a>
       </li>
-      <!--<li class="nav-item">
+      &lt;!&ndash;<li class="nav-item">
         <a class="nav-link" routerLink="/admin/dashboard">Dashboard</a>
-      </li>
+      </li>&ndash;&gt;
       <li class="nav-item">
         <a class="nav-link" routerLink="/admin/sponsorAdsManager">Ads Manager</a>
-      </li>-->
+      </li>
       <li class="nav-item">
         <a class="nav-link" routerLink="/admin/sponsorshipManager">Campaign Manager</a>
       </li>
@@ -33,9 +119,24 @@
         <a class="nav-link" routerLink="/admin/userManager">User Manager</a>
       </li>
     </ul>
+    <div class="dropdown cursor-pointer" (click)="unreadNotificationsCount=0">
+      <i class="fas fa-bell position-relative h4" data-bs-toggle="dropdown" aria-expanded="false">
+<span class = "position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
+  <span class="visually-hidden">new Alert</span>
+</span>
+      </i>
+      <ul class = "dropdown-menu">
+        <li *ngFor="let notification of notifications">
+          <span class="dropdown-item cursor-pointer border-bottom">
+            <i class="fas fa-bell"></i>&nbsp;{{notification.status}} : {{notification.message}}
+          </span>
+        </li>
+      </ul>
+    </div>
     <button class="btn btn-outline-light" (click)="logout()">
       <i class="fas fa-sign-out-alt me-1"></i> Logout
     </button>
   </div>
 </nav>
 
+-->

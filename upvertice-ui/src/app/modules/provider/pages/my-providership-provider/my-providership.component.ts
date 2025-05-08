@@ -6,6 +6,7 @@ import {Chart, ChartConfiguration} from 'chart.js';
 import {ProvidershipMultipartRequest} from '../../../../services/models/providership-multipart-request';
 import { Router } from '@angular/router';
 import {KeycloakService} from '../../../../core/keycloak/keycloak.service';
+import {ToastrService} from 'ngx-toastr';
 @Component({
   selector: 'app-my-providership',
   standalone: false,
@@ -23,8 +24,8 @@ export class MyProvidershipProviderComponent implements OnInit {
   constructor(
     private service: ProvidershipControllerService,
     private router: Router,
-
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private toastService: ToastrService // Injecting ToastrService
   ) {
     this.form = this.fb.group({
       sponsorshipId: [null, Validators.required],
@@ -39,13 +40,18 @@ export class MyProvidershipProviderComponent implements OnInit {
 
   ngOnInit() {
     this.getAll();
-
   }
 
   getAll() {
-    this.service.getAllProviderships({pageable: {page: 0, size: 10}}).subscribe(res => {
-      this.providerships = res.content || [];
-      setTimeout(() => this.renderChart(), 0);
+    this.service.getAllProviderships({pageable: {page: 0, size: 10}}).subscribe({
+      next: (res) => {
+        this.providerships = res.content || [];
+        setTimeout(() => this.renderChart(), 0);
+      },
+      error: (err) => {
+        console.error('Error fetching providerships:', err);
+        this.toastService.error('Failed to load providerships. Please try again.', 'Error');
+      }
     });
   }
 
@@ -77,6 +83,7 @@ export class MyProvidershipProviderComponent implements OnInit {
     });
     this.proofFiles = [];
     this.showModal = true;
+    this.toastService.info('Editing providership', 'Info');
   }
 
   onFileChange(event: any) {
@@ -95,15 +102,29 @@ export class MyProvidershipProviderComponent implements OnInit {
 
     if (this.isEdit) {
       this.service.updateProvidership({id: this.selectedId!, body: multipartRequest})
-        .subscribe(() => {
-          this.getAll();
-          this.closeModal();
+        .subscribe({
+          next: () => {
+            this.getAll();
+            this.closeModal();
+            this.toastService.success('Providership updated successfully!', 'Success');
+          },
+          error: (err) => {
+            console.error('Error updating providership:', err);
+            this.toastService.error('Failed to update providership. Please try again.', 'Error');
+          }
         });
     } else {
       this.service.createProvidership({body: multipartRequest})
-        .subscribe(() => {
-          this.getAll();
-          this.closeModal();
+        .subscribe({
+          next: () => {
+            this.getAll();
+            this.closeModal();
+            this.toastService.success('Providership created successfully!', 'Success');
+          },
+          error: (err) => {
+            console.error('Error creating providership:', err);
+            this.toastService.error('Failed to create providership. Please try again.', 'Error');
+          }
         });
     }
   }
@@ -111,7 +132,16 @@ export class MyProvidershipProviderComponent implements OnInit {
   delete(id: number) {
     if (confirm('Are you sure you want to delete this providership?')) {
       this.service.deleteProvidership({id})
-        .subscribe(() => this.getAll());
+        .subscribe({
+          next: () => {
+            this.getAll();
+            this.toastService.success('Providership deleted successfully!', 'Success');
+          },
+          error: (err) => {
+            console.error('Error deleting providership:', err);
+            this.toastService.error('Failed to delete providership. Please try again.', 'Error');
+          }
+        });
     }
   }
 
@@ -152,9 +182,9 @@ export class MyProvidershipProviderComponent implements OnInit {
 
   goToDetails(id: number | undefined): void {
     if (id != null) {
-        this.router.navigate(['/provider/providership-details', id]);
-      }
+      this.router.navigate(['/provider/providership-details', id]);
     }
+  }
 
 
 }

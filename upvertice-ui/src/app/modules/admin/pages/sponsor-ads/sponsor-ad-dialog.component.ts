@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import {SponsorAdControllerService} from '../../../../services/services/sponsor-ad-controller.service';
 import {SponsorAdResponse} from '../../../../services/models/sponsor-ad-response';
 import {SponsorAdMultipartRequest} from '../../../../services/models/sponsor-ad-multipart-request';
+import {ToastrService} from 'ngx-toastr';
 
 
 @Component({
@@ -19,13 +20,17 @@ export class SponsorAdDialogComponent {
   constructor(
     private fb: FormBuilder,
     private sponsorAdService: SponsorAdControllerService,
+    private toastService: ToastrService,
     private dialogRef: MatDialogRef<SponsorAdDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: SponsorAdResponse
   ) {
     this.form = this.fb.group({
       title: [data?.title || '', Validators.required],
       content: [data?.content || '', Validators.required],
-      designColors: this.fb.array(data?.designColors || [''], Validators.required)
+      designColors: this.fb.array(
+        data?.designColors?.length ? data.designColors.map(color => this.fb.control(color, Validators.required)) : [this.fb.control('', Validators.required)],
+        Validators.required
+      )
     });
   }
 
@@ -38,18 +43,24 @@ export class SponsorAdDialogComponent {
   }
 
   removeColor(index: number): void {
-    this.designColors.removeAt(index);
+    if (this.designColors.length > 1) {
+      this.designColors.removeAt(index);
+    }
   }
 
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
       this.selectedImage = file;
+      this.toastService.info('Image selected');
     }
   }
 
   submit(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.toastService.error('Please fill in all required fields');
+      return;
+    }
 
     const multipartRequest: SponsorAdMultipartRequest = {
       request: JSON.stringify(this.form.value),
@@ -60,8 +71,14 @@ export class SponsorAdDialogComponent {
       adId: this.data?.id as number,
       body: multipartRequest
     }).subscribe({
-      next: res => this.dialogRef.close(res),
-      error: err => console.error('Update failed', err)
+      next: (res) => {
+        this.toastService.success('Sponsor ad updated successfully');
+        this.dialogRef.close(res);
+      },
+      error: (err) => {
+        console.error('Update failed', err);
+        this.toastService.error('Failed to update sponsor ad');
+      }
     });
   }
 }

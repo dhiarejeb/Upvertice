@@ -6,52 +6,68 @@
     </button>
   </div>
 
-  <table class="table table-hover">
-    <thead class="table-light">
-    <tr>
-      <th>Title</th>
-      <th>Price</th>
-      <th>Status</th>
-      <th>Dates</th>
-      <th>Image</th>
-      <th>Sponsor Ads</th>
-      <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr *ngFor="let offer of supplierOffers">
-      <td>{{ offer.title }}</td>
-      <td>{{ offer.price }} TND</td>
-      <td><span class="badge bg-info text-dark">{{ offer.status }}</span></td>
-      <td>{{ offer.startDate }} → {{ offer.endDate }}</td>
-      <td>
-        <img *ngIf="offer.imageUrl" [src]="offer.imageUrl" alt="Offer Image" class="img-thumbnail" width="60">
-      </td>
-      <td>
-        <ng-container *ngIf="offer.sponsorAds?.length; else noAds">
-    <span
-      *ngFor="let ad of offer.sponsorAds"
-      class="badge bg-secondary me-1"
-      title="{{ ad.title }}">
-      {{ ad.title!.length > 15 ? (ad.title | slice:0:15) + '…' : ad.title }}
-    </span>
-        </ng-container>
-        <ng-template #noAds>
-          <span class="text-muted">No Ads</span>
-        </ng-template>
-      </td>
+  <!-- Offers Card Grid -->
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <div class="col" *ngFor="let offer of supplierOffers">
+      <div class="card h-100 shadow-sm">
+        <img
+          *ngIf="offer.imageUrl"
+          [src]="offer.imageUrl"
+          class="card-img-top"
+          alt="Offer Image"
+          style="object-fit: cover; height: 200px"
+        />
+        <div class="card-body">
+          <h5 class="card-title">{{ offer.title }}</h5>
+          <p class="card-text text-muted">{{ offer.description }}</p>
+          <p class="mb-1">
+            <i class="fa fa-calendar"></i>
+            {{ offer.startDate }} → {{ offer.endDate }}
+          </p>
+          <p class="mb-1">
+            <i class="fa fa-tag"></i> {{ offer.price }} TND
+          </p>
+          <p class="mb-1">
+            <i class="fa fa-box"></i> Quantity: {{ offer.quantityAvailable }}
+          </p>
+          <p>
+            <span class="badge bg-info text-dark">{{ offer.status }}</span>
+          </p>
 
-      <td>
-        <button class="btn btn-sm btn-warning me-1" (click)="editOffer(offer)">
-          <i class="fa fa-edit"></i>
-        </button>
-        <button class="btn btn-sm btn-danger" (click)="confirmDelete(offer.id!)">
-          <i class="fa fa-trash"></i>
-        </button>
-      </td>
-    </tr>
-    </tbody>
-  </table>
+          <div *ngIf="offer.sponsorAds?.length; else noAds">
+            <p class="fw-bold mb-1">Sponsor Ads:</p>
+            <div class="d-flex flex-wrap gap-3">
+              <div *ngFor="let ad of offer.sponsorAds" class="text-center" style="max-width: 120px;">
+                <!-- Larger thumbnail -->
+                <img
+                  *ngIf="ad.design"
+                  [src]="ad.design"
+                  alt="{{ ad.title }}"
+                  class="img-thumbnail mb-1"
+                  style="width: 120px; height: 120px; object-fit: cover;"
+                />
+                <!-- Full title, wrapping if needed -->
+                <div class="small text-wrap">
+                  {{ ad.title }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noAds>
+            <p class="text-muted">No Sponsor Ads</p>
+          </ng-template>
+        <div class="card-footer d-flex justify-content-between">
+          <button class="btn btn-sm btn-warning" (click)="editOffer(offer)">
+            <i class="fa fa-edit"></i>
+          </button>
+          <button class="btn btn-sm btn-danger" (click)="confirmDelete(offer.id!)">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
 
   <!-- Pagination -->
@@ -118,6 +134,16 @@
                 <label>Description</label>
                 <textarea formControlName="description" class="form-control"></textarea>
               </div>
+              <div class="form-group">
+                <label for="sponsorAdIds">Sponsor Ad IDs</label>
+                <input
+                  type="text"
+                  id="sponsorAdIds"
+                  class="form-control"
+                  placeholder="Enter Sponsor Ad IDs (comma-separated)"
+                  formControlName="sponsorAdIds"
+                />
+              </div>
               <div class="col-12">
                 <label>Image</label>
                 <input type="file" (change)="onImageSelected($event)" class="form-control">
@@ -134,4 +160,5 @@
       </div>
     </div>
   </div>
+</div>
 </div>

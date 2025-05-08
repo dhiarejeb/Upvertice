@@ -13,8 +13,8 @@ import {
 } from './modules/advertiser/pages/sponsorships/sponsorship-details/sponsorship-details.component';
 import {AdminComponent} from './modules/admin/admin/admin.component';
 import {HomeComponent} from './modules/admin/pages/home/home.component';
-import {DashboardComponent} from './modules/admin/pages/dashboard/dashboard.component';
-import {ManagerComponent} from './modules/admin/pages/manager/manager.component';
+
+
 import {RoleRedirectComponent} from './modules/role-redirect/role-redirect.component';
 import {SponsorOffersComponent} from './modules/admin/pages/sponsor-offers/sponsor-offers.component';
 import {SponsorAdsComponent} from './modules/admin/pages/sponsor-ads/sponsor-ads.component';
@@ -58,6 +58,8 @@ import {
 import {
   SupplierTransactionDetailsSupplierComponent
 } from './modules/supplier/pages/supplier-transactions-supplier/supplier-transaction-details/supplier-transaction-details.component';
+import {SponsorAdsAdvertiserComponent} from './modules/advertiser/pages/sponsor-ads-advertiser/sponsor-ads.component';
+import {SponsorAdsProviderComponent} from './modules/provider/pages/sponsor-ads-provider/sponsor-ads.component';
 
 
 
@@ -77,7 +79,9 @@ const routes: Routes = [
       { path: 'offers', component: OffersComponent },
       { path: 'dashboard', component: SponsorshipsListComponent },
       { path: 'sponsorships/:id', component: SponsorshipDetailsComponent },
+      { path: 'sponsorAdsManager', component: SponsorAdsAdvertiserComponent },
       { path: 'userManager', component: UserManagementComponent}
+
     ]
   },
 
@@ -87,7 +91,6 @@ const routes: Routes = [
     component: AdminComponent,
     children: [
       { path: '', component: HomeComponent }, // /admin
-      { path: 'dashboard', component: DashboardComponent }, // /admin/dashboard
       { path: 'sponsorOfferManager', component: SponsorOffersComponent} ,
       { path: 'sponsorAdsManager', component: SponsorAdsComponent} ,
       { path: 'sponsorshipManager', component: SponsorshipManagerComponent} ,
@@ -112,7 +115,10 @@ const routes: Routes = [
       { path: 'supplierOfferManager', component: SupplierOffersComponent},
       { path: 'supplierTransactionManager', component: SupplierTransactionsProviderComponent},
       { path: "supplier-transaction-details/:id", component: SupplierTransactionDetailsProviderComponent },
+      { path: "sponsorAdsManager", component: SponsorAdsProviderComponent },
       { path: 'userManager', component: UserManagementComponent}
+
+    //sponsorAdsManager
     ]
   },
   {

@@ -26,17 +26,17 @@ services:
     ports:
       - 9090:8080
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_ADMIN: meddhiarejeb22@gmail.com
+      KEYCLOAK_ADMIN_PASSWORD: 1
     networks:
       - spring-demo
     volumes:
       - ./keycloak-extensions:/opt/keycloak/providers
+      - ./keycloak/realm:/opt/keycloak/data/import
     # Add host.docker.internal for Linux
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    command:
-      - "start-dev"
+    command: start-dev --import-realm
   redis:
     image: redis:latest
     container_name: redis_upvertice

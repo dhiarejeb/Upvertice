@@ -36,6 +36,7 @@ public class SponsorAdService {
     private final SponsorAdMapper sponsorAdMapper;
 
 
+
     @Cacheable(value = "sponsorAds", key = "#connectedUser.name + '-' + #page + '-' + #size")
     public PageResponse<SponsorAdResponse> getAllSponsorAds(Authentication connectedUser, int page, int size) {
         String userId = connectedUser.getName(); // Assuming Keycloak ID is stored here
@@ -43,12 +44,14 @@ public class SponsorAdService {
         // Check if the user is an Admin
         boolean isAdmin = connectedUser.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_Admin"));
+        boolean isProvider = connectedUser.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_Provider"));
 
         Pageable pageable = PageRequest.of(page, size);
         Page<SponsorAd> sponsorAdsPage;
 
         // Fetch based on user role
-        if (isAdmin) {
+        if (isAdmin || isProvider) {
             sponsorAdsPage = sponsorAdRepository.findAll(pageable);
         } else {
             sponsorAdsPage = sponsorAdRepository.findByCreatedBy(userId, pageable);
@@ -114,6 +117,7 @@ public class SponsorAdService {
         // Save updated entity
         sponsorAdRepository.save(sponsorAd);
 
+
         return sponsorAdMapper.toSponsorAdResponseWithImageUrl(sponsorAd);
     }
     @CacheEvict(value = "sponsorAds", allEntries = true)
@@ -135,7 +139,9 @@ public class SponsorAdService {
 
         // ✅ If there are no sponsorships, allow deletion
         if (sponsorships.isEmpty()) {
-            cloudinaryService.deleteImage(sponsorAd.getDesign()); // Delete image from Cloudinary
+            if (sponsorAd.getDesign() != null && !sponsorAd.getDesign().isBlank()) {
+                cloudinaryService.deleteImage(sponsorAd.getDesign());
+            }
             sponsorAdRepository.delete(sponsorAd);
             return;
         }
@@ -152,7 +158,9 @@ public class SponsorAdService {
         // Remove the links between this ad and all Sponsorships
         sponsorships.forEach(sponsorship -> sponsorship.getSponsorAds().remove(sponsorAd));
         // ✅ Delete associated image if exists
-        cloudinaryService.deleteImage(sponsorAd.getDesign());
+        if (sponsorAd.getDesign() != null && !sponsorAd.getDesign().isBlank()) {
+            cloudinaryService.deleteImage(sponsorAd.getDesign());
+        }
         // Delete the ad
         sponsorAdRepository.delete(sponsorAd);
     }

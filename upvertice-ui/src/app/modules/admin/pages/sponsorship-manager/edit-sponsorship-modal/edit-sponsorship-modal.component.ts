@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {SponsorshipResponse} from '../../../../../services/models/sponsorship-response';
 import {SponsorAdResponse} from '../../../../../services/models/sponsor-ad-response';
-
+import {ToastrService} from 'ngx-toastr';
 @Component({
   selector: 'app-edit-sponsorship-modal',
   standalone: false,
@@ -16,14 +16,13 @@ export class EditSponsorshipModalComponent implements OnInit {
   statusForm: FormGroup;
   adForm: FormGroup;
 
-
-
   previewUrl: string | null = null;
   selectedImage: File | null = null;
   selectedColors: string[] = [];
 
   constructor(
     private fb: FormBuilder,
+    private toastService: ToastrService,
     public dialogRef: MatDialogRef<EditSponsorshipModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { sponsorship: SponsorshipResponse }
   ) {
@@ -45,22 +44,25 @@ export class EditSponsorshipModalComponent implements OnInit {
 
   ngOnInit(): void {
     const sponsorAd = this.sponsorship.sponsorAds?.[0];
-    this.selectedColors = sponsorAd?.designColors || ['#ffffff']; // fallback
+    this.selectedColors = sponsorAd?.designColors || ['#ffffff'];
   }
 
   onTabChange(tab: string): void {
     this.activeTab = tab;
   }
 
-  // edit-sponsorship-modal.component.ts
   onStatusSubmit(): void {
     if (this.statusForm.valid) {
+      this.toastService.success('Status form submitted successfully');
       this.dialogRef.close({
         type: 'status',
         status: this.statusForm.value.status
       });
+    } else {
+      this.toastService.error('Status form is invalid');
     }
   }
+
   onAdSubmit(): void {
     if (this.adForm.valid) {
       const sponsorAd: Partial<SponsorAdResponse> = {
@@ -70,11 +72,14 @@ export class EditSponsorshipModalComponent implements OnInit {
         designColors: this.selectedColors
       };
 
+      this.toastService.success('Sponsor ad form submitted successfully');
       this.dialogRef.close({
         type: 'ad',
         sponsorAd,
         image: this.selectedImage
       });
+    } else {
+      this.toastService.error('Ad form is invalid');
     }
   }
 
@@ -91,10 +96,12 @@ export class EditSponsorshipModalComponent implements OnInit {
   }
 
   onCancel(): void {
+    this.toastService.success('Edit cancelled');
     this.dialogRef.close();
   }
+
   addColor(): void {
-    this.selectedColors.push('#000000'); // default new color
+    this.selectedColors.push('#000000');
   }
 
   removeColor(index: number): void {

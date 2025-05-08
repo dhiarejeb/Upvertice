@@ -10,6 +10,7 @@ import {EditSponsorshipModalComponent} from './edit-sponsorship-modal/edit-spons
 import {DeleteConfirmationModalComponent} from './delete-confirmation-modal/delete-confirmation-modal.component';
 import {PatchSponsorship$Params} from '../../../../services/fn/sponsorship-controller/patch-sponsorship';
 import {SponsorshipPatchMultipartRequest} from '../../../../services/models/sponsorship-patch-multipart-request';
+import {ToastrService} from 'ngx-toastr';
 
 
 
@@ -32,7 +33,7 @@ export class SponsorshipManagerComponent implements OnInit {
   constructor(
     private sponsorshipService: SponsorshipControllerService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
@@ -42,23 +43,18 @@ export class SponsorshipManagerComponent implements OnInit {
   fetchSponsorships(page = 0): void {
     this.loading = true;
 
-    if (this.activeTab === 'all') {
-      this.sponsorshipService.getAllSponsorships({ page, size: this.pageSize })
-        .subscribe({
-          next: (response) => this.handleSponsorshipsResponse(response),
-          error: (error) => this.handleError('Failed to load sponsorships', error)
-        });
-    } else {
-      this.sponsorshipService.getSponsorshipsByStatus({
+    const fetch$ = this.activeTab === 'all'
+      ? this.sponsorshipService.getAllSponsorships({ page, size: this.pageSize })
+      : this.sponsorshipService.getSponsorshipsByStatus({
         status: this.activeTab.toUpperCase() as 'PENDING' | 'APPROVED' | 'REJECTED' | 'FINISHED',
         page,
         size: this.pageSize
-      })
-        .subscribe({
-          next: (response) => this.handleSponsorshipsResponse(response),
-          error: (error) => this.handleError('Failed to load sponsorships', error)
-        });
-    }
+      });
+
+    fetch$.subscribe({
+      next: (response) => this.handleSponsorshipsResponse(response),
+      error: (error) => this.handleError('Failed to load sponsorships', error)
+    });
   }
 
   private handleSponsorshipsResponse(response: PageResponseSponsorshipResponse): void {
@@ -70,7 +66,7 @@ export class SponsorshipManagerComponent implements OnInit {
 
   onTabChange(tab: string): void {
     this.activeTab = tab;
-    this.fetchSponsorships(0); // Reset to first page when changing tabs
+    this.fetchSponsorships(0);
   }
 
   onPageChange(page: number): void {
@@ -116,17 +112,11 @@ export class SponsorshipManagerComponent implements OnInit {
       sponsorshipId,
       body: patchRequest
     }).subscribe({
-      next: (response) => {
-        console.log('Status update response:', response);
-        this.snackBar.open(`Sponsorship status updated to ${newStatus}`, 'Close', {
-          duration: 3000
-        });
+      next: () => {
+        this.toastr.success(`Sponsorship status updated to ${newStatus}`);
         this.fetchSponsorships(this.currentPage);
       },
-      error: (error) => {
-        console.error('Error updating status:', error);
-        this.handleError('Failed to update sponsorship status', error);
-      }
+      error: (error) => this.handleError('Failed to update sponsorship status', error)
     });
   }
 
@@ -134,7 +124,6 @@ export class SponsorshipManagerComponent implements OnInit {
     const patchRequest: SponsorshipPatchMultipartRequest = {
       request: JSON.stringify({ sponsorAdData: sponsorAd })
     };
-
     if (image) {
       patchRequest.image = image;
     }
@@ -143,27 +132,18 @@ export class SponsorshipManagerComponent implements OnInit {
       sponsorshipId,
       body: patchRequest
     }).subscribe({
-      next: (response) => {
-        console.log('Ad update response:', response);
-        this.snackBar.open('Sponsorship ad updated successfully', 'Close', {
-          duration: 3000
-        });
+      next: () => {
+        this.toastr.success('Sponsorship ad updated successfully');
         this.fetchSponsorships(this.currentPage);
       },
-      error: (error) => {
-        console.error('Error updating ad:', error);
-        this.handleError('Failed to update sponsorship ad', error);
-      }
+      error: (error) => this.handleError('Failed to update sponsorship ad', error)
     });
   }
-
 
   deleteSponsorship(sponsorshipId: number): void {
     this.sponsorshipService.deleteSponsorship({ sponsorshipId }).subscribe({
       next: () => {
-        this.snackBar.open(`Sponsorship ID ${sponsorshipId} deleted successfully`, 'Close', {
-          duration: 3000
-        });
+        this.toastr.success(`Sponsorship ID ${sponsorshipId} deleted successfully`);
         this.fetchSponsorships(this.currentPage);
       },
       error: (error) => this.handleError('Failed to delete sponsorship', error)
@@ -172,10 +152,7 @@ export class SponsorshipManagerComponent implements OnInit {
 
   private handleError(message: string, error: any): void {
     console.error(message, error);
-    this.snackBar.open(message, 'Close', {
-      duration: 5000,
-      panelClass: ['error-snackbar']
-    });
+    this.toastr.error(message, 'Error');
     this.loading = false;
   }
 }

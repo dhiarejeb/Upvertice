@@ -9,6 +9,9 @@ import com.dhia.Upvertise.models.common.PageResponse;
 import com.dhia.Upvertise.models.sponsorship.SponsorAd;
 import com.dhia.Upvertise.models.sponsorship.Sponsorship;
 import com.dhia.Upvertise.models.sponsorship.SponsorshipStatus;
+import com.dhia.Upvertise.notification.Notification;
+import com.dhia.Upvertise.notification.NotificationService;
+import com.dhia.Upvertise.notification.NotificationStatus;
 import com.dhia.Upvertise.repositories.SponsorAdRepository;
 import com.dhia.Upvertise.repositories.SponsorshipRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -37,6 +40,8 @@ public class SponsorshipService {
     private final SponsorAdMapper sponsorAdMapper;
     private final SponsorAdRepository sponsorAdRepository;
     private final CloudinaryService cloudinaryService;
+    private final NotificationService notificationService;
+    private final KafkaProducerService kafkaProducerService; // inject it here
 
 
 
@@ -165,40 +170,20 @@ public class SponsorshipService {
 
         // Finally, delete the sponsorship
         sponsorshipRepository.delete(sponsorship);
+        // === Kafka Notifications ===
+        String kafkaMessage = "Sponsorship deleted: ID " + sponsorshipId;
+        kafkaProducerService.sendMessage("adminNotificationTopic", kafkaMessage);
+        kafkaProducerService.sendMessage("advertiserNotificationTopic", kafkaMessage);
+
+// === WebSocket Notifications ===
+        Notification notification = Notification.builder()
+                .status(NotificationStatus.SPONSORSHIP_DELETED)
+                .message("Your sponsorship with ID " + sponsorshipId + " has been deleted.")
+                .build();
+
+        notificationService.sendNotification(sponsorship.getUserId(), notification);
+        notificationService.sendNotificationToRole("Admin", notification);
     }
-
-/*    public void deleteSponsorship(Integer sponsorshipId, Authentication connectedUser) {
-        // Find the sponsorship by ID
-        Sponsorship sponsorship = sponsorshipRepository.findById(sponsorshipId)
-                .orElseThrow(() -> new RuntimeException("Sponsorship not found"));
-
-        // Check if the sponsorship status allows deletion
-        if (sponsorship.getStatus() != SponsorshipStatus.PENDING &&
-                sponsorship.getStatus() != SponsorshipStatus.REJECTED &&
-                sponsorship.getStatus() != SponsorshipStatus.FINISHED) {
-            throw new IllegalStateException("Only PENDING, REJECTED, or FINISHED sponsorships can be deleted.");
-        }
-
-        // Check if the user is an Admin or the creator of the sponsorship (Advertiser)
-        boolean isAdmin = connectedUser.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_Admin"));
-
-        boolean isAdvertiser = connectedUser.getAuthorities().stream()
-                .anyMatch(role -> role.getAuthority().equals("ROLE_Advertiser"));
-
-        if (isAdmin) {
-            sponsorshipRepository.delete(sponsorship);
-        } else if (isAdvertiser && sponsorship.getUserId().equals(connectedUser.getName())) {
-            if (sponsorship.getStatus() == SponsorshipStatus.PENDING ||
-                    sponsorship.getStatus() == SponsorshipStatus.REJECTED) {
-                sponsorshipRepository.delete(sponsorship);
-            } else {
-                throw new UnauthorizedAccessException("You are not authorized to delete this sponsorship.");
-            }
-        } else {
-            throw new ForbiddenActionException("You are not authorized to perform this action.");
-        }
-    }*/
 
 
     public SponsorshipResponse updateSponsorshipStatus(Authentication connectedUser, Integer sponsorshipId, SponsorshipStatus newStatus) {
@@ -253,6 +238,19 @@ public class SponsorshipService {
         }
 
         sponsorshipRepository.save(sponsorship);
+        // === Kafka Notifications ===
+        String kafkaMessage = "Sponsorship ID " + sponsorshipId + " updated to status: " + sponsorship.getStatus();
+        kafkaProducerService.sendMessage("adminNotificationTopic", kafkaMessage);
+        //kafkaProducerService.sendMessage("advertiserNotificationTopic", kafkaMessage);
+
+// === WebSocket Notifications ===
+        Notification notification = Notification.builder()
+                .status(NotificationStatus.SPONSORSHIP_UPDATED)
+                .message("Your sponsorship with ID " + sponsorshipId + " was updated to status " + sponsorship.getStatus())
+                .build();
+
+        notificationService.sendNotification(sponsorship.getUserId(), notification);
+        notificationService.sendNotificationToRole("Admin", notification);
         return SponsorshipMapper.toSponsorshipResponse(sponsorship);
     }
 

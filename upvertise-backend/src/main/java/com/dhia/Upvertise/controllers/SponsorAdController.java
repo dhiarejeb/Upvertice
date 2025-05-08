@@ -20,6 +20,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/sponsorAd")
 @RequiredArgsConstructor
@@ -30,7 +32,7 @@ public class SponsorAdController {
     private final ObjectMapper objectMapper;
 
     @GetMapping("/sponsorAds")
-    @PreAuthorize("hasAnyRole('Admin', 'Advertiser')")
+    @PreAuthorize("hasAnyRole('Admin','Provider', 'Advertiser')")
     public ResponseEntity<PageResponse<SponsorAdResponse>> getAllSponsorAds(
             Authentication connectedUser,
             @RequestParam(defaultValue = "0") int page,
@@ -45,7 +47,8 @@ public class SponsorAdController {
             @PathVariable Integer adId,
             Authentication connectedUser) {
         sponsorAdService.deleteSponsorAd(connectedUser, adId);
-        return ResponseEntity.ok("Sponsor Ad deleted successfully");
+        //return ResponseEntity.ok("Sponsor Ad deleted successfully");
+        return ResponseEntity.ok(Map.of("message", "Sponsor Ad deleted successfully"));
     }
 
 

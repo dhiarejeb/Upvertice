@@ -183,19 +183,26 @@ export class SupplierTransactionDetailsSupplierComponent {
   }
 
   calculateSalesPercentage(): number {
-    if (
-      !this.transaction ||
-      !this.transaction.supplierOffer?.quantityAvailable ||
-      this.transaction.supplierOffer.quantityAvailable === 0
-    ) {
-      return 0
-    }
-    return ((this.transaction.quantitySold || 0) / this.transaction.supplierOffer.quantityAvailable) * 100
+    const sold = this.transaction?.quantitySold ?? 0;
+    const available = this.transaction?.supplierOffer?.quantityAvailable ?? 0;
+    if (available <= 0) return 0;
+    let pct = (sold / available) * 100;
+    // clamp & round to integer
+    pct = Math.min(Math.max(pct, 0), 100);
+    return Math.round(pct);
   }
 
   formatDate(date: string | undefined): string {
     if (!date) return "N/A"
     return new Date(date).toLocaleDateString()
+  }
+
+  getSalesFraction(): number {
+    const sold = this.transaction?.quantitySold ?? 0;
+    const avail = this.transaction?.supplierOffer?.quantityAvailable ?? 0;
+    if (avail <= 0) return 0;
+    // clamp so you never go below 0 or above 1
+    return Math.min(Math.max(sold / avail, 0), 1);
   }
 
 }

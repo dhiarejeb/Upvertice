@@ -17,8 +17,14 @@ import { deleteUser } from '../fn/user-controller/delete-user';
 import { DeleteUser$Params } from '../fn/user-controller/delete-user';
 import { deleteUserFromKeycloak } from '../fn/user-controller/delete-user-from-keycloak';
 import { DeleteUserFromKeycloak$Params } from '../fn/user-controller/delete-user-from-keycloak';
+import { getAdminEmails } from '../fn/user-controller/get-admin-emails';
+import { GetAdminEmails$Params } from '../fn/user-controller/get-admin-emails';
 import { getAdvertiserEmails } from '../fn/user-controller/get-advertiser-emails';
 import { GetAdvertiserEmails$Params } from '../fn/user-controller/get-advertiser-emails';
+import { getProviderEmails } from '../fn/user-controller/get-provider-emails';
+import { GetProviderEmails$Params } from '../fn/user-controller/get-provider-emails';
+import { getSupplierEmails } from '../fn/user-controller/get-supplier-emails';
+import { GetSupplierEmails$Params } from '../fn/user-controller/get-supplier-emails';
 import { getUsers } from '../fn/user-controller/get-users';
 import { GetUsers$Params } from '../fn/user-controller/get-users';
 import { PageResponseUserResponse } from '../models/page-response-user-response';
@@ -180,6 +186,56 @@ export class UserControllerService extends BaseService {
     );
   }
 
+  /** Path part for operation `getSupplierEmails()` */
+  static readonly GetSupplierEmailsPath = '/users/supplier-emails';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getSupplierEmails()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getSupplierEmails$Response(params?: GetSupplierEmails$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<string>>> {
+    return getSupplierEmails(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getSupplierEmails$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getSupplierEmails(params?: GetSupplierEmails$Params, context?: HttpContext): Observable<Array<string>> {
+    return this.getSupplierEmails$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Array<string>>): Array<string> => r.body)
+    );
+  }
+
+  /** Path part for operation `getProviderEmails()` */
+  static readonly GetProviderEmailsPath = '/users/provider-emails';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getProviderEmails()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getProviderEmails$Response(params?: GetProviderEmails$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<string>>> {
+    return getProviderEmails(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getProviderEmails$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getProviderEmails(params?: GetProviderEmails$Params, context?: HttpContext): Observable<Array<string>> {
+    return this.getProviderEmails$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Array<string>>): Array<string> => r.body)
+    );
+  }
+
   /** Path part for operation `getAdvertiserEmails()` */
   static readonly GetAdvertiserEmailsPath = '/users/advertiser-emails';
 
@@ -201,6 +257,31 @@ export class UserControllerService extends BaseService {
    */
   getAdvertiserEmails(params?: GetAdvertiserEmails$Params, context?: HttpContext): Observable<Array<string>> {
     return this.getAdvertiserEmails$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Array<string>>): Array<string> => r.body)
+    );
+  }
+
+  /** Path part for operation `getAdminEmails()` */
+  static readonly GetAdminEmailsPath = '/users/admin-emails';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getAdminEmails()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAdminEmails$Response(params?: GetAdminEmails$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<string>>> {
+    return getAdminEmails(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getAdminEmails$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getAdminEmails(params?: GetAdminEmails$Params, context?: HttpContext): Observable<Array<string>> {
+    return this.getAdminEmails$Response(params, context).pipe(
       map((r: StrictHttpResponse<Array<string>>): Array<string> => r.body)
     );
   }

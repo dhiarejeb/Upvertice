@@ -73,6 +73,16 @@
             <version>20.0.2</version> <!-- Use the latest version -->
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-messaging</artifactId>
+
+        </dependency>
+
 
     </dependencies>
 

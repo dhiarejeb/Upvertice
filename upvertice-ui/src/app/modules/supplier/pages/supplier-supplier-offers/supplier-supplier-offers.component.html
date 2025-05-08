@@ -20,6 +20,7 @@
           <p class="card-text"><strong>Start Date:</strong> {{ offer.startDate | date:'mediumDate' }}</p>
           <p class="card-text"><strong>End Date:</strong> {{ offer.endDate | date:'mediumDate' }}</p>
 
+
           <!-- Sponsor Ads -->
           <div *ngIf="offer.sponsorAds?.length">
             <p class="fw-bold mt-3 mb-1">Sponsor Ads:</p>
@@ -27,7 +28,7 @@
               <li *ngFor="let ad of offer.sponsorAds" class="list-group-item">
                 <strong>{{ ad.title }}</strong><br />
                 <span>{{ ad.content }}</span><br />
-                <small><strong>Colors:</strong> {{ ad.designColors?.join(', ') }}</small>
+
                 <img *ngIf="ad.design" [src]="ad.design" alt="Ad Design" class="img-fluid mt-2 rounded shadow-sm" style="max-height: 150px;" />
               </li>
             </ul>

@@ -1,0 +1,54 @@
+<div class="row">
+  <div class="col-md-4 mb-4" *ngFor="let ad of sponsorAds">
+    <div class="custom-ad-card card h-100 shadow-sm">
+      <img
+        *ngIf="ad.design"
+        [src]="ad.design"
+        class="card-img-top"
+        alt="Ad Design"
+      />
+      <div class="card-body">
+        <h5 class="card-title">
+          <i class="fas fa-ad me-2"></i>{{ ad.title }}
+        </h5>
+        <small class="text-muted d-block mb-2">ID: {{ ad.id }}</small>
+        <p class="card-text">{{ ad.content }}</p>
+        <div class="mb-3">
+          <span
+            *ngFor="let color of ad.designColors"
+            class="badge me-1"
+            [ngStyle]="{ backgroundColor: color, color: 'white' }"
+          >
+            {{ color }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pagination Controls -->
+<div class="d-flex justify-content-center align-items-center mt-4 gap-2">
+  <button class="btn btn-outline-primary btn-sm" (click)="prevPage()" [disabled]="page === 0">
+    Previous
+  </button>
+
+  <span>Page {{ page + 1 }} of {{ totalPages }}</span>
+
+  <button class="btn btn-outline-primary btn-sm" (click)="nextPage()" [disabled]="page + 1 >= totalPages">
+    Next
+  </button>
+
+  <input
+    type="number"
+    min="1"
+    [max]="totalPages"
+    [(ngModel)]="pageInput"
+    (keyup.enter)="goToPage(pageInput)"
+    class="form-control"
+    style="width: 80px;"
+  />
+  <button class="btn btn-secondary btn-sm" (click)="goToPage(pageInput)">
+    Go
+  </button>
+</div>

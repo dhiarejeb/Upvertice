@@ -10,6 +10,9 @@ import com.dhia.Upvertise.models.provider.Providership;
 import com.dhia.Upvertise.models.provider.ProvidershipApprovalStatus;
 import com.dhia.Upvertise.models.provider.ProvidershipStatus;
 import com.dhia.Upvertise.models.sponsorship.Sponsorship;
+import com.dhia.Upvertise.notification.Notification;
+import com.dhia.Upvertise.notification.NotificationService;
+import com.dhia.Upvertise.notification.NotificationStatus;
 import com.dhia.Upvertise.repositories.ProvidershipRepository;
 import com.dhia.Upvertise.repositories.SponsorshipRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -38,6 +41,9 @@ public class ProvidershipService {
 
     private final CloudinaryService cloudinaryService;
     private final ProvidershipMapper providershipMapper;
+    private final NotificationService notificationService;
+    private final KafkaProducerService kafkaProducerService;
+
 
 
 
@@ -126,9 +132,23 @@ public class ProvidershipService {
             }
             deleteProofsFromCloudinary(providership.getProofDocs()); // Delete proofs first
             providershipRepository.delete(providership);
+
         } else {
             throw new SecurityException("Access denied. Only admins and providers can delete providerships.");
         }
+        // === Kafka Notifications ===
+        String kafkaMessage = "Providership deleted: ID " + id;
+        //kafkaProducerService.sendMessage("adminNotificationTopic", kafkaMessage);
+       // kafkaProducerService.sendMessage("providerNotificationTopic", kafkaMessage);
+
+// === WebSocket Notifications ===
+        Notification notification = Notification.builder()
+                .status(NotificationStatus.PROVIDERSHIP_CREATED) // Adjust status as needed
+                .message("The providership with ID " + id + " has been deleted.")
+                .build();
+
+        notificationService.sendNotification(providership.getUserId(), notification);
+        notificationService.sendNotificationToRole("Admin", notification);
     }
     public ProvidershipResponse updateProvidership(
             Integer id,
@@ -143,7 +163,12 @@ public class ProvidershipService {
         boolean isAdmin    = hasRole(connectedUser, "ROLE_Admin");
         boolean isProvider = hasRole(connectedUser, "ROLE_Provider")
                 && p.getCreatedBy().equals(userId);
-
+        if (p.getSponsorship() != null) {
+            Integer productQuantity = p.getSponsorship()
+                    .getSponsorOffer()
+                    .getProductQuantity();
+            p.setTotalProduct(productQuantity);
+        }
         if (!isAdmin && !isProvider) {
             throw new AccessDeniedException("You do not have permission to update this providership.");
         }
@@ -169,9 +194,11 @@ public class ProvidershipService {
             if (request.producedProduct() != null) {
                 p.setProducedProduct(request.producedProduct());
             }
-            if (request.totalProduct() != null) {
-                p.setTotalProduct(request.totalProduct());
-            }
+            //if (request.totalProduct() != null) {
+                //p.setTotalProduct(request.totalProduct());
+            //}
+            // 🔄 Auto-update totalProduct if Sponsorship exists
+
             if (request.location() != null) {
                 p.setLocation(request.location());
             }
@@ -187,72 +214,25 @@ public class ProvidershipService {
         }
 
         providershipRepository.save(p);
+        // === Kafka Notifications ===
+        String kafkaMessage = "Providership updated: ID " + id + " to status: " + p.getStatus();
+        //kafkaProducerService.sendMessage("adminNotificationTopic", kafkaMessage);
+        //kafkaProducerService.sendMessage("providerNotificationTopic", kafkaMessage);
+
+// === WebSocket Notifications ===
+        Notification notification = Notification.builder()
+                .status(NotificationStatus.PROVIDERSHIP_UPDATED) // Adjust status as needed
+                .message("The providership with ID " + id + " was updated to status " + p.getStatus())
+                .build();
+
+        notificationService.sendNotification(p.getUserId(), notification);
+        notificationService.sendNotificationToRole("Admin", notification);
+        //notificationService.sendNotificationToRole("Provider", notification);
+
         return providershipMapper.toProvidershipResponse(p);
+
     }
-    /*public ProvidershipResponse updateProvidership(Integer id, ProvidershipRequest request, List<MultipartFile> proofFiles, Authentication connectedUser) {
-        Providership providership = providershipRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Providership not found"));
 
-        String userId = connectedUser.getName();
-        boolean isAdmin = hasRole(connectedUser, "ROLE_Admin");
-        boolean isProvider = hasRole(connectedUser, "ROLE_Provider");
-
-        if (!isAdmin && !isProvider) {
-            throw new AccessDeniedException("You do not have permission to update this providership.");
-        }
-
-        if (isAdmin) {
-            // Admin updates only approval status and bonus earned
-            providership.setProvidershipApprovalStatus(request.providershipApprovalStatus() == null
-                    ? providership.getProvidershipApprovalStatus()
-                    : ProvidershipApprovalStatus.valueOf(request.providershipApprovalStatus().name()));
-
-            providership.setBonusEarned(request.bonusEarned() == null
-                    ? providership.getBonusEarned()
-                    : request.bonusEarned());
-            // ✅ Assign Sponsorship (Admin Only)
-            if (request.sponsorshipId() != null) {
-                Sponsorship sponsorship = sponsorshipRepository.findById(request.sponsorshipId())
-                        .orElseThrow(() -> new EntityNotFoundException("Sponsorship not found"));
-                providership.setSponsorship(sponsorship);
-            }
-        } else if (isProvider && (providership.getCreatedBy().equals(userId))) {
-            // Prevent updates if providership is already approved
-            if (!(providership.getProvidershipApprovalStatus() == ProvidershipApprovalStatus.APPROVED)) {
-
-                providership.setTotalProduct(request.totalProduct() == null
-                        ? providership.getTotalProduct()
-                        : request.totalProduct());
-                providership.setLocation(request.location() == null
-                        ? providership.getLocation()
-                        : request.location());
-                providership.setHasPrintMachine(request.hasPrintMachine() == null
-                        ? providership.getHasPrintMachine()
-                        : request.hasPrintMachine());
-            }else {
-
-                // Provider updates only non-admin fields
-                providership.setStatus(request.status() == null
-                        ? providership.getStatus()
-                        : request.status());
-
-                providership.setProducedProduct(request.producedProduct() == null
-                        ? providership.getProducedProduct()
-                        : request.producedProduct());
-
-
-                // ✅ Update Proof Docs if provided (upload to Cloudinary)
-                if (proofFiles != null && !proofFiles.isEmpty()) {
-                    List<String> uploadedProofs = uploadProofs(proofFiles); // Upload to Cloudinary
-                    providership.setProofDocs(uploadedProofs);
-                }
-            }
-
-        }
-
-        providershipRepository.save(providership);
-        return providershipMapper.toProvidershipResponse(providership);
-    }*/
 
     public ProvidershipResponse createProvidership(ProvidershipRequest request , List<MultipartFile> proofFiles, Authentication  connectedUser) {
         String userId = connectedUser.getName(); // Get provider's Keycloak ID
@@ -278,9 +258,24 @@ public class ProvidershipService {
 
         // Save it
         providership = providershipRepository.save(providership);
+// === Kafka Notifications ===
+        String kafkaMessage = "New providership created: ID " + providership.getId();
+        kafkaProducerService.sendMessage("adminNotificationTopic", kafkaMessage);
+        //kafkaProducerService.sendMessage("providerNotificationTopic", kafkaMessage);
+
+// === WebSocket Notifications ===
+        Notification notification = Notification.builder()
+                .status(NotificationStatus.PROVIDERSHIP_CREATED) // Adjust status as needed
+                .message("A new providership with ID " + providership.getId() + " has been created and is pending approval.")
+                .build();
+
+        notificationService.sendNotification(providership.getUserId(), notification);
+        notificationService.sendNotificationToRole("Admin", notification);
+        //notificationService.sendNotificationToRole("Provider", notification);
 
         // Convert to DTO and return
         return providershipMapper.toProvidershipResponse(providership);
+
     }
 
     // ✅ Upload images to Cloudinary and return URLs

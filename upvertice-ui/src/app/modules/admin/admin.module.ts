@@ -4,8 +4,8 @@ import {AdminComponent} from './admin/admin.component';
 
 import {AdminMenuComponent} from './components/admin-menu/admin-menu.component';
 import {HomeComponent} from './pages/home/home.component';
-import { ManagerComponent } from './pages/manager/manager.component';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
+
+
 import {AdminRoutingModule} from './admin-routing.module';
 import { RouterModule } from '@angular/router';
 import { SponsorOffersComponent } from './pages/sponsor-offers/sponsor-offers.component';
@@ -50,8 +50,6 @@ import {
     AdminComponent,
     AdminMenuComponent,
     HomeComponent,
-    ManagerComponent,
-    DashboardComponent,
     SponsorOffersComponent,
     SponsorOfferFormDialogComponent,
     SponsorAdsComponent,
